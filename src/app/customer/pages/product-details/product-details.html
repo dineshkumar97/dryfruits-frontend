@@ -31,27 +31,27 @@
         <!-- Price and Discount -->
         <div class="price-section">
 
-  <div class="price-details">
+          <div class="price-details">
 
-    <strong class="current-price">
-      ₹{{ price * quantity }}
-    </strong>
+            <strong class="current-price">
+              ₹{{ price * quantity }}
+            </strong>
 
-    <del class="old-price">
-      ₹{{ oldPrice * quantity }}
-    </del>
+            <del class="old-price">
+              ₹{{ oldPrice * quantity }}
+            </del>
 
-    <span class="discount">
-      {{ discountPercentage }}% OFF
-    </span>
+            <span class="discount">
+              {{ discountPercentage }}% OFF
+            </span>
 
-  </div>
+          </div>
 
-  <small class="savings">
-    You save ₹{{ savings * quantity }}
-  </small>
+          <small class="savings">
+            You save ₹{{ savings * quantity }}
+          </small>
 
-</div>
+        </div>
         <!-- Weight Selection -->
         <div class="weight-section">
 
@@ -61,13 +61,9 @@
 
             @for (weight of weights; track weight) {
 
-              <button
-                type="button"
-                [class.active]="selectedWeight === weight"
-                (click)="selectedWeight = weight"
-              >
-                {{ weight }}
-              </button>
+            <button type="button" [class.active]="selectedWeight === weight" (click)="selectedWeight = weight">
+              {{ weight }}
+            </button>
 
             }
 
@@ -101,14 +97,26 @@
           Total: ₹{{ price * quantity }}
         </div>
 
-        <!-- Add to Cart -->
-        <button
-          type="button"
-          class="add-cart-btn"
-          (click)="addToCart()"
-        >
+
+        <!-- <button type="button" class="add-cart-btn" (click)="addToCart()">
           Add to Cart
         </button>
+        <button type="button" class="back-btn" routerLink="/products">
+          ← Back to Products
+        </button> -->
+
+        <!-- Action Buttons -->
+        <div class="product-actions">
+
+          <button type="button" class="add-cart-btn" (click)="addToCart()">
+            Add to Cart
+          </button>
+
+          <button type="button" class="back-btn" routerLink="/products">
+            ← Back to Products
+          </button>
+
+        </div>
 
         <p class="delivery-note">
           Freshly packed with care by NutNest.

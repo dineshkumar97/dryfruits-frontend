@@ -352,3 +352,83 @@
   font-size: 13px;
   font-weight: 600;
 }
+
+/* Product Action Buttons */
+
+.product-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 20px;
+
+  button {
+    flex: 1;
+    min-width: 0;
+    min-height: 50px;
+    width: auto;
+    margin: 0;
+    padding: 12px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+}
+
+/* Add to Cart */
+
+.add-cart-btn {
+  background: #173d2c;
+  color: #fff;
+  border: 1px solid #173d2c;
+
+  &:hover:not(:disabled) {
+    background: #28583f;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+/* Back to Products */
+
+.back-btn {
+  background: transparent;
+  color: #173d2c;
+  border: 1px solid #173d2c;
+
+  &:hover {
+    background: #173d2c;
+    color: #fff;
+  }
+}
+/* Mobile Action Buttons */
+
+@media (max-width: 768px) {
+  .product-actions {
+    gap: 10px;
+
+    button {
+      min-height: 48px;
+      padding: 12px 8px;
+      font-size: 13px;
+    }
+  }
+}
+
+/* Small Phones */
+
+@media (max-width: 400px) {
+  .product-actions {
+    gap: 8px;
+
+    button {
+      min-height: 45px;
+      padding: 10px 5px;
+      font-size: 12px;
+    }
+  }
+}
