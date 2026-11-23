@@ -64,6 +64,10 @@
           <div class="product-price">
             <strong>₹{{ product.price }}</strong>
             <del>₹{{ product.oldPrice }}</del>
+
+            <span class="discount">
+              {{ ((product.oldPrice - product.price) / product.oldPrice * 100) | number:'1.0-0' }}% OFF
+            </span>
           </div>
 
           <button type="button" class="add-cart-btn">

@@ -313,3 +313,42 @@
     font-size: 15px;
   }
 }
+
+.price-section {
+  margin: 20px 0;
+}
+
+.price-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.current-price {
+  font-size: 30px;
+  color: #173d2c;
+  font-weight: 700;
+}
+
+.old-price {
+  color: #999;
+  font-size: 17px;
+}
+
+.discount {
+  background: #e8f3e9;
+  color: #218044;
+  padding: 5px 9px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.savings {
+  display: block;
+  color: #218044;
+  margin-top: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}

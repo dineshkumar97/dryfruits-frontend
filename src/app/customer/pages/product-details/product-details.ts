@@ -1,4 +1,3 @@
-
 import { Component } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Cart } from '../../../core/services/cart';
@@ -22,8 +21,9 @@ export class ProductDetails {
       id: 1,
       name: 'Premium California Almonds',
       category: 'Almonds',
-      price: 330, 
-       image: 'images/almonds.png',
+      price: 330,
+      oldPrice: 380,
+      image: 'images/almonds.png',
       description: 'Premium quality California almonds, carefully selected for freshness and taste.'
     },
     {
@@ -31,6 +31,7 @@ export class ProductDetails {
       name: 'Premium Whole Cashews',
       category: 'Cashews',
       price: 290,
+      oldPrice: 340,
       image: 'images/cashews.png',
       description: 'Delicious whole cashews with a rich, naturally creamy taste.'
     },
@@ -39,6 +40,7 @@ export class ProductDetails {
       name: 'Premium Pistachios',
       category: 'Pistachios',
       price: 350,
+      oldPrice: 400,
       image: 'images/pistachios.png',
       description: 'Crunchy premium pistachios selected for quality and freshness.'
     },
@@ -47,6 +49,7 @@ export class ProductDetails {
       name: 'Premium Black Dates',
       category: 'Dates',
       price: 180,
+      oldPrice: 220,
       image: 'images/black_dates.png',
       description: 'Naturally sweet dates with a soft texture.'
     },
@@ -55,6 +58,7 @@ export class ProductDetails {
       name: 'Golden Raisins',
       category: 'Raisins',
       price: 150,
+      oldPrice: 180,
       image: 'images/golden_raisins.png',
       description: 'Sweet and delicious golden raisins.'
     },
@@ -63,6 +67,7 @@ export class ProductDetails {
       name: 'Premium Walnuts',
       category: 'Walnuts',
       price: 320,
+      oldPrice: 370,
       image: 'images/walnuts.png',
       description: 'Premium walnuts with a rich taste and crunchy texture.'
     }
@@ -89,16 +94,34 @@ export class ProductDetails {
     }
   }
 
-  get price(): number {
-    const grams = Number(
-      this.selectedWeight
-        .replace('g', '')
-        .replace('k', '000')
-    );
+  private getWeightInGrams(): number {
+    if (this.selectedWeight === '1kg') {
+      return 1000;
+    }
 
+    return Number(this.selectedWeight.replace('g', ''));
+  }
+
+  get price(): number {
     return Math.round(
-      (this.product.price / 250) * grams
+      (this.product.price / 250) * this.getWeightInGrams()
     );
+  }
+
+  get oldPrice(): number {
+    return Math.round(
+      (this.product.oldPrice / 250) * this.getWeightInGrams()
+    );
+  }
+
+  get discountPercentage(): number {
+    return Math.round(
+      ((this.oldPrice - this.price) / this.oldPrice) * 100
+    );
+  }
+
+  get savings(): number {
+    return this.oldPrice - this.price;
   }
 
   increaseQuantity(): void {
@@ -119,7 +142,8 @@ export class ProductDetails {
       category: this.product.category,
       weight: this.selectedWeight,
       price: this.price,
-      quantity: this.quantity
+      quantity: this.quantity,
+      oldPrice: this.oldPrice
     });
 
     alert('Product added to your cart successfully!');

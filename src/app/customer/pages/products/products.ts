@@ -1,11 +1,11 @@
 
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-
+import { DecimalPipe } from '@angular/common';
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, DecimalPipe],
   templateUrl: './products.html',
   styleUrl: './products.scss'
 })

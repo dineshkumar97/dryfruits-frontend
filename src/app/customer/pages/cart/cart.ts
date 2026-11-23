@@ -2,11 +2,12 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Cart as CartService, CartItem } from '../../../core/services/cart';
+import { DecimalPipe } from '@angular/common';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, DecimalPipe],
   templateUrl: './cart.html',
   styleUrl: './cart.scss'
 })
@@ -55,5 +56,19 @@ export class Cart {
 
   get subtotal(): number {
     return this.cartService.getSubtotal();
+  }
+
+  get totalQuantity(): number {
+    return this.cartItems.reduce(
+      (total, item) => total + item.quantity,
+      0
+    );
+  }
+  get totalSavings(): number {
+    return this.cartItems.reduce(
+      (total, item) =>
+        total + (item.oldPrice - item.price) * item.quantity,
+      0
+    );
   }
 }

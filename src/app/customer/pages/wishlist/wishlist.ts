@@ -25,12 +25,12 @@ export class Wishlist {
   private readonly wishlistKey = 'nutnest-wishlist';
 
   products: WishlistProduct[] = [
-    { id: 1, name: 'Premium California Almonds', category: 'Almonds', weight: '250g', price: 330, oldPrice: 380, image: 'images/almonds.jpg' },
-    { id: 2, name: 'Premium Whole Cashews', category: 'Cashews', weight: '250g', price: 290, oldPrice: 340, image: 'images/cashews.jpg' },
-    { id: 3, name: 'Premium Pistachios', category: 'Pistachios', weight: '250g', price: 350, oldPrice: 400, image: 'images/pistachios.jpg' },
-    { id: 4, name: 'Premium Black Dates', category: 'Dates', weight: '250g', price: 180, oldPrice: 220, image: 'images/dates.jpg' },
-    { id: 5, name: 'Golden Raisins', category: 'Raisins', weight: '250g', price: 150, oldPrice: 180, image: 'images/raisins.jpg' },
-    { id: 6, name: 'Premium Walnuts', category: 'Walnuts', weight: '250g', price: 320, oldPrice: 370, image: 'images/walnuts.jpg' }
+    { id: 1, name: 'Premium California Almonds', category: 'Almonds', weight: '250g', price: 330, oldPrice: 380, image: 'images/almonds.png' },
+    { id: 2, name: 'Premium Whole Cashews', category: 'Cashews', weight: '250g', price: 290, oldPrice: 340, image: 'images/cashews.png' },
+    { id: 3, name: 'Premium Pistachios', category: 'Pistachios', weight: '250g', price: 350, oldPrice: 400, image: 'images/pistachios.png' },
+    { id: 4, name: 'Premium Black Dates', category: 'Dates', weight: '250g', price: 180, oldPrice: 220, image: 'images/dates.png' },
+    { id: 5, name: 'Golden Raisins', category: 'Raisins', weight: '250g', price: 150, oldPrice: 180, image: 'images/raisins.png' },
+    { id: 6, name: 'Premium Walnuts', category: 'Walnuts', weight: '250g', price: 320, oldPrice: 370, image: 'images/walnuts.png' }
   ];
 
   wishlistIds: number[] = this.loadWishlist();
@@ -59,7 +59,8 @@ export class Wishlist {
       category: product.category,
       weight: product.weight,
       price: product.price,
-      quantity: 1
+      quantity: 1,
+      oldPrice: product.oldPrice
     });
 
     alert('Product added to your cart successfully!');

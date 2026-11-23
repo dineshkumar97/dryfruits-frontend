@@ -403,3 +403,29 @@
     font-size: 11px;
   }
 }
+
+.product-price {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  strong {
+    color: #173d2c;
+    font-size: 21px;
+  }
+
+  del {
+    color: #999;
+    font-size: 14px;
+  }
+
+  .discount {
+    background: #e8f3e9;
+    color: #218044;
+    padding: 4px 7px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+}

@@ -1,8 +1,13 @@
+
 <section class="cart-page">
 
   <div class="container">
 
-    <h1>My Shopping Cart</h1>
+    <div class="cart-heading">
+      <span>YOUR SELECTION</span>
+      <h1>My Shopping Cart</h1>
+      <p>Review your premium dry fruits before checkout.</p>
+    </div>
 
     @if (cartItems.length > 0) {
 
@@ -14,28 +19,82 @@
 
         <div class="cart-item">
 
-          <img [src]="item.image" [alt]="item.name">
+          <div class="cart-product-image">
+            <img [src]="item.image" [alt]="item.name">
+          </div>
 
           <div class="cart-item-info">
+
             <h3>{{ item.name }}</h3>
-            <p>{{ item.category }}</p>
-            <p>Weight: {{ item.weight }}</p>
-            <strong>₹{{ item.price }}</strong>
+
+            <p class="category">
+              {{ item.category }} · {{ item.weight }}
+            </p>
+
+            <div class="cart-price">
+              <strong>₹{{ item.price }}</strong>
+              <del>₹{{ item.oldPrice }}</del>
+
+              <span class="discount">
+                {{ ((item.oldPrice - item.price) / item.oldPrice * 100) | number:'1.0-0' }}% OFF
+              </span>
+            </div>
+
+            <small class="item-savings">
+              You save ₹{{ item.oldPrice - item.price }} per pack
+            </small>
+
+            <button
+              type="button"
+              class="remove-btn"
+              (click)="removeItem(item)">
+              Remove
+            </button>
+
           </div>
 
-          <div class="quantity-control">
-            <button type="button" (click)="decreaseQuantity(item)">−</button>
-            <span>{{ item.quantity }}</span>
-            <button type="button" (click)="increaseQuantity(item)">+</button>
-          </div>
+          <div class="cart-item-actions">
 
-          <div class="item-total">
-            ₹{{ item.price * item.quantity }}
-          </div>
+            <span class="action-label">Quantity</span>
 
-          <button type="button" class="remove-btn" (click)="removeItem(item)">
-            Remove
-          </button>
+            <div class="quantity-control">
+
+              <button
+                type="button"
+                class="quantity-btn"
+                [disabled]="item.quantity <= 1"
+                (click)="decreaseQuantity(item)"
+                aria-label="Decrease quantity">
+                −
+              </button>
+
+              <span class="quantity-value">
+                {{ item.quantity }}
+              </span>
+
+              <button
+                type="button"
+                class="quantity-btn"
+                (click)="increaseQuantity(item)"
+                aria-label="Increase quantity">
+                +
+              </button>
+
+            </div>
+
+            <span class="action-label item-total-label">
+              Item Total
+            </span>
+
+            <strong class="item-total-price">
+              ₹{{ item.price * item.quantity }}
+            </strong>
+
+            <small class="item-total-savings">
+              You save ₹{{ (item.oldPrice - item.price) * item.quantity }}
+            </small>
+
+          </div>
 
         </div>
 
@@ -44,31 +103,42 @@
       </div>
 
       <div class="cart-summary">
+
         <h2>Order Summary</h2>
+
+        <div class="summary-row">
+          <span>Total Items</span>
+          <strong>{{ totalQuantity }} packs</strong>
+        </div>
 
         <div class="summary-row">
           <span>Subtotal</span>
           <strong>₹{{ subtotal }}</strong>
         </div>
 
-        <div class="summary-row">
-          <span>Delivery</span>
-          <span>Calculated at checkout</span>
+        <div class="summary-row savings-row">
+          <span>Total Savings</span>
+          <strong>₹{{ totalSavings }}</strong>
+        </div>
+
+        <div class="savings-message">
+          <span>✓</span>
+          You're saving ₹{{ totalSavings }} on this order!
         </div>
 
         <div class="summary-total">
-          <span>Total</span>
+          <span>Total Payable</span>
           <strong>₹{{ subtotal }}</strong>
         </div>
 
-
-
         <a routerLink="/checkout" class="checkout-btn">
-          Proceed to Checkout
+          Proceed to Checkout →
         </a>
+
         <a routerLink="/products" class="continue-shopping">
-          Continue Shopping
+          ← Continue Shopping
         </a>
+
       </div>
 
     </div>
@@ -76,13 +146,17 @@
     } @else {
 
     <div class="empty-cart">
+
       <div class="empty-icon">🛒</div>
+
       <h2>Your cart is empty</h2>
+
       <p>Discover our premium dry fruits collection.</p>
 
       <a routerLink="/products">
         Start Shopping
       </a>
+
     </div>
 
     }
