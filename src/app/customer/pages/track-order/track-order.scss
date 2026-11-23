@@ -1,0 +1,326 @@
+
+.track-page {
+  min-height: 70vh;
+  padding: 50px 20px;
+  background: #fffdf8;
+  box-sizing: border-box;
+}
+
+.track-container {
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
+  padding: 35px;
+  background: #fff;
+  border: 1px solid #eee8dc;
+  border-radius: 16px;
+  box-shadow: 0 5px 25px rgba(23, 61, 44, 0.07);
+  box-sizing: border-box;
+}
+
+.track-header h1 {
+  margin: 0;
+  color: #173d2c;
+  text-align: center;
+  font-size: 28px;
+}
+
+.subtitle {
+  margin: 12px 0 30px;
+  color: #777;
+  text-align: center;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label {
+  color: #173d2c;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 14px;
+  border: 1px solid #ddd6c9;
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+input:focus {
+  border-color: #173d2c;
+  box-shadow: 0 0 0 3px rgba(23, 61, 44, 0.08);
+}
+
+button {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 13px;
+  border: none;
+  border-radius: 8px;
+  background: #173d2c;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: #24583e;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-message {
+  margin-top: 20px;
+  padding: 13px;
+  border-radius: 8px;
+  background: #fff0f0;
+  color: #c62828;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.order-result {
+  margin-top: 30px;
+  padding: 22px;
+  background: #faf8f2;
+  border-radius: 12px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e8e1d5;
+  min-width: 0;
+}
+
+.section-label {
+  color: #888;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.result-header h2 {
+  margin: 7px 0 0;
+  color: #173d2c;
+  font-size: 21px;
+  overflow-wrap: anywhere;
+}
+
+.status {
+  flex-shrink: 0;
+  padding: 7px 12px;
+  border-radius: 20px;
+  background: #e8f3e9;
+  color: #173d2c;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.result-section {
+  padding: 20px 0;
+  border-bottom: 1px solid #e8e1d5;
+  min-width: 0;
+}
+
+.result-section h3 {
+  margin: 0 0 12px;
+  color: #173d2c;
+  font-size: 17px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 10px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  min-width: 0;
+}
+
+.info-row span {
+  flex-shrink: 0;
+  color: #777;
+}
+
+.info-row strong {
+  min-width: 0;
+  color: #173d2c;
+  text-align: right;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.product-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 13px 0;
+  border-bottom: 1px solid #eeeae2;
+  font-size: 14px;
+}
+
+.product-row:last-child {
+  border-bottom: none;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.product-info strong {
+  color: #173d2c;
+  overflow-wrap: anywhere;
+}
+
+.product-info span {
+  color: #777;
+  font-size: 13px;
+}
+
+.product-row > strong {
+  flex-shrink: 0;
+  color: #173d2c;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding-top: 20px;
+  color: #173d2c;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .track-page {
+    padding: 35px 18px;
+  }
+
+  .track-container {
+    padding: 28px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .track-page {
+    min-height: auto;
+    padding: 25px 12px;
+  }
+
+  .track-container {
+    padding: 22px 16px;
+    border-radius: 13px;
+  }
+
+  .track-header h1 {
+    font-size: 23px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  .order-result {
+    padding: 16px 12px;
+  }
+
+  .result-header h2 {
+    font-size: 16px;
+  }
+
+  .result-section h3 {
+    font-size: 16px;
+  }
+
+  .info-row {
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .info-row span {
+    max-width: 40%;
+  }
+
+  .info-row strong {
+    flex: 1;
+  }
+
+  .product-row {
+    font-size: 13px;
+  }
+
+  .total-row {
+    font-size: 16px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 360px) {
+  .track-container {
+    padding: 18px 12px;
+  }
+
+  .order-result {
+    padding: 14px 10px;
+  }
+
+  .result-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .status {
+    align-self: flex-start;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .info-row {
+    gap: 7px;
+    font-size: 12px;
+  }
+
+  .product-row {
+    gap: 8px;
+  }
+}

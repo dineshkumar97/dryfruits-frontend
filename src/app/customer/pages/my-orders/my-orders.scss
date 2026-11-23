@@ -1,0 +1,180 @@
+
+.orders-page {
+  min-height: 65vh;
+  padding: 50px 20px;
+  background: #fffdf8;
+  box-sizing: border-box;
+}
+
+.container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  min-width: 0;
+}
+
+h1 {
+  color: #173d2c;
+  margin-bottom: 8px;
+  font-size: 30px;
+}
+
+.subtitle {
+  color: #777;
+  margin-bottom: 30px;
+}
+
+.orders-list {
+  display: grid;
+  gap: 20px;
+}
+
+.order-card {
+  min-width: 0;
+  padding: 24px;
+  background: white;
+  border: 1px solid #eee5d6;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+
+  span:first-child {
+    color: #777;
+    font-size: 13px;
+  }
+
+  h3 {
+    color: #173d2c;
+    margin: 6px 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.status {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  background: #e7f2e9;
+  color: #173d2c;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.order-info {
+  margin-top: 15px;
+  padding-top: 12px;
+  border-top: 1px solid #eee5d6;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+
+  p {
+    color: #555;
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
+.empty-orders {
+  padding: 50px 20px;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+
+  h2 {
+    color: #173d2c;
+  }
+
+  a {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: #173d2c;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+  }
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .orders-page {
+    padding: 35px 16px;
+  }
+
+  .order-card {
+    padding: 20px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .orders-page {
+    padding: 28px 14px;
+  }
+
+  h1 {
+    font-size: 25px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    margin-bottom: 22px;
+  }
+
+  .order-card {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .order-header {
+    align-items: flex-start;
+    gap: 10px;
+
+    h3 {
+      font-size: 15px;
+    }
+  }
+
+  .status {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .order-info {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+
+    p {
+      font-size: 13px;
+    }
+  }
+
+  .empty-orders {
+    padding: 35px 16px;
+  }
+
+  .empty-orders h2 {
+    font-size: 21px;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 360px) {
+  .order-header {
+    flex-direction: column;
+  }
+
+  .status {
+    align-self: flex-start;
+  }
+}

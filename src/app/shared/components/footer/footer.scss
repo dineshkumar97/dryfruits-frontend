@@ -1,0 +1,167 @@
+
+.footer {
+  width: 100%;
+  background: #173d2c;
+  color: #ffffff;
+  padding-top: 50px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.container {
+  width: min(1200px, 92%);
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 40px;
+}
+
+/* Brand */
+
+.footer-brand {
+  min-width: 0;
+
+  h2 {
+    color: #d5ad57;
+    font-family: Georgia, serif;
+    font-size: 30px;
+    margin: 0 0 15px;
+  }
+
+  p {
+    color: #e7e3d9;
+    line-height: 1.8;
+    font-size: 14px;
+    margin: 0 0 12px;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Links and Contact */
+
+.footer-links,
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+  min-width: 0;
+
+  h3 {
+    color: #d5ad57;
+    font-size: 17px;
+    margin: 0 0 8px;
+  }
+
+  a {
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1.5;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #d5ad57;
+    }
+  }
+
+  p {
+    color: #e7e3d9;
+    font-size: 14px;
+    line-height: 1.7;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Bottom */
+
+.footer-bottom {
+  border-top: 1px solid #42604e;
+  padding: 20px 15px;
+  text-align: center;
+  color: #e7e3d9;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .footer-content {
+    grid-template-columns: 1.5fr 1fr;
+    gap: 35px;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .footer {
+    padding-top: 35px;
+  }
+
+  .container {
+    width: 90%;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-bottom: 30px;
+  }
+
+  .footer-brand {
+    grid-column: auto;
+
+    h2 {
+      font-size: 27px;
+    }
+  }
+
+  .footer-links,
+  .footer-contact {
+    gap: 11px;
+
+    h3 {
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    a,
+    p {
+      font-size: 14px;
+    }
+  }
+
+  .footer-bottom {
+    padding: 17px 15px;
+    font-size: 12px;
+  }
+}
+
+/* Small phones */
+
+@media (max-width: 360px) {
+  .container {
+    width: 92%;
+  }
+
+  .footer-content {
+    gap: 24px;
+  }
+
+  .footer-brand h2 {
+    font-size: 25px;
+  }
+}

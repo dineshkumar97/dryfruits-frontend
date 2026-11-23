@@ -1,0 +1,161 @@
+
+<section class="contact-page">
+
+  <!-- Hero -->
+  <div class="contact-hero">
+    <span>WE'RE HERE TO HELP</span>
+    <h1>Get in Touch</h1>
+    <p>
+      Have a question about our products or your order?
+      We'd love to hear from you.
+    </p>
+  </div>
+
+  <div class="contact-container">
+
+    <!-- Contact Information -->
+    <div class="contact-info">
+      <span class="section-label">CONTACT INFORMATION</span>
+      <h2>Let's Talk</h2>
+      <p class="info-description">
+        Reach out to us for product enquiries, order support
+        or any other questions.
+      </p>
+
+      <div class="info-card">
+        <div class="info-icon">☎</div>
+        <div>
+          <h3>Phone</h3>
+          <p>Contact number coming soon</p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">✉</div>
+        <div>
+          <h3>Email</h3>
+          <p>Email address coming soon</p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">⌖</div>
+        <div>
+          <h3>Location</h3>
+          <p>Chennai, Tamil Nadu, India</p>
+        </div>
+      </div>
+
+      <div class="contact-note">
+        <h3>NutNest Customer Support</h3>
+        <p>
+          Your satisfaction matters to us.
+          Send us your enquiry and we'll be happy to help.
+        </p>
+      </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="contact-form-card">
+      <span class="section-label">SEND US A MESSAGE</span>
+      <h2>How Can We Help?</h2>
+
+      <form #contactForm="ngForm"
+            (ngSubmit)="submitMessage(contactForm)">
+
+        <div class="form-group">
+          <label for="name">Full Name *</label>
+          <input
+            id="name"
+            type="text"
+            name="name"
+            [(ngModel)]="contact.name"
+            required
+            minlength="2"
+            #name="ngModel"
+            placeholder="Enter your name">
+
+          @if (name.invalid && name.touched) {
+            <small>Please enter your name.</small>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="mobile">Mobile Number *</label>
+            <input
+              id="mobile"
+              type="tel"
+              name="mobile"
+              [(ngModel)]="contact.mobile"
+              required
+              pattern="[0-9]{10}"
+              #mobile="ngModel"
+              placeholder="10-digit number">
+
+            @if (mobile.invalid && mobile.touched) {
+              <small>Enter a valid 10-digit mobile number.</small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              [(ngModel)]="contact.email"
+              required
+              email
+              #email="ngModel"
+              placeholder="Enter your email">
+              
+            @if (email.invalid && email.touched) {
+              <small>Enter a valid email address.</small>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="subject">Subject *</label>
+          <input
+            id="subject"
+            type="text"
+            name="subject"
+            [(ngModel)]="contact.subject"
+            required
+            #subject="ngModel"
+            placeholder="What is your enquiry about?">
+
+          @if (subject.invalid && subject.touched) {
+            <small>Please enter a subject.</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="message">Your Message *</label>
+          <textarea
+            id="message"
+            name="message"
+            [(ngModel)]="contact.message"
+            required
+            minlength="10"
+            rows="5"
+            #message="ngModel"
+            placeholder="Write your message here...">
+          </textarea>
+
+          @if (message.invalid && message.touched) {
+            <small>Please enter at least 10 characters.</small>
+          }
+        </div>
+
+        <button type="submit" class="submit-btn">
+          Send Message <span>→</span>
+        </button>
+
+      </form>
+    </div>
+
+  </div>
+</section>

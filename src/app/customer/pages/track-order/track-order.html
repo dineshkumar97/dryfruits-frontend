@@ -1,0 +1,151 @@
+
+<section class="track-page">
+
+  <div class="track-container">
+
+    <div class="track-header">
+      <h1>Track Your Order</h1>
+      <p class="subtitle">
+        Enter your Order ID and mobile number to check your order status.
+      </p>
+    </div>
+
+    <!-- TRACKING FORM -->
+    <form #trackForm="ngForm" (ngSubmit)="trackOrder()">
+
+      <div class="form-group">
+        <label for="orderId">Order ID</label>
+        <input
+          id="orderId"
+          type="text"
+          name="orderId"
+          [(ngModel)]="orderId"
+          placeholder="Example: NN123456789"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="mobile">Mobile Number</label>
+        <input
+          id="mobile"
+          type="tel"
+          name="mobile"
+          [(ngModel)]="mobile"
+          placeholder="Enter 10-digit mobile number"
+          pattern="[6-9][0-9]{9}"
+          maxlength="10"
+          inputmode="numeric"
+          required
+        />
+      </div>
+
+      <button type="submit" [disabled]="trackForm.invalid">
+        Track My Order
+      </button>
+
+    </form>
+
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <!-- ORDER RESULT -->
+    @if (order) {
+
+      <div class="order-result">
+
+        <div class="result-header">
+          <div>
+            <span class="section-label">ORDER NUMBER</span>
+            <h2>{{ order.orderId }}</h2>
+          </div>
+
+          <span class="status">{{ order.status }}</span>
+        </div>
+
+        <!-- ORDER INFORMATION -->
+        <div class="result-section">
+          <h3>Order Information</h3>
+
+          <div class="info-row">
+            <span>Order Date</span>
+            <strong>{{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}</strong>
+          </div>
+
+          <div class="info-row">
+            <span>Payment Method</span>
+            <strong>
+              {{ order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment' }}
+            </strong>
+          </div>
+
+          <div class="info-row">
+            <span>Order Status</span>
+            <strong>{{ order.status }}</strong>
+          </div>
+        </div>
+
+        <!-- CUSTOMER DETAILS -->
+        <div class="result-section">
+          <h3>Delivery Details</h3>
+
+          <div class="info-row">
+            <span>Name</span>
+            <strong>{{ order.customer.name }}</strong>
+          </div>
+
+          <div class="info-row">
+            <span>Mobile</span>
+            <strong>{{ order.customer.mobile }}</strong>
+          </div>
+
+          <div class="info-row">
+            <span>Address</span>
+            <strong>{{ order.customer.address }}</strong>
+          </div>
+
+          <div class="info-row">
+            <span>City</span>
+            <strong>{{ order.customer.city }}</strong>
+          </div>
+
+          <div class="info-row">
+            <span>Pincode</span>
+            <strong>{{ order.customer.pincode }}</strong>
+          </div>
+        </div>
+
+        <!-- ORDERED PRODUCTS -->
+        <div class="result-section">
+          <h3>Ordered Products</h3>
+
+          @for (item of order.items; track item.productId + item.weight) {
+            <div class="product-row">
+
+              <div class="product-info">
+                <strong>{{ item.name }}</strong>
+                <span>{{ item.weight }} × {{ item.quantity }}</span>
+              </div>
+
+              <strong>₹{{ item.price * item.quantity }}</strong>
+
+            </div>
+          }
+        </div>
+
+        <!-- TOTAL -->
+        <div class="total-row">
+          <span>Total Amount</span>
+          <strong>₹{{ order.subtotal }}</strong>
+        </div>
+
+      </div>
+
+    }
+
+  </div>
+
+</section>

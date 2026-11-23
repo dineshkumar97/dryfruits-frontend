@@ -1,0 +1,63 @@
+<section class="orders-page">
+
+  <div class="container">
+
+    <h1>My Orders</h1>
+    <p class="subtitle">Track your NutNest purchases</p>
+
+    @if (orders.length > 0) {
+
+      <div class="orders-list">
+
+        @for (order of orders; track order.orderId) {
+
+          <div class="order-card">
+
+            <div class="order-header">
+              <div>
+                <span>Order Number</span>
+                <h3>{{ order.orderId }}</h3>
+              </div>
+
+              <span class="status">
+                {{ order.status }}
+              </span>
+            </div>
+
+            <div class="order-info">
+              <p>
+                <strong>Date:</strong>
+                {{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+              </p>
+
+              <p>
+                <strong>Items:</strong>
+                {{ order.items.length }}
+              </p>
+
+              <p>
+                <strong>Total:</strong>
+                ₹{{ order.subtotal }}
+              </p>
+            </div>
+
+          </div>
+
+        }
+
+      </div>
+
+    } @else {
+
+      <div class="empty-orders">
+        <h2>No Orders Yet</h2>
+        <p>Your NutNest orders will appear here.</p>
+
+        <a routerLink="/products">Start Shopping</a>
+      </div>
+
+    }
+
+  </div>
+
+</section>

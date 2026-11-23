@@ -1,0 +1,82 @@
+
+<section class="about-page">
+
+  <!-- Hero Section -->
+  <section class="about-hero">
+    <div class="about-hero-content">
+      <span class="eyebrow">WELCOME TO NUTNEST</span>
+
+      <h1>Nature's Finest Treasures,<br>
+        Delivered with Love.</h1>
+
+      <p>
+        Discover the goodness of premium dry fruits,
+        carefully selected to bring natural taste and
+        everyday nutrition to your family.
+      </p>
+
+      <a routerLink="/products" class="shop-btn">
+        Explore Our Products
+      </a>
+    </div>
+  </section>
+
+  <!-- Our Story -->
+  <section class="story-section">
+    <div class="story-content">
+      <span class="section-label">OUR STORY</span>
+
+      <h2>A Little Goodness in Every Bite</h2>
+
+      <p>
+        NutNest was created with a simple idea: make quality
+        dry fruits accessible for everyone. We believe that
+        good food brings happiness, supports healthy habits
+        and makes everyday moments special.
+      </p>
+
+      <p>
+        From crunchy almonds to delicious cashews and
+        flavourful dates, we aim to bring carefully selected
+        products to your home with care and attention.
+      </p>
+    </div>
+
+    <div class="story-image">
+      <img
+        src="images/our_story.png"
+        alt="Premium assortment of nuts and dry fruits">
+    </div>
+  </section>
+
+  <!-- Why Choose Us -->
+  <section class="features-section">
+    <div class="section-heading">
+      <span class="section-label">WHY NUTNEST</span>
+      <h2>Goodness You Can Feel</h2>
+      <p>We focus on the little details that make a difference.</p>
+    </div>
+
+    <div class="features-grid">
+      @for (feature of features; track feature.title) {
+        <div class="feature-card">
+          <div class="feature-icon">{{ feature.icon }}</div>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Mission -->
+  <section class="mission-section">
+    <span class="section-label">OUR PROMISE</span>
+    <h2>Making Everyday Snacking Better</h2>
+    <p>
+      Our goal is to make shopping for dry fruits simple,
+      enjoyable and convenient, while giving every customer
+      a quality experience.
+    </p>
+  </section>
+
+</section>

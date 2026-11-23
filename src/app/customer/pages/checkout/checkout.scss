@@ -1,0 +1,315 @@
+
+.checkout-page {
+  min-height: 75vh;
+  background: #fffdf8;
+  padding: 45px 0 70px;
+}
+
+.container {
+  width: min(1200px, 92%);
+  margin: auto;
+}
+
+h1,
+h2,
+h3 {
+  color: #173d2c;
+}
+
+h1 {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #777;
+  margin-bottom: 30px;
+}
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+  gap: 30px;
+  align-items: start;
+}
+
+.checkout-form {
+  min-width: 0;
+}
+
+.form-card,
+.order-summary {
+  background: white;
+  border: 1px solid #eee8db;
+  border-radius: 10px;
+  padding: 25px;
+  margin-bottom: 20px;
+  min-width: 0;
+}
+
+.form-card h2,
+.order-summary h2 {
+  font-size: 20px;
+  margin: 0 0 22px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+
+  label {
+    color: #173d2c;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px;
+    border: 1px solid #d8d0bf;
+    border-radius: 5px;
+    outline: none;
+    font: inherit;
+    font-size: 15px;
+
+    &:focus {
+      border-color: #173d2c;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.summary-product {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee8db;
+
+  img {
+    width: 75px;
+    height: 75px;
+    object-fit: cover;
+    border-radius: 7px;
+    flex-shrink: 0;
+  }
+}
+
+.summary-product-info {
+  min-width: 0;
+
+  h3 {
+    font-size: 15px;
+    margin: 0 0 5px;
+  }
+
+  p {
+    color: #777;
+    font-size: 13px;
+    margin: 5px 0;
+  }
+
+  strong {
+    color: #173d2c;
+  }
+}
+
+.summary-row,
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.summary-total {
+  border-top: 1px solid #eee8db;
+  padding-top: 20px;
+  color: #173d2c;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.payment-section {
+  margin-top: 25px;
+
+  h3 {
+    color: #173d2c;
+    font-size: 17px;
+    margin-bottom: 15px;
+  }
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  margin-bottom: 12px;
+  border: 1px solid #e5ddce;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: #173d2c;
+  }
+
+  input {
+    accent-color: #173d2c;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  strong {
+    color: #173d2c;
+  }
+
+  small {
+    color: #777;
+    line-height: 1.5;
+  }
+}
+
+.place-order-btn {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 15px;
+  margin-top: 20px;
+  border: none;
+  border-radius: 5px;
+  background: #173d2c;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.back-to-cart {
+  display: block;
+  text-align: center;
+  margin-top: 18px;
+  color: #173d2c;
+  text-decoration: none;
+}
+
+.empty-checkout {
+  text-align: center;
+  padding: 60px 20px;
+
+  a {
+    color: #173d2c;
+  }
+}
+
+// Tablet
+
+@media (max-width: 900px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .order-summary {
+    width: auto;
+  }
+}
+
+// Mobile
+
+@media (max-width: 600px) {
+  .checkout-page {
+    padding: 28px 0 45px;
+  }
+
+  h1 {
+    font-size: 26px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    margin-bottom: 22px;
+  }
+
+  .form-card,
+  .order-summary {
+    padding: 17px;
+    border-radius: 8px;
+  }
+
+  .form-card h2,
+  .order-summary h2 {
+    font-size: 18px;
+    margin-bottom: 18px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .form-group {
+    input,
+    textarea {
+      font-size: 16px;
+    }
+  }
+
+  .summary-product {
+    gap: 12px;
+
+    img {
+      width: 65px;
+      height: 65px;
+    }
+  }
+
+  .summary-product-info h3 {
+    font-size: 14px;
+  }
+
+  .summary-row {
+    font-size: 13px;
+  }
+
+  .summary-total {
+    font-size: 17px;
+  }
+
+  .payment-option {
+    padding: 13px;
+  }
+
+  .place-order-btn {
+    padding: 15px 10px;
+  }
+}

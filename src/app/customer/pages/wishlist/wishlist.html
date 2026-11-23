@@ -1,0 +1,98 @@
+
+<section class="wishlist-page">
+
+  <div class="wishlist-banner">
+    <span>YOUR FAVOURITES</span>
+    <h1>My Wishlist</h1>
+    <p>Your favourite NutNest products, saved in one place.</p>
+  </div>
+
+  <div class="container">
+
+    @if (wishlistProducts.length > 0) {
+
+      <div class="wishlist-heading">
+        <h2>Saved Products</h2>
+        <span>{{ wishlistProducts.length }} Products</span>
+      </div>
+
+      <div class="wishlist-grid">
+
+        @for (product of wishlistProducts; track product.id) {
+
+          <div class="wishlist-card">
+
+            <div class="wishlist-image">
+              <img [src]="product.image" [alt]="product.name">
+
+              <button
+                type="button"
+                class="remove-btn"
+                (click)="removeFromWishlist(product.id)"
+                aria-label="Remove from wishlist">
+                ♥
+              </button>
+            </div>
+
+            <div class="wishlist-info">
+
+              <span class="product-category">
+                {{ product.category }}
+              </span>
+
+              <h3>{{ product.name }}</h3>
+
+              <p>{{ product.weight }}</p>
+
+              <div class="product-price">
+                <strong>₹{{ product.price }}</strong>
+                <del>₹{{ product.oldPrice }}</del>
+              </div>
+
+              <div class="wishlist-actions">
+
+                <button
+                  type="button"
+                  class="add-cart-btn"
+                  (click)="addToCart(product)">
+                  Add to Cart
+                </button>
+
+                <button
+                  type="button"
+                  class="remove-text-btn"
+                  (click)="removeFromWishlist(product.id)">
+                  Remove
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        }
+
+      </div>
+
+    } @else {
+
+      <div class="empty-wishlist">
+
+        <div class="empty-icon">♡</div>
+
+        <h2>Your Wishlist is Empty</h2>
+
+        <p>You haven't saved any favourite products yet.</p>
+
+        <a routerLink="/products" class="shop-btn">
+          Explore Products
+        </a>
+
+      </div>
+
+    }
+
+  </div>
+
+</section>

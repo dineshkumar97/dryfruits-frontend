@@ -1,0 +1,104 @@
+<section class="success-page">
+
+    <div class="success-card">
+
+        <div class="success-icon">✓</div>
+
+        <h1>Thank You for Your Order!</h1>
+
+        <p class="success-message">
+            Your NutNest order has been placed successfully.
+        </p>
+
+        @if (order) {
+        <div class="order-details">
+
+            <div class="detail-row">
+                <span>Order Number</span>
+                <strong>{{ order.orderId }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Name</span>
+                <strong>{{ order.customer.name }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Mobile</span>
+                <strong>{{ order.customer.mobile }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Address</span>
+                <strong>{{ order.customer.address }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>City</span>
+                <strong>{{ order.customer.city }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Pincode</span>
+                <strong>{{ order.customer.pincode }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Order Status</span>
+                <strong>{{ order.status }}</strong>
+            </div>
+            <div class="detail-row">
+                <span>Order Date</span>
+                <strong>{{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Payment Method</span>
+                <strong>
+                    {{ order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment' }}
+                </strong>
+            </div>
+
+            <!-- Ordered Products -->
+            <div class="ordered-items">
+
+                <h3>Ordered Products</h3>
+
+                @for (item of order.items; track item.productId + item.weight) {
+                <div class="detail-row">
+                    <span>
+                        {{ item.name }} ({{ item.weight }}) × {{ item.quantity }}
+                    </span>
+
+                    <strong>₹{{ item.price * item.quantity }}</strong>
+                </div>
+                }
+
+            </div>
+
+            <div class="detail-row">
+                <span>Total Amount</span>
+                <strong>₹{{ order.subtotal }}</strong>
+            </div>
+
+        </div>
+        }
+
+        <p class="delivery-message">
+            We will contact you regarding your delivery.
+        </p>
+
+      <div class="success-actions">
+
+  <a routerLink="/track-order" class="track-order-btn">
+    Track Your Order
+  </a>
+
+  <a routerLink="/products" class="continue-btn">
+    Continue Shopping
+  </a>
+
+</div>
+    </div>
+
+</section>

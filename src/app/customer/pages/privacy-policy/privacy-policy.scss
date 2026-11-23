@@ -1,0 +1,226 @@
+
+.policy-page {
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #fffdf8;
+  color: #243b2e;
+  box-sizing: border-box;
+}
+
+/* Hero */
+
+.policy-hero {
+  padding: 70px 20px;
+  text-align: center;
+  background: #173d2c;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.policy-hero span {
+  color: #d5b36c;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+
+.policy-hero h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 1.2;
+  margin: 18px 0;
+  overflow-wrap: anywhere;
+}
+
+.policy-hero p {
+  max-width: 650px;
+  margin: 0 auto 18px;
+  color: #e4ebe5;
+  line-height: 1.8;
+  font-size: 15px;
+}
+
+.policy-hero small {
+  color: #d5b36c;
+  font-size: 13px;
+}
+
+/* Content */
+
+.policy-container {
+  width: 100%;
+  max-width: 950px;
+  margin: 0 auto;
+  padding: 65px 25px 85px;
+  box-sizing: border-box;
+}
+
+.policy-intro {
+  padding: 28px;
+  background: #f7f2e8;
+  border-radius: 14px;
+  margin-bottom: 40px;
+  box-sizing: border-box;
+}
+
+.policy-intro h2 {
+  font-family: Georgia, serif;
+  font-size: 25px;
+  line-height: 1.3;
+  color: #173d2c;
+  margin: 0 0 12px;
+}
+
+.policy-intro p,
+.policy-section p,
+.policy-section li {
+  color: #6e756e;
+  font-size: 15px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+.policy-section {
+  padding-bottom: 27px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid #eee8dc;
+}
+
+.policy-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.policy-section h2 {
+  color: #173d2c;
+  font-family: Georgia, serif;
+  font-size: 22px;
+  line-height: 1.4;
+  margin: 0 0 13px;
+  overflow-wrap: anywhere;
+}
+
+.policy-section ul {
+  padding-left: 23px;
+  margin-bottom: 0;
+}
+
+.policy-section li {
+  padding-left: 5px;
+  margin-bottom: 7px;
+}
+
+.contact-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: #a77d36;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.contact-link:hover {
+  color: #173d2c;
+}
+
+/* Tablet */
+
+@media (max-width: 768px) {
+  .policy-hero {
+    padding: 60px 20px;
+  }
+
+  .policy-container {
+    padding: 50px 22px 65px;
+  }
+
+  .policy-intro {
+    margin-bottom: 32px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .policy-hero {
+    padding: 48px 18px;
+  }
+
+  .policy-hero span {
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+
+  .policy-hero h1 {
+    font-size: 36px;
+    margin: 15px 0;
+  }
+
+  .policy-hero p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .policy-container {
+    padding: 35px 18px 50px;
+  }
+
+  .policy-intro {
+    padding: 20px;
+    margin-bottom: 30px;
+    border-radius: 12px;
+  }
+
+  .policy-intro h2 {
+    font-size: 22px;
+  }
+
+  .policy-intro p,
+  .policy-section p,
+  .policy-section li {
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .policy-section {
+    padding-bottom: 22px;
+    margin-bottom: 22px;
+  }
+
+  .policy-section h2 {
+    font-size: 19px;
+    line-height: 1.4;
+  }
+
+  .policy-section ul {
+    padding-left: 20px;
+  }
+
+  .policy-section li {
+    padding-left: 3px;
+  }
+}
+
+/* Small phones */
+
+@media (max-width: 360px) {
+  .policy-hero {
+    padding: 40px 15px;
+  }
+
+  .policy-hero h1 {
+    font-size: 31px;
+  }
+
+  .policy-container {
+    padding: 28px 14px 40px;
+  }
+
+  .policy-intro {
+    padding: 17px;
+  }
+
+  .policy-section h2 {
+    font-size: 18px;
+  }
+}

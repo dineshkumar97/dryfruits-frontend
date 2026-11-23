@@ -1,0 +1,296 @@
+
+.header {
+  width: 100%;
+  background: #173d2c;
+  color: #fff;
+  padding: 14px 0;
+}
+
+.container {
+  width: min(1400px, 94%);
+  margin: 0 auto;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+// Logo
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  text-decoration: none;
+  color: #fff;
+}
+
+.brand-name {
+  font-size: 29px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+.brand-tagline {
+  color: #d5ad57;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  margin-top: 3px;
+  white-space: nowrap;
+}
+
+// Navigation
+
+.navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex: 1;
+  min-width: 0;
+
+  a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color 0.3s;
+
+    &:hover,
+    &.active {
+      color: #d5ad57;
+    }
+  }
+}
+
+.wishlist-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  span {
+    font-size: 20px;
+  }
+}
+
+// Header actions
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+
+  button,
+  a {
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d5ad57;
+  background: transparent;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 22px;
+}
+
+.login-btn {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signup-btn {
+  background: #d5ad57;
+  color: #173d2c;
+  padding: 9px 13px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.cart-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  text-decoration: none;
+  border: 1px solid #d5ad57;
+  padding: 8px 11px;
+  border-radius: 5px;
+}
+
+.cart-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 5px;
+  border-radius: 50%;
+  background: #d5ad57;
+  color: #173d2c;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+// Tablet
+
+@media (max-width: 1100px) {
+  .header-content {
+    flex-wrap: wrap;
+    row-gap: 15px;
+  }
+
+  .navigation {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px 22px;
+  }
+
+  .header-actions {
+    margin-left: auto;
+  }
+}
+
+// Mobile
+
+@media (max-width: 600px) {
+  .header {
+    padding: 12px 0;
+  }
+
+  .container {
+    width: 92%;
+  }
+
+  .header-content {
+    gap: 14px;
+  }
+
+  .brand-name {
+    font-size: 25px;
+  }
+
+  .brand-tagline {
+    font-size: 8px;
+  }
+
+  .header-actions {
+    gap: 7px;
+  }
+
+  .icon-btn {
+    display: none;
+  }
+
+  .login-btn,
+  .signup-btn {
+    display: none;
+  }
+
+  .cart-btn {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .navigation {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 5px 0 8px;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    a {
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+  }
+}
+
+
+
+/* Mobile Menu Button */
+
+.menu-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid #d5ad57;
+  color: #d5ad57;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  font-size: 24px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile Navigation */
+
+@media (max-width: 600px) {
+
+  .header-content {
+    position: relative;
+  }
+
+  .menu-toggle {
+    display: flex;
+    margin-left: auto;
+  }
+
+
+.navigation {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+  width: 220px;
+  background: #173d2c;
+  padding: 10px 15px;
+  border: 1px solid #d5ad57;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+
+  a {
+    display: block;
+    padding: 13px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    white-space: nowrap;
+  }
+
+  a:last-child {
+    border-bottom: none;
+  }
+}
+
+.navigation.mobile-open {
+  display: flex;
+}
+
+}

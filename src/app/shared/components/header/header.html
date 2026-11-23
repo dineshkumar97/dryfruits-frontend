@@ -1,0 +1,71 @@
+
+<header class="header">
+  <div class="container header-content">
+
+    <!-- Logo -->
+    <a routerLink="/" class="brand" (click)="closeMobileMenu()">
+      <span class="brand-name">NutNest</span>
+      <span class="brand-tagline">NATURE'S FINEST TREASURES</span>
+    </a>
+
+    <!-- Mobile Menu Button -->
+    <button
+      type="button"
+      class="menu-toggle"
+      (click)="toggleMobileMenu()"
+      [attr.aria-expanded]="isMobileMenuOpen"
+      aria-label="Toggle navigation menu">
+      <span>{{ isMobileMenuOpen ? '✕' : '☰' }}</span>
+    </button>
+
+    <!-- Navigation -->
+    <nav class="navigation" [class.mobile-open]="isMobileMenuOpen">
+
+      <a routerLink="/home" routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }"
+         (click)="closeMobileMenu()">Home</a>
+
+      <a routerLink="/products" routerLinkActive="active"
+         (click)="closeMobileMenu()">Products</a>
+
+      <a routerLink="/my-orders" routerLinkActive="active"
+         (click)="closeMobileMenu()">My Orders</a>
+
+      <a routerLink="/track-order" routerLinkActive="active"
+         (click)="closeMobileMenu()">Track Order</a>
+
+      <a routerLink="/wishlist" routerLinkActive="active"
+         class="wishlist-link"
+         (click)="closeMobileMenu()">
+        <span>♡</span> Wishlist
+      </a>
+
+      <a routerLink="/about" routerLinkActive="active"
+         (click)="closeMobileMenu()">About Us</a>
+
+      <a routerLink="/contact" routerLinkActive="active"
+         (click)="closeMobileMenu()">Contact</a>
+
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+
+      <!-- <button type="button" class="icon-btn" aria-label="Search">
+        <span>⌕</span>
+      </button>
+
+      <a routerLink="/login" class="login-btn">Login</a>
+
+      <a routerLink="/signup" class="signup-btn">Sign Up</a> -->
+
+      <a routerLink="/cart" class="cart-btn">
+        <span>🛒</span>
+        <span>Cart</span>
+        <span class="cart-count">{{ cartService.cartCount() }}</span>
+      </a>
+
+    </div>
+
+  </div>
+</header>
