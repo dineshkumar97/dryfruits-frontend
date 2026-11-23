@@ -146,6 +146,6 @@ export class ProductDetails {
       oldPrice: this.oldPrice
     });
 
-    alert('Product added to your cart successfully!');
+    // alert('Product added to your cart successfully!');
   }
 }

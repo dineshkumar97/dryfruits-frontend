@@ -20,6 +20,33 @@ export class TrackOrder {
 
   constructor(private orderService: OrderService) {}
 
+  get totalDiscount(): number {
+    if (!this.order) return 0;
+
+    return this.order.items.reduce((total, item) => {
+      const savings = Math.max(0, (item.oldPrice ?? item.price) - item.price);
+      return total + savings * item.quantity;
+    }, 0);
+  }
+
+  get originalSubtotal(): number {
+    if (!this.order) return 0;
+
+    return this.order.subtotal + this.totalDiscount;
+  }
+
+  get discountPercentage(): number {
+    if (this.originalSubtotal === 0) return 0;
+
+    return Math.round(
+      (this.totalDiscount / this.originalSubtotal) * 100
+    );
+  }
+
+  getItemSavings(item: Order['items'][number]): number {
+    return Math.max(0, (item.oldPrice ?? item.price) - item.price);
+  }
+
   trackOrder(): void {
     this.errorMessage = '';
     this.order = null;

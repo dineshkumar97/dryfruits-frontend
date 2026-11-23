@@ -81,6 +81,87 @@ h1 {
     word-break: break-word;
   }
 }
+.ordered-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px 0;
+  border: none;
+}
+
+.ordered-product-image {
+  width: 85px;
+  height: 85px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 10px;
+  background: #f7f2e8;
+}
+
+.ordered-item-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 8px;
+
+  span {
+    font-size: 13px;
+    color: #777;
+  }
+}
+
+.ordered-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+
+  strong {
+    color: #173d2c;
+  }
+}
+
+.ordered-item-content del {
+  margin-left: 6px;
+  color: #999;
+}
+
+.discount-info {
+  color: #198754 !important;
+  font-weight: 600;
+}
+
+.order-price-summary {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f7f2e8;
+  border-radius: 10px;
+  border: none;
+}
+
+.final-total {
+  margin-top: 12px;
+  padding-top: 10px;
+  border: none !important;
+
+  strong {
+    color: #173d2c;
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ordered-product-image {
+    width: 70px;
+    height: 70px;
+  }
+
+  .ordered-item-header {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
 
 .detail-row:last-child {
   border-bottom: none;
@@ -88,8 +169,6 @@ h1 {
 
 .ordered-items {
   padding: 15px 0;
-  border-bottom: 1px solid #eeeae2;
-
   h3 {
     margin: 0 0 12px;
     color: #173d2c;
@@ -262,5 +341,56 @@ h1 {
 @supports (padding: env(safe-area-inset-bottom)) {
   .success-page {
     padding-bottom: max(25px, env(safe-area-inset-bottom));
+  }
+}
+.ordered-item {
+  padding: 14px 0;
+  border-bottom: 1px solid #eee8dc;
+}
+
+.ordered-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+
+  strong {
+    color: #173d2c;
+  }
+}
+
+.ordered-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.ordered-item-details del {
+  margin-left: 6px;
+  color: #999;
+}
+
+.discount-info {
+  color: #198754 !important;
+  font-weight: 600;
+}
+
+.order-price-summary {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f7f2e8;
+  border-radius: 10px;
+}
+
+.final-total {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #ddd;
+
+  strong {
+    color: #173d2c;
+    font-size: 20px;
   }
 }

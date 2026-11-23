@@ -384,3 +384,51 @@ button:disabled {
   color: #173d2c;
   margin-top: 4px;
 }
+.discount-info {
+  color: #198754 !important;
+  font-weight: 600;
+}
+
+.product-info del {
+  color: #999;
+  margin-left: 6px;
+  font-size: 13px;
+}
+
+.order-price-summary {
+  margin-top: 25px;
+  padding: 20px;
+  background: #f7f2e8;
+  border-radius: 10px;
+
+  .total-row {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+  }
+}
+
+.price-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.price-line del {
+  color: #999;
+  font-size: 13px;
+}
+
+.product-info .product-total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 9px;
+  border-top: 1px solid #eee8dc;
+}
+
+.discount-info {
+  color: #198754 !important;
+  font-size: 13px;
+  font-weight: 600;
+}

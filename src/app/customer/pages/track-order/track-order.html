@@ -102,8 +102,9 @@
         </div>
       </div>
 
-      <!-- ORDERED PRODUCTS -->
 
+      <!-- ORDERED PRODUCTS -->
+      <!-- ORDERED PRODUCTS -->
       <div class="result-section">
         <h3>Ordered Products</h3>
 
@@ -117,22 +118,57 @@
 
             <span>Weight: {{ item.weight }}</span>
             <span>Quantity: {{ item.quantity }} packs</span>
-            <span>Price per pack: ₹{{ item.price }}</span>
 
-            <strong class="product-total">
-              Total: ₹{{ item.price * item.quantity }}
-            </strong>
+            <div class="price-line">
+              <span>Price per pack:</span>
+              <strong>₹{{ item.price }}</strong>
+              @if (getItemSavings(item) > 0) {
+              <del>₹{{ item.oldPrice }}</del>
+              }
+            </div>
+
+            @if (getItemSavings(item) > 0) {
+            <span class="discount-info">
+              You save ₹{{ getItemSavings(item) }} per pack
+            </span>
+            }
+
+            <div class="product-total">
+              <span>Item Total</span>
+              <strong>₹{{ item.price * item.quantity }}</strong>
+            </div>
+
+            @if (getItemSavings(item) > 0) {
+            <span class="discount-info">
+              Total savings: ₹{{ getItemSavings(item) * item.quantity }}
+            </span>
+            }
           </div>
 
         </div>
         }
       </div>
 
+      <!-- ORDER PRICE SUMMARY -->
+      <div class="order-price-summary">
 
-      <!-- TOTAL -->
-      <div class="total-row">
-        <span>Total Amount</span>
-        <strong>₹{{ order.subtotal }}</strong>
+        <div class="info-row">
+          <span>Original Price</span>
+          <strong>₹{{ originalSubtotal }}</strong>
+        </div>
+
+        <div class="info-row">
+          <span>Total Discount ({{ discountPercentage }}%)</span>
+          <strong class="discount-info">
+            -₹{{ totalDiscount }}
+          </strong>
+        </div>
+
+        <div class="total-row">
+          <span>Total Amount</span>
+          <strong>₹{{ order.subtotal }}</strong>
+        </div>
+
       </div>
 
     </div>
