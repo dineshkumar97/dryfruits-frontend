@@ -60,25 +60,69 @@
             </div>
 
             <!-- Ordered Products -->
+
+            <!-- Ordered Products -->
+
+            <!-- ORDERED PRODUCTS -->
             <div class="ordered-items">
 
                 <h3>Ordered Products</h3>
 
                 @for (item of order.items; track item.productId + item.weight) {
-                <div class="detail-row">
-                    <span>
-                        {{ item.name }} ({{ item.weight }}) × {{ item.quantity }}
-                    </span>
+                <div class="ordered-item">
 
-                    <strong>₹{{ item.price * item.quantity }}</strong>
+                    <img class="ordered-product-image" [src]="item.image" [alt]="item.name">
+
+                    <div class="ordered-item-content">
+
+                        <div class="ordered-item-header">
+                            <strong>{{ item.name }} ({{ item.weight }})</strong>
+                            <strong>₹{{ item.price * item.quantity }}</strong>
+                        </div>
+
+                        <span>Quantity: {{ item.quantity }} packs</span>
+
+                        <span>
+                            Price per pack: ₹{{ item.price }}
+                            @if (getItemSavings(item) > 0) {
+                            <del>₹{{ item.oldPrice }}</del>
+                            }
+                        </span>
+
+                        @if (getItemSavings(item) > 0) {
+                        <span class="discount-info">
+                            You save ₹{{ getItemSavings(item) }} per pack
+                        </span>
+
+                        <span class="discount-info">
+                            Total savings: ₹{{ getItemSavings(item) * item.quantity }}
+                        </span>
+                        }
+
+                    </div>
                 </div>
                 }
 
             </div>
 
-            <div class="detail-row">
-                <span>Total Amount</span>
-                <strong>₹{{ order.subtotal }}</strong>
+            <!-- ORDER PRICE SUMMARY -->
+            <div class="order-price-summary">
+
+                <div class="detail-row">
+                    <span>Original Price</span>
+                    <strong>₹{{ originalSubtotal }}</strong>
+                </div>
+
+                <div class="detail-row">
+                    <span>Total Discount ({{ discountPercentage }}%)</span>
+                    <strong class="discount-info">-₹{{ totalDiscount }}</strong>
+                </div>
+
+                <div class="detail-row final-total">
+                    <span>Total Amount</span>
+                    <strong>₹{{ order.subtotal }}</strong>
+                </div>
+
             </div>
 
         </div>
@@ -88,17 +132,17 @@
             We will contact you regarding your delivery.
         </p>
 
-      <div class="success-actions">
+        <div class="success-actions">
 
-  <a routerLink="/track-order" class="track-order-btn">
-    Track Your Order
-  </a>
+            <a routerLink="/track-order" class="track-order-btn">
+                Track Your Order
+            </a>
 
-  <a routerLink="/products" class="continue-btn">
-    Continue Shopping
-  </a>
+            <a routerLink="/products" class="continue-btn">
+                Continue Shopping
+            </a>
 
-</div>
+        </div>
     </div>
 
 </section>

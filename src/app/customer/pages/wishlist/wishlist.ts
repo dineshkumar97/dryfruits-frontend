@@ -63,7 +63,7 @@ export class Wishlist {
       oldPrice: product.oldPrice
     });
 
-    alert('Product added to your cart successfully!');
+    // alert('Product added to your cart successfully!');
   }
 
   private loadWishlist(): number[] {
