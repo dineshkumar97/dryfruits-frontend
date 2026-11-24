@@ -1,17 +1,10 @@
 
-import { Component } from '@angular/core';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { Cart as CartService } from '../../../core/services/cart';
-
-interface WishlistProduct {
-  id: number;
-  name: string;
-  category: string;
-  weight: string;
-  price: number;
-  oldPrice: number;
-  image: string;
-}
+import { Product, ProductService } from '../../../core/services/product';
+import { CategoryService } from '../../../core/services/category';
 
 @Component({
   selector: 'app-wishlist',
@@ -23,27 +16,51 @@ interface WishlistProduct {
 export class Wishlist {
 
   private readonly wishlistKey = 'nutnest-wishlist';
+  private readonly isBrowser: boolean;
 
-  products: WishlistProduct[] = [
-    { id: 1, name: 'Premium California Almonds', category: 'Almonds', weight: '250g', price: 330, oldPrice: 380, image: 'images/almonds.png' },
-    { id: 2, name: 'Premium Whole Cashews', category: 'Cashews', weight: '250g', price: 290, oldPrice: 340, image: 'images/cashews.png' },
-    { id: 3, name: 'Premium Pistachios', category: 'Pistachios', weight: '250g', price: 350, oldPrice: 400, image: 'images/pistachios.png' },
-    { id: 4, name: 'Premium Black Dates', category: 'Dates', weight: '250g', price: 180, oldPrice: 220, image: 'images/dates.png' },
-    { id: 5, name: 'Golden Raisins', category: 'Raisins', weight: '250g', price: 150, oldPrice: 180, image: 'images/raisins.png' },
-    { id: 6, name: 'Premium Walnuts', category: 'Walnuts', weight: '250g', price: 320, oldPrice: 370, image: 'images/walnuts.png' }
-  ];
+  products: Product[] = [];
+  wishlistIds: number[] = [];
 
-  wishlistIds: number[] = this.loadWishlist();
+  constructor(
+    private cartService: CartService,
+    private productService: ProductService,
+    private categoryService: CategoryService,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
 
-  constructor(private cartService: CartService) {}
+    if (this.isBrowser) {
+      this.loadWishlist();
+      this.loadProducts();
+    }
+  }
 
-  get wishlistProducts(): WishlistProduct[] {
+  // Load active products from shared catalogue
+  loadProducts(): void {
+
+    const activeCategories = this.categoryService
+      .getCategories()
+      .filter(category => category.active)
+      .map(category => category.name.toLowerCase());
+
+    this.products = this.productService
+      .getProducts()
+      .filter(product =>
+        product.active &&
+        activeCategories.includes(product.category.toLowerCase())
+      );
+  }
+
+  // Get products saved in wishlist
+  get wishlistProducts(): Product[] {
     return this.products.filter(product =>
       this.wishlistIds.includes(product.id)
     );
   }
 
+  // Remove product from wishlist
   removeFromWishlist(productId: number): void {
+
     this.wishlistIds = this.wishlistIds.filter(
       id => id !== productId
     );
@@ -51,7 +68,9 @@ export class Wishlist {
     this.saveWishlist();
   }
 
-  addToCart(product: WishlistProduct): void {
+  // Add wishlist product to cart
+  addToCart(product: Product): void {
+
     this.cartService.addToCart({
       productId: product.id,
       name: product.name,
@@ -62,26 +81,37 @@ export class Wishlist {
       quantity: 1,
       oldPrice: product.oldPrice
     });
-
-    // alert('Product added to your cart successfully!');
   }
 
-  private loadWishlist(): number[] {
+  // Load saved wishlist IDs
+  private loadWishlist(): void {
+
     try {
+
       const saved = JSON.parse(
         localStorage.getItem(this.wishlistKey) || '[]'
       );
 
-      return Array.isArray(saved) ? saved : [];
+      this.wishlistIds = Array.isArray(saved)
+        ? saved.filter((id): id is number =>
+            Number.isInteger(id) && id > 0
+          )
+        : [];
+
     } catch {
-      return [];
+      this.wishlistIds = [];
     }
   }
 
+  // Save wishlist IDs
   private saveWishlist(): void {
+
+    if (!this.isBrowser) return;
+
     localStorage.setItem(
       this.wishlistKey,
       JSON.stringify(this.wishlistIds)
     );
   }
+
 }

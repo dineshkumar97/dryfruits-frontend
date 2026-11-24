@@ -1,0 +1,253 @@
+<section class="profile-page">
+
+    <div class="profile-container">
+
+        <!-- PAGE HEADING -->
+        <div class="profile-heading">
+
+            <div>
+                <span class="section-label">
+                    {{ isAdminProfile ? 'ADMIN ACCOUNT' : 'MY ACCOUNT' }}
+                </span>
+
+                <h1>My Profile</h1>
+
+                <p>
+                    {{ isAdminProfile
+                    ? 'Manage your administrator account information.'
+                    : 'Manage your personal information and delivery details.' }}
+                </p>
+            </div>
+
+            @if (hasProfile && !isEditing) {
+            <button type="button" class="edit-profile-btn" (click)="editProfile()">
+                Edit Profile
+            </button>
+            }
+
+        </div>
+
+        <!-- SUCCESS MESSAGE -->
+        @if (successMessage) {
+        <div class="success-message">
+            <span>✓</span>
+            {{ successMessage }}
+        </div>
+        }
+
+        <!-- PROFILE CARD -->
+        <div class="profile-card">
+
+            <!-- PROFILE HEADER -->
+            <div class="profile-card-header">
+
+                <div class="profile-avatar">
+
+                    @if (f.profileImage.value) {
+                    <img [src]="f.profileImage.value" alt="Profile picture">
+                    } @else {
+                    <span>{{ profileInitial }}</span>
+                    }
+
+                </div>
+
+                <div class="profile-header-info">
+
+                    <h2>
+                        {{ f.name.value || 'Your Name' }}
+                    </h2>
+
+                    <p>
+                        {{ f.email.value || 'Add your email address' }}
+                    </p>
+
+                    <span class="profile-badge">
+                        {{ isAdminProfile ? 'NutNest Administrator' : 'NutNest Member' }}
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- PROFILE FORM -->
+            <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
+
+                <!-- PERSONAL INFORMATION -->
+                <div class="profile-section">
+
+                    <div class="section-title">
+                        <div>
+                            <h3>Personal Information</h3>
+                            <p>Update your basic account information.</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-form-grid">
+
+                        <!-- NAME -->
+                        <div class="form-group">
+
+                            <label for="name">Full Name *</label>
+
+                            <input id="name" type="text" formControlName="name" placeholder="Enter your full name">
+
+                            @if (f.name.touched && f.name.hasError('required')) {
+                            <small class="field-error">
+                                Full name is required.
+                            </small>
+                            }
+
+                            @if (f.name.touched && f.name.hasError('minlength')) {
+                            <small class="field-error">
+                                Name must contain at least 3 characters.
+                            </small>
+                            }
+
+                        </div>
+
+                        <!-- MOBILE -->
+                        <div class="form-group">
+
+                            <label for="mobile">Mobile Number *</label>
+
+                            <input id="mobile" type="tel" formControlName="mobile" maxlength="10"
+                                placeholder="10-digit mobile number">
+
+                            @if (f.mobile.touched && f.mobile.hasError('required')) {
+                            <small class="field-error">
+                                Mobile number is required.
+                            </small>
+                            }
+
+                            @if (f.mobile.touched && f.mobile.hasError('pattern')) {
+                            <small class="field-error">
+                                Enter a valid 10-digit Indian mobile number.
+                            </small>
+                            }
+
+                        </div>
+
+                        <!-- EMAIL -->
+                        <div class="form-group">
+
+                            <label for="email">Email Address</label>
+
+                            <input id="email" type="email" formControlName="email" placeholder="Enter your email">
+
+                            @if (f.email.touched && f.email.hasError('email')) {
+                            <small class="field-error">
+                                Enter a valid email address.
+                            </small>
+                            }
+
+                        </div>
+
+                        <!-- PROFILE IMAGE -->
+                        <div class="form-group">
+
+                            <label for="profileImage">Profile Image Path</label>
+
+                            <input id="profileImage" type="text" formControlName="profileImage"
+                                placeholder="Example: images/profile.png">
+
+                            <small class="input-hint">
+                                Enter an existing image path or image URL.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- DELIVERY ADDRESS - CUSTOMER ONLY -->
+                @if (!isAdminProfile) {
+
+                <div class="profile-section">
+
+                    <div class="section-title">
+                        <div>
+                            <h3>Delivery Address</h3>
+                            <p>Manage your preferred delivery information.</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-form-grid">
+
+                        <!-- ADDRESS -->
+                        <div class="form-group full-width">
+
+                            <label for="address">Full Address</label>
+
+                            <textarea id="address" formControlName="address" rows="3"
+                                placeholder="House number, street, area">
+                </textarea>
+
+                        </div>
+
+                        <!-- CITY -->
+                        <div class="form-group">
+
+                            <label for="city">City</label>
+
+                            <input id="city" type="text" formControlName="city" placeholder="Enter your city">
+
+                        </div>
+
+                        <!-- PINCODE -->
+                        <div class="form-group">
+
+                            <label for="pincode">PIN Code</label>
+
+                            <input id="pincode" type="text" formControlName="pincode" maxlength="6"
+                                placeholder="6-digit PIN code">
+
+                            @if (f.pincode.touched && f.pincode.hasError('pattern')) {
+                            <small class="field-error">
+                                Enter a valid 6-digit PIN code.
+                            </small>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                }
+
+                <!-- FORM ACTIONS -->
+                @if (isEditing) {
+
+                <div class="profile-actions">
+
+                    @if (hasProfile) {
+                    <button type="button" class="cancel-btn" (click)="cancelEdit()">
+                        Cancel
+                    </button>
+                    }
+
+                    <button type="submit" class="save-profile-btn" [disabled]="profileForm.invalid">
+                        Save Changes
+                    </button>
+
+                </div>
+
+                }
+
+            </form>
+
+        </div>
+
+        <!-- PROFILE FOOTER -->
+        <div class="profile-footer">
+            <p>
+                {{ isAdminProfile
+                ? 'NutNest Administration Profile'
+                : 'Your information helps us deliver your NutNest orders accurately.' }}
+            </p>
+        </div>
+
+    </div>
+
+</section>

@@ -59,4 +59,27 @@ export class OrderService {
       ? orders[orders.length - 1]
       : null;
   }
+  updateOrderStatus(orderId: string, status: string): boolean {
+  const orders = this.getOrders();
+
+  const orderIndex = orders.findIndex(
+    order => order.orderId === orderId
+  );
+
+  if (orderIndex === -1) {
+    return false;
+  }
+
+  orders[orderIndex] = {
+    ...orders[orderIndex],
+    status
+  };
+
+  localStorage.setItem(
+    this.storageKey,
+    JSON.stringify(orders)
+  );
+
+  return true;
+}
 }

@@ -1,4 +1,5 @@
-<!-- Hero Section -->
+
+<!-- HERO SECTION -->
 <section class="hero-section">
 
   <div class="hero-container">
@@ -34,9 +35,9 @@
     </div>
 
     <div class="hero-image">
-
-      <img src="images/home.png" alt="Premium assortment of dry fruits">
-
+      <img
+        src="images/home.png"
+        alt="Premium assortment of dry fruits">
     </div>
 
   </div>
@@ -44,7 +45,7 @@
 </section>
 
 
-<!-- Categories Section -->
+<!-- DYNAMIC CATEGORIES SECTION -->
 <section class="categories-section">
 
   <div class="section-heading">
@@ -59,64 +60,42 @@
 
   </div>
 
-
   <div class="category-grid">
 
-    <div class="category-card">
-      <div class="category-image">
-        <img src="images/almonds.png" alt="Premium Almonds">
-      </div>
-      <h3>Almonds</h3>
-      <a routerLink="/products">Explore Now →</a>
-    </div>
+    @for (category of categories; track category.id) {
 
-    <div class="category-card">
-      <div class="category-image">
-        <img src="images/cashews.png" alt="Premium Cashews">
-      </div>
-      <h3>Cashews</h3>
-      <a routerLink="/products">Explore Now →</a>
-    </div>
+      <div class="category-card">
 
-    <div class="category-card">
-      <div class="category-image">
-        <img src="images/pistachios.png" alt="Premium Pistachios">
-      </div>
-      <h3>Pistachios</h3>
-      <a routerLink="/products">Explore Now →</a>
-    </div>
+        <div class="category-image">
 
-    <div class="category-card">
-      <div class="category-image">
-        <img src="images/golden_raisins.png" alt="Premium Raisins">
-      </div>
-      <h3>Raisins</h3>
-      <a routerLink="/products">Explore Now →</a>
-    </div>
+          <img
+            [src]="getCategoryImage(category)"
+            [alt]="category.name">
 
-    <div class="category-card">
-      <div class="category-image">
-        <img src="images/black_dates.png" alt="Premium Dates">
-      </div>
-      <h3>Dates</h3>
-      <a routerLink="/products">Explore Now →</a>
-    </div>
+        </div>
 
-    <!-- <div class="category-card">
-      <div class="category-image">
-        <img src="images/walnuts.png" alt="Premium Walnuts">
+        <h3>{{ category.name }}</h3>
+
+        <a routerLink="/products">
+          Explore Now →
+        </a>
+
       </div>
-      <h3>Walnuts</h3>
-      <a routerLink="/products">Explore Now →</a>
-    </div> -->
+
+    }
+
+    @if (categories.length === 0) {
+      <p class="empty-categories">
+        Our collections will be available soon.
+      </p>
+    }
 
   </div>
-
 
 </section>
 
 
-<!-- Why Choose Us -->
+<!-- WHY CHOOSE US -->
 <section class="why-section">
 
   <div class="section-heading">

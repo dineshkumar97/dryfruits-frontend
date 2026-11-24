@@ -432,3 +432,98 @@
     }
   }
 }
+
+/* STOCK INFORMATION */
+
+.stock-information {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.stock-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stock-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.stock-status.in-stock {
+  background: #e8f5eb;
+  color: #198754;
+}
+
+.stock-status.low-stock {
+  background: #fff5df;
+  color: #a77917;
+}
+
+.stock-status.out-of-stock {
+  background: #fbeaea;
+  color: #dc3545;
+}
+
+.available-quantity {
+  color: #777;
+  font-size: 12px;
+}
+
+.quantity-note {
+  display: block;
+  margin-top: 9px;
+  color: #888;
+  font-size: 12px;
+}
+
+/* QUANTITY BUTTONS */
+
+.quantity-control button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* CART MESSAGES */
+
+.cart-success-message,
+.cart-error-message {
+  margin: 15px 0;
+  padding: 12px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cart-success-message {
+  background: #e8f5eb;
+  color: #198754;
+
+  span {
+    margin-right: 7px;
+    font-weight: 700;
+  }
+}
+
+.cart-error-message {
+  background: #fff0f0;
+  color: #dc3545;
+}
+
+/* ADD TO CART */
+
+.add-cart-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}

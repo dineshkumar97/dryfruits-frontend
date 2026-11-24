@@ -601,3 +601,50 @@
     font-size: 16px;
   }
 }
+
+/* STOCK ERROR MESSAGE */
+
+.stock-error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  grid-column: 1 / -1;
+  padding: 15px;
+  border: 1px solid #f2cccc;
+  border-radius: 9px;
+  background: #fff0f0;
+  color: #dc3545;
+
+  > span {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  strong {
+    display: block;
+    font-size: 14px;
+  }
+
+  p {
+    margin: 6px 0;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  small {
+    font-size: 11px;
+    color: #a94442;
+  }
+}
+
+/* DISABLED CHECKOUT */
+
+.checkout-disabled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}

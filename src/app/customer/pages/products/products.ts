@@ -2,6 +2,9 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
+import { Product, ProductService } from '../../../core/services/product';
+import { CategoryService } from '../../../core/services/category';
+
 @Component({
   selector: 'app-products',
   standalone: true,
@@ -15,69 +18,62 @@ export class Products {
 
   wishlistIds: number[] = this.loadWishlist();
 
-  categories = [
-    'All Products',
-    'Almonds',
-    'Cashews',
-    'Pistachios',
-    'Dates',
-    'Raisins',
-    'Walnuts'
-  ];
-
   selectedCategory = 'All Products';
 
-  products = [
-    {
-      id: 1,
-      name: 'Premium California Almonds',
-      category: 'Almonds',
-      weight: '250g',
-      price: 330,
-      oldPrice: 380,
-      image: 'images/almonds.png',
+  products: Product[] = [];
 
-    },
-    {
-      id: 2,
-      name: 'Premium Whole Cashews',
-      category: 'Cashews',
-      weight: '250g',
-      price: 290,
-      oldPrice: 340,
-      image: 'images/cashews.png'
-    },
-    {
-      id: 3,
-      name: 'Premium Pistachios',
-      category: 'Pistachios',
-      weight: '250g',
-      price: 350,
-      oldPrice: 400,
-      image: 'images/pistachios.png'
-    },
-    {
-      id: 4,
-      name: 'Premium Black Dates',
-      category: 'Dates',
-      weight: '250g',
-      price: 180,
-      oldPrice: 220,
-      image: 'images/black_dates.png'
-    },
-    {
-      id: 5,
-      name: 'Golden Raisins',
-      category: 'Raisins',
-      weight: '250g',
-      price: 150,
-      oldPrice: 180,
-      image: 'images/golden_raisins.png'
+  private activeCategoryNames: string[] = [];
+
+  constructor(
+    private productService: ProductService,
+    private categoryService: CategoryService
+  ) {
+    this.loadProducts();
+  }
+
+  // Active category names from Admin Categories
+  get categories(): string[] {
+    return [
+      'All Products',
+      ...this.categoryService
+        .getCategories()
+        .filter(category => category.active)
+        .map(category => category.name)
+    ];
+  }
+
+  // Load active products belonging to active categories
+  loadProducts(): void {
+
+    const activeCategories = this.categoryService
+      .getCategories()
+      .filter(category => category.active);
+
+    this.activeCategoryNames = activeCategories.map(
+      category => category.name.toLowerCase()
+    );
+
+    this.products = this.productService
+      .getProducts()
+      .filter(product =>
+        product.active &&
+        this.activeCategoryNames.includes(product.category.toLowerCase())
+      );
+
+    // Reset selection if its category is no longer active
+    if (
+      this.selectedCategory !== 'All Products' &&
+      !activeCategories.some(
+        category => category.name === this.selectedCategory
+      )
+    ) {
+      this.selectedCategory = 'All Products';
     }
-    
-  ];
+  }
 
-  get filteredProducts() {
+  // Filter products by category
+  get filteredProducts(): Product[] {
+
     if (this.selectedCategory === 'All Products') {
       return this.products;
     }
@@ -87,23 +83,29 @@ export class Products {
     );
   }
 
-  selectCategory(category: string) {
+  selectCategory(category: string): void {
     this.selectedCategory = category;
   }
 
+  // Wishlist
   toggleWishlist(productId: number, event: Event): void {
+
     event.stopPropagation();
 
     if (this.isWishlisted(productId)) {
-      this.wishlistIds = this.wishlistIds.filter(id => id !== productId);
+      this.wishlistIds = this.wishlistIds.filter(
+        id => id !== productId
+      );
     } else {
       this.wishlistIds = [...this.wishlistIds, productId];
     }
 
-    localStorage.setItem(
-      this.wishlistKey,
-      JSON.stringify(this.wishlistIds)
-    );
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(
+        this.wishlistKey,
+        JSON.stringify(this.wishlistIds)
+      );
+    }
   }
 
   isWishlisted(productId: number): boolean {
@@ -111,6 +113,11 @@ export class Products {
   }
 
   private loadWishlist(): number[] {
+
+    if (typeof localStorage === 'undefined') {
+      return [];
+    }
+
     try {
       const saved = JSON.parse(
         localStorage.getItem(this.wishlistKey) || '[]'
@@ -121,8 +128,10 @@ export class Products {
             Number.isInteger(id) && id > 0
           )
         : [];
+
     } catch {
       return [];
     }
   }
+
 }
