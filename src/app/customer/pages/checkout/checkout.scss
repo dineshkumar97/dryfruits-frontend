@@ -374,3 +374,22 @@ h1 {
 .form-group textarea.ng-valid.ng-touched {
   border-color: #198754;
 }
+
+.stock-error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 15px 0;
+  padding: 13px 15px;
+  border: 1px solid #f2cccc;
+  border-radius: 8px;
+  background: #fff0f0;
+  color: #dc3545;
+  font-size: 13px;
+  line-height: 1.5;
+
+  span {
+    font-size: 16px;
+    font-weight: 700;
+  }
+}

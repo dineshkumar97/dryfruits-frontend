@@ -1,3 +1,4 @@
+
 <section class="cart-page">
 
   <div class="container">
@@ -12,18 +13,30 @@
 
     <div class="cart-layout">
 
+      <!-- STOCK VALIDATION MESSAGE -->
+      @if (stockError) {
+        <div class="stock-error-message">
+          <span>⚠</span>
+          <div>
+            <strong>Stock Availability Issue</strong>
+            <p>{{ stockError }}</p>
+            <small>Please update or remove the affected product before checkout.</small>
+          </div>
+        </div>
+      }
+
       <div class="cart-items">
 
         @for (item of cartItems; track item.productId + item.weight) {
 
         <div class="cart-item">
 
-          <!-- Product Image -->
+          <!-- PRODUCT IMAGE -->
           <div class="cart-product-image">
             <img [src]="item.image" [alt]="item.name">
           </div>
 
-          <!-- Product Information -->
+          <!-- PRODUCT INFORMATION -->
           <div class="cart-item-info">
 
             <h3>{{ item.name }}</h3>
@@ -47,11 +60,9 @@
 
           </div>
 
-          <!-- Quantity, Remove and Item Total -->
-          <!-- Quantity, Remove and Item Total -->
+          <!-- QUANTITY, REMOVE AND ITEM TOTAL -->
           <div class="cart-item-actions">
 
-            <!-- Quantity and Remove in Same Row -->
             <div class="quantity-remove-row">
 
               <div class="quantity-section">
@@ -59,8 +70,12 @@
 
                 <div class="quantity-control">
 
-                  <button type="button" class="quantity-btn" [disabled]="item.quantity <= 1"
-                    (click)="decreaseQuantity(item)" aria-label="Decrease quantity">
+                  <button
+                    type="button"
+                    class="quantity-btn"
+                    [disabled]="item.quantity <= 1"
+                    (click)="decreaseQuantity(item)"
+                    aria-label="Decrease quantity">
                     −
                   </button>
 
@@ -68,7 +83,10 @@
                     {{ item.quantity }}
                   </span>
 
-                  <button type="button" class="quantity-btn" (click)="increaseQuantity(item)"
+                  <button
+                    type="button"
+                    class="quantity-btn"
+                    (click)="increaseQuantity(item)"
                     aria-label="Increase quantity">
                     +
                   </button>
@@ -76,11 +94,23 @@
                 </div>
               </div>
 
-              <button type="button" class="remove-btn" (click)="removeItem(item)" aria-label="Remove item"
+              <button
+                type="button"
+                class="remove-btn"
+                (click)="removeItem(item)"
+                aria-label="Remove item"
                 title="Remove item">
 
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#dc3545"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round">
 
                   <path d="M3 6h18" />
                   <path d="M8 6V4h8v2" />
@@ -94,7 +124,7 @@
 
             </div>
 
-            <!-- Item Total -->
+            <!-- ITEM TOTAL -->
             <div class="item-total-row">
               <span class="action-label">Item Total</span>
 
@@ -115,7 +145,7 @@
 
       </div>
 
-      <!-- Order Summary -->
+      <!-- ORDER SUMMARY -->
       <div class="cart-summary">
 
         <h2>Order Summary</h2>
@@ -145,9 +175,23 @@
           <strong>₹{{ subtotal }}</strong>
         </div>
 
-        <a routerLink="/checkout" class="checkout-btn">
-          Proceed to Checkout →
-        </a>
+        <!-- CHECKOUT BUTTON -->
+        @if (!stockError) {
+
+          <a routerLink="/checkout" class="checkout-btn">
+            Proceed to Checkout →
+          </a>
+
+        } @else {
+
+          <button
+            type="button"
+            class="checkout-btn checkout-disabled"
+            disabled>
+            Checkout Unavailable
+          </button>
+
+        }
 
         <a routerLink="/products" class="continue-shopping">
           ← Continue Shopping

@@ -1,0 +1,324 @@
+
+<section class="categories-page">
+
+  <!-- PAGE HEADING -->
+  <div class="categories-heading">
+
+    <div>
+      <span class="section-label">STORE MANAGEMENT</span>
+      <h2>Categories</h2>
+      <p>Organize and manage your NutNest product categories.</p>
+    </div>
+
+    <button
+      type="button"
+      class="add-category-btn"
+      (click)="addCategory()">
+      + Add Category
+    </button>
+
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="category-summary">
+
+    <div class="summary-card">
+      <span>Total Categories</span>
+      <strong>{{ totalCategories }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Active Categories</span>
+      <strong>{{ activeCategories }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Inactive Categories</span>
+      <strong>{{ inactiveCategories }}</strong>
+    </div>
+
+  </div>
+
+  <!-- ADD / EDIT CATEGORY FORM -->
+ 
+<!-- ADD / EDIT CATEGORY POPUP -->
+@if (isFormOpen) {
+
+  <div
+    class="category-modal-backdrop"
+    (click)="closeForm()">
+
+    <div
+      class="category-form-card category-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="categoryFormTitle"
+      (click)="$event.stopPropagation()">
+
+      <!-- MODAL HEADER -->
+      <div class="form-heading">
+
+        <div>
+          <span class="section-label">CATEGORY MANAGEMENT</span>
+
+          <h3 id="categoryFormTitle">
+            {{ isEditing ? 'Edit Category' : 'Add New Category' }}
+          </h3>
+
+          <p>Enter the category information below.</p>
+        </div>
+
+        <button
+          type="button"
+          class="close-btn"
+          aria-label="Close popup"
+          (click)="closeForm()">
+          ×
+        </button>
+
+      </div>
+
+      <!-- REACTIVE FORM -->
+      <form
+        [formGroup]="categoryForm"
+        (ngSubmit)="saveCategory()"
+        novalidate>
+
+        <div class="form-grid">
+
+          <!-- CATEGORY NAME -->
+          <div class="form-group">
+
+            <label for="categoryName">Category Name *</label>
+
+            <input
+              id="categoryName"
+              type="text"
+              formControlName="name"
+              placeholder="Example: Almonds">
+
+            @if (categoryForm.controls.name.touched &&
+                 categoryForm.controls.name.hasError('required')) {
+              <small class="field-error">
+                Category name is required.
+              </small>
+            }
+
+            @if (categoryForm.controls.name.touched &&
+                 categoryForm.controls.name.hasError('minlength')) {
+              <small class="field-error">
+                Minimum 2 characters required.
+              </small>
+            }
+
+            @if (categoryForm.controls.name.touched &&
+                 categoryForm.controls.name.hasError('maxlength')) {
+              <small class="field-error">
+                Maximum 50 characters allowed.
+              </small>
+            }
+
+          </div>
+
+          <!-- CATEGORY IMAGE -->
+          <div class="form-group">
+
+            <label for="categoryImage">Category Image Path</label>
+
+            <input
+              id="categoryImage"
+              type="text"
+              formControlName="image"
+              placeholder="Example: images/almonds.png">
+
+          </div>
+
+          <!-- DESCRIPTION -->
+          <div class="form-group full-width">
+
+            <label for="categoryDescription">Description</label>
+
+            <textarea
+              id="categoryDescription"
+              formControlName="description"
+              rows="4"
+              placeholder="Enter category description">
+            </textarea>
+
+          </div>
+
+          <!-- STATUS -->
+          <div class="form-group">
+
+            <label for="categoryStatus">Category Status</label>
+
+            <select
+              id="categoryStatus"
+              formControlName="active">
+
+              <option [ngValue]="true">Active</option>
+              <option [ngValue]="false">Inactive</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        <!-- ERROR MESSAGE -->
+        @if (formError) {
+          <div class="form-error">
+            {{ formError }}
+          </div>
+        }
+
+        <!-- FORM ACTIONS -->
+        <div class="form-actions">
+
+          <button
+            type="button"
+            class="cancel-btn"
+            (click)="closeForm()">
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="save-btn"
+            [disabled]="categoryForm.invalid">
+
+            {{ isEditing ? 'Update Category' : 'Save Category' }}
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+}
+
+
+  <!-- CATEGORY LIST -->
+  <div class="categories-list-card">
+
+    <div class="list-heading">
+      <div>
+        <h3>All Categories</h3>
+        <p>{{ filteredCategories.length }} categories found</p>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="categories-toolbar">
+
+      <input
+        type="search"
+        [(ngModel)]="searchTerm"
+        placeholder="Search categories...">
+
+    </div>
+
+    <!-- CATEGORY GRID -->
+    @if (categories.length > 0 && filteredCategories.length > 0) {
+
+      <div class="category-grid">
+
+        @for (category of filteredCategories; track category.id) {
+
+          <div class="category-card">
+
+            <div class="category-image">
+
+              @if (category.image) {
+                <img
+                  [src]="category.image"
+                  [alt]="category.name">
+              } @else {
+                <div class="image-placeholder">
+                  {{ category.name.charAt(0).toUpperCase() }}
+                </div>
+              }
+
+              <span
+                class="category-status"
+                [class.inactive]="!category.active">
+                {{ category.active ? 'Active' : 'Inactive' }}
+              </span>
+
+            </div>
+
+            <div class="category-info">
+
+              <h3>{{ category.name }}</h3>
+
+              <p>
+                {{ category.description || 'No description available.' }}
+              </p>
+
+              <div class="category-actions">
+
+                <button
+                  type="button"
+                  class="edit-btn"
+                  (click)="editCategory(category)">
+                  Edit
+                </button>
+
+                <button
+                  type="button"
+                  class="status-btn"
+                  (click)="toggleAvailability(category)">
+                  {{ category.active ? 'Deactivate' : 'Activate' }}
+                </button>
+
+                <button
+                  type="button"
+                  class="delete-btn"
+                  (click)="deleteCategory(category.id)">
+                  Delete
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        }
+
+      </div>
+
+    } @else {
+
+      <div class="empty-categories">
+
+        <div class="empty-icon">▤</div>
+
+        @if (categories.length === 0) {
+          <h3>No Categories Added Yet</h3>
+          <p>Add your first category to organize your NutNest products.</p>
+        } @else {
+          <h3>No Matching Categories</h3>
+          <p>Try another category name in the search field.</p>
+        }
+
+        @if (categories.length === 0) {
+          <button
+            type="button"
+            class="add-category-btn"
+            (click)="addCategory()">
+            + Add Your First Category
+          </button>
+        }
+
+      </div>
+
+    }
+
+  </div>
+
+</section>

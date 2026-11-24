@@ -1,6 +1,8 @@
+
 import { Component } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Cart } from '../../../core/services/cart';
+import { Product, ProductService } from '../../../core/services/product';
 
 @Component({
   selector: 'app-product-details',
@@ -11,110 +13,86 @@ import { Cart } from '../../../core/services/cart';
 })
 export class ProductDetails {
 
-  productId: number;
+  productId = 0;
 
   selectedWeight = '250g';
   quantity = 1;
 
-  products = [
-    {
-      id: 1,
-      name: 'Premium California Almonds',
-      category: 'Almonds',
-      price: 330,
-      oldPrice: 380,
-      image: 'images/almonds.png',
-      description: 'Premium quality California almonds, carefully selected for freshness and taste.'
-    },
-    {
-      id: 2,
-      name: 'Premium Whole Cashews',
-      category: 'Cashews',
-      price: 290,
-      oldPrice: 340,
-      image: 'images/cashews.png',
-      description: 'Delicious whole cashews with a rich, naturally creamy taste.'
-    },
-    {
-      id: 3,
-      name: 'Premium Pistachios',
-      category: 'Pistachios',
-      price: 350,
-      oldPrice: 400,
-      image: 'images/pistachios.png',
-      description: 'Crunchy premium pistachios selected for quality and freshness.'
-    },
-    {
-      id: 4,
-      name: 'Premium Black Dates',
-      category: 'Dates',
-      price: 180,
-      oldPrice: 220,
-      image: 'images/black_dates.png',
-      description: 'Naturally sweet dates with a soft texture.'
-    },
-    {
-      id: 5,
-      name: 'Golden Raisins',
-      category: 'Raisins',
-      price: 150,
-      oldPrice: 180,
-      image: 'images/golden_raisins.png',
-      description: 'Sweet and delicious golden raisins.'
-    },
-    {
-      id: 6,
-      name: 'Premium Walnuts',
-      category: 'Walnuts',
-      price: 320,
-      oldPrice: 370,
-      image: 'images/walnuts.png',
-      description: 'Premium walnuts with a rich taste and crunchy texture.'
-    }
-  ];
+  successMessage = '';
+  errorMessage = '';
 
   weights = ['50g', '100g', '250g', '500g', '1kg'];
 
-  product = this.products[0];
+  product: Product = {
+    id: 0,
+    name: '',
+    category: '',
+    weight: '250g',
+    price: 0,
+    oldPrice: 0,
+    image: '',
+    description: '',
+    stock: 0,
+    active: false
+  };
 
   constructor(
     private route: ActivatedRoute,
-    private cartService: Cart
+    private router: Router,
+    private cartService: Cart,
+    private productService: ProductService
   ) {
     this.productId = Number(
       this.route.snapshot.paramMap.get('id')
     );
 
-    const foundProduct = this.products.find(
-      item => item.id === this.productId
+    const foundProduct = this.productService.getProductById(
+      this.productId
     );
 
-    if (foundProduct) {
+    if (foundProduct && foundProduct.active) {
       this.product = foundProduct;
+
+      if (this.weights.includes(foundProduct.weight)) {
+        this.selectedWeight = foundProduct.weight;
+      }
+    } else {
+      this.router.navigate(['/products']);
     }
   }
 
-  private getWeightInGrams(): number {
-    if (this.selectedWeight === '1kg') {
+  private getWeightInGrams(weight: string): number {
+    if (weight === '1kg') {
       return 1000;
     }
 
-    return Number(this.selectedWeight.replace('g', ''));
+    return Number(weight.replace('g', ''));
   }
 
+  private getBaseWeightInGrams(): number {
+    return this.getWeightInGrams(this.product.weight);
+  }
+
+  // Current selling price
   get price(): number {
     return Math.round(
-      (this.product.price / 250) * this.getWeightInGrams()
+      (this.product.price / this.getBaseWeightInGrams()) *
+      this.getWeightInGrams(this.selectedWeight)
     );
   }
 
+  // Original price
   get oldPrice(): number {
     return Math.round(
-      (this.product.oldPrice / 250) * this.getWeightInGrams()
+      (this.product.oldPrice / this.getBaseWeightInGrams()) *
+      this.getWeightInGrams(this.selectedWeight)
     );
   }
 
+  // Discount percentage
   get discountPercentage(): number {
+    if (this.oldPrice <= 0) return 0;
+
     return Math.round(
       ((this.oldPrice - this.price) / this.oldPrice) * 100
     );
@@ -124,18 +102,77 @@ export class ProductDetails {
     return this.oldPrice - this.price;
   }
 
-  increaseQuantity(): void {
-    this.quantity++;
+  // Available quantity for selected weight
+  get availableQuantity(): number {
+    return this.cartService.getAvailableQuantity(
+      this.product.id,
+      this.selectedWeight
+    );
   }
 
-  decreaseQuantity(): void {
-    if (this.quantity > 1) {
-      this.quantity--;
+  get stockStatus(): string {
+    if (this.availableQuantity === 0) {
+      return 'Out of Stock';
+    }
+
+    if (this.availableQuantity <= 5) {
+      return 'Limited Stock';
+    }
+
+    return 'In Stock';
+  }
+
+  // Change selected weight
+  selectWeight(weight: string): void {
+    this.selectedWeight = weight;
+    this.quantity = 1;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  // Increase quantity
+  increaseQuantity(): void {
+
+    this.successMessage = '';
+
+    if (this.quantity < this.availableQuantity) {
+      this.quantity++;
+      this.errorMessage = '';
+    } else {
+      this.errorMessage = this.availableQuantity === 0
+        ? 'This product is currently out of stock.'
+        : `Only ${this.availableQuantity} more pack(s) are available.`;
     }
   }
 
+  // Decrease quantity
+  decreaseQuantity(): void {
+
+    if (this.quantity > 1) {
+      this.quantity--;
+      this.errorMessage = '';
+      this.successMessage = '';
+    }
+  }
+
+  // Add product to cart
   addToCart(): void {
-    this.cartService.addToCart({
+
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    if (this.availableQuantity < 1) {
+      this.errorMessage = 'Sorry, this product is currently out of stock.';
+      return;
+    }
+
+    if (this.quantity > this.availableQuantity) {
+      this.errorMessage =
+        `Only ${this.availableQuantity} pack(s) are available.`;
+      return;
+    }
+
+    const result = this.cartService.addToCart({
       productId: this.product.id,
       name: this.product.name,
       image: this.product.image,
@@ -146,6 +183,11 @@ export class ProductDetails {
       oldPrice: this.oldPrice
     });
 
-    // alert('Product added to your cart successfully!');
+    if (result.success) {
+      this.successMessage = result.message;
+    } else {
+      this.errorMessage = result.message;
+    }
   }
+
 }

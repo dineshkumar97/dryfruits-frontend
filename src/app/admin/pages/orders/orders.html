@@ -1,0 +1,405 @@
+
+<section class="orders-page">
+
+  <!-- PAGE HEADING -->
+  <div class="orders-heading">
+
+    <div>
+      <span class="section-label">STORE MANAGEMENT</span>
+      <h2>Orders</h2>
+      <p>Manage and track all customer orders.</p>
+    </div>
+
+    <button
+      type="button"
+      class="refresh-btn"
+      (click)="loadOrders()">
+      ↻ Refresh Orders
+    </button>
+
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="orders-summary">
+
+    <div class="summary-card">
+      <span>Total Orders</span>
+      <strong>{{ totalOrders }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Active Orders</span>
+      <strong>{{ activeOrders }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Delivered Orders</span>
+      <strong>{{ deliveredOrders }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Total Order Value</span>
+      <strong>₹{{ totalOrderValue }}</strong>
+    </div>
+
+  </div>
+
+  <!-- SUCCESS MESSAGE -->
+  @if (successMessage) {
+    <div class="success-message">
+      {{ successMessage }}
+    </div>
+  }
+
+  <!-- ERROR MESSAGE -->
+  @if (errorMessage) {
+    <div class="error-message">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- ORDERS LIST -->
+  <div class="orders-list-card">
+
+    <div class="list-heading">
+      <div>
+        <h3>All Orders</h3>
+        <p>{{ filteredOrders.length }} orders found</p>
+      </div>
+    </div>
+
+    <!-- SEARCH AND FILTER -->
+    <div class="orders-toolbar">
+
+      <input
+        type="search"
+        name="search"
+        [(ngModel)]="searchTerm"
+        placeholder="Search Order ID, customer or mobile number">
+
+      <select
+        name="status"
+        [(ngModel)]="selectedStatus">
+
+        <option value="All">All Statuses</option>
+
+        @for (status of statusOptions; track status) {
+          <option [value]="status">
+            {{ status }}
+          </option>
+        }
+
+      </select>
+
+    </div>
+
+    <!-- ORDERS TABLE -->
+    @if (filteredOrders.length > 0) {
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Order Date</th>
+              <th>Items</th>
+              <th>Amount</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            @for (order of filteredOrders; track order.orderId) {
+
+              <tr>
+
+                <!-- ORDER ID -->
+                <td>
+                  <strong class="order-id">
+                    {{ order.orderId }}
+                  </strong>
+                </td>
+
+                <!-- CUSTOMER -->
+                <td>
+                  <div class="customer-info">
+                    <strong>{{ order.customer.name }}</strong>
+                    <span>{{ order.customer.mobile }}</span>
+                  </div>
+                </td>
+
+                <!-- DATE -->
+                <td>
+                  {{ order.createdAt | date:'dd MMM yyyy' }}
+                </td>
+
+                <!-- ITEMS -->
+                <td>
+                  {{ order.items.length }}
+                  {{ order.items.length === 1 ? 'item' : 'items' }}
+                </td>
+
+                <!-- AMOUNT -->
+                <td>
+                  <strong class="order-amount">
+                    ₹{{ order.subtotal }}
+                  </strong>
+                </td>
+
+                <!-- PAYMENT -->
+                <td>
+                  {{ order.paymentMethod === 'COD' ? 'COD' : 'Online' }}
+                </td>
+
+                <!-- STATUS -->
+                <td>
+                  <select
+                    class="status-select"
+                    [class]="getStatusClass(order.status)"
+                    [ngModel]="order.status"
+                    (ngModelChange)="updateStatus(order, $event)"
+                    [name]="'status-' + order.orderId">
+
+                    @for (status of statusOptions; track status) {
+                      <option [value]="status">
+                        {{ status }}
+                      </option>
+                    }
+
+                  </select>
+                </td>
+
+                <!-- ACTION -->
+                <td>
+                  <button
+                    type="button"
+                    class="view-btn"
+                    (click)="viewOrder(order)">
+                    View Details
+                  </button>
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    } @else {
+
+      <div class="empty-orders">
+
+        <div class="empty-icon">▤</div>
+
+        @if (orders.length === 0) {
+          <h3>No Orders Yet</h3>
+          <p>Customer orders will appear here when they place an order.</p>
+        } @else {
+          <h3>No Matching Orders</h3>
+          <p>Try changing your search or status filter.</p>
+        }
+
+      </div>
+
+    }
+
+  </div>
+
+  <!-- ORDER DETAILS POPUP -->
+  @if (selectedOrder) {
+
+    <div
+      class="order-modal-backdrop"
+      (click)="closeDetails()">
+
+      <div
+        class="order-details-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="orderDetailsTitle"
+        (click)="$event.stopPropagation()">
+
+        <!-- MODAL HEADER -->
+        <div class="details-heading">
+
+          <div>
+            <span class="section-label">ORDER INFORMATION</span>
+            <h3 id="orderDetailsTitle">{{ selectedOrder.orderId }}</h3>
+          </div>
+
+          <button
+            type="button"
+            class="close-btn"
+            aria-label="Close order details"
+            (click)="closeDetails()">
+            ×
+          </button>
+
+        </div>
+
+        <!-- CUSTOMER DETAILS -->
+        <div class="details-section">
+
+          <h4>Customer Details</h4>
+
+          <div class="details-grid">
+
+            <div class="detail-item">
+              <span>Name</span>
+              <strong>{{ selectedOrder.customer.name }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Mobile</span>
+              <strong>{{ selectedOrder.customer.mobile }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Email</span>
+              <strong>{{ selectedOrder.customer.email || 'Not provided' }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Address</span>
+              <strong>{{ selectedOrder.customer.address }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>City</span>
+              <strong>{{ selectedOrder.customer.city }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Pincode</span>
+              <strong>{{ selectedOrder.customer.pincode }}</strong>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ORDER INFORMATION -->
+        <div class="details-section">
+
+          <h4>Order Information</h4>
+
+          <div class="details-grid">
+
+            <div class="detail-item">
+              <span>Order Date</span>
+              <strong>
+                {{ selectedOrder.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Payment Method</span>
+              <strong>
+                {{ selectedOrder.paymentMethod === 'COD'
+                  ? 'Cash on Delivery'
+                  : 'Online Payment' }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Order Status</span>
+              <strong class="details-status">
+                {{ selectedOrder.status }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Total Amount</span>
+              <strong class="details-amount">
+                ₹{{ selectedOrder.subtotal }}
+              </strong>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ORDERED PRODUCTS -->
+        <div class="details-section">
+
+          <h4>Ordered Products</h4>
+
+          @for (
+            item of selectedOrder.items;
+            track item.productId + item.weight
+          ) {
+
+            <div class="ordered-product">
+
+              <img [src]="item.image" [alt]="item.name">
+
+              <div class="ordered-product-info">
+                <strong>{{ item.name }}</strong>
+                <span>Weight: {{ item.weight }}</span>
+                <span>Quantity: {{ item.quantity }} packs</span>
+                <span>Price per pack: ₹{{ item.price }}</span>
+              </div>
+
+              <strong class="ordered-product-total">
+                ₹{{ item.price * item.quantity }}
+              </strong>
+
+            </div>
+
+          }
+
+          <div class="order-total">
+            <span>Order Total</span>
+            <strong>₹{{ selectedOrder.subtotal }}</strong>
+          </div>
+
+        </div>
+
+        <!-- UPDATE ORDER STATUS -->
+        <div class="details-section status-update-section">
+
+          <h4>Update Order Status</h4>
+
+          <select
+            class="details-status-select"
+            [ngModel]="selectedOrder.status"
+            (ngModelChange)="updateStatus(selectedOrder!, $event)"
+            name="detailOrderStatus">
+
+            @for (status of statusOptions; track status) {
+              <option [value]="status">
+                {{ status }}
+              </option>
+            }
+
+          </select>
+
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="modal-close-btn"
+            (click)="closeDetails()">
+            Close
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+
+</section>

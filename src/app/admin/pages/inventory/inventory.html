@@ -1,0 +1,307 @@
+
+<section class="inventory-page">
+
+  <!-- PAGE HEADING -->
+  <div class="inventory-heading">
+
+    <div>
+      <span class="section-label">STORE MANAGEMENT</span>
+      <h2>Inventory</h2>
+      <p>Monitor product stock and manage availability.</p>
+    </div>
+
+    <button
+      type="button"
+      class="refresh-btn"
+      (click)="loadProducts()">
+      ↻ Refresh Inventory
+    </button>
+
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="inventory-summary">
+
+    <div class="summary-card">
+      <span>Total Products</span>
+      <strong>{{ totalProducts }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Total Stock Units</span>
+      <strong>{{ totalStock }}</strong>
+    </div>
+
+    <div class="summary-card low-stock-card">
+      <span>Low Stock Products</span>
+      <strong>{{ lowStockCount }}</strong>
+    </div>
+
+    <div class="summary-card out-stock-card">
+      <span>Out of Stock</span>
+      <strong>{{ outOfStockCount }}</strong>
+    </div>
+
+  </div>
+
+  <!-- SUCCESS MESSAGE -->
+  @if (successMessage) {
+    <div class="success-message">
+      {{ successMessage }}
+    </div>
+  }
+
+  <!-- INVENTORY LIST -->
+  <div class="inventory-list-card">
+
+    <div class="list-heading">
+      <div>
+        <h3>Stock Overview</h3>
+        <p>{{ filteredProducts.length }} products found</p>
+      </div>
+    </div>
+
+    <!-- SEARCH AND FILTER -->
+    <div class="inventory-toolbar">
+
+      <input
+        type="search"
+        name="search"
+        [(ngModel)]="searchTerm"
+        placeholder="Search product or category...">
+
+      <select
+        name="stockFilter"
+        [(ngModel)]="selectedFilter">
+
+        <option value="All">All Stock Status</option>
+        <option value="In Stock">In Stock</option>
+        <option value="Low Stock">Low Stock</option>
+        <option value="Out of Stock">Out of Stock</option>
+
+      </select>
+
+    </div>
+
+    <!-- INVENTORY TABLE -->
+    @if (filteredProducts.length > 0) {
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Weight</th>
+              <th>Available Stock</th>
+              <th>Stock Status</th>
+              <th>Product Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            @for (product of filteredProducts; track product.id) {
+
+              <tr>
+
+                <!-- PRODUCT -->
+                <td>
+                  <div class="product-cell">
+
+                    @if (product.image) {
+                      <img
+                        [src]="product.image"
+                        [alt]="product.name">
+                    } @else {
+                      <div class="image-placeholder">N</div>
+                    }
+
+                    <strong>{{ product.name }}</strong>
+
+                  </div>
+                </td>
+
+                <td>{{ product.category }}</td>
+
+                <td>{{ product.weight }}</td>
+
+                <!-- STOCK -->
+                <td>
+                  <strong class="stock-quantity">
+                    {{ product.stock }}
+                  </strong>
+                </td>
+
+                <!-- STOCK STATUS -->
+                <td>
+                  <span
+                    class="stock-status"
+                    [class]="getStockClass(product.stock)">
+                    {{ getStockStatus(product.stock) }}
+                  </span>
+                </td>
+
+                <!-- PRODUCT AVAILABILITY -->
+                <td>
+                  <span
+                    class="availability-status"
+                    [class.inactive]="!product.active">
+                    {{ product.active ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+
+                <!-- ACTION -->
+                <td>
+                  <button
+                    type="button"
+                    class="update-btn"
+                    (click)="openStockUpdate(product)">
+                    Update Stock
+                  </button>
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    } @else {
+
+      <div class="empty-inventory">
+
+        <div class="empty-icon">◷</div>
+
+        @if (products.length === 0) {
+          <h3>No Products Available</h3>
+          <p>Add products through Admin Product Management to manage their stock.</p>
+        } @else {
+          <h3>No Matching Products</h3>
+          <p>Try changing the search or stock filter.</p>
+        }
+
+      </div>
+
+    }
+
+  </div>
+
+  <!-- UPDATE STOCK POPUP -->
+  @if (selectedProduct) {
+
+    <div
+      class="inventory-modal-backdrop"
+      (click)="closeStockUpdate()">
+
+      <div
+        class="inventory-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="stockModalTitle"
+        (click)="$event.stopPropagation()">
+
+        <!-- MODAL HEADER -->
+        <div class="modal-heading">
+
+          <div>
+            <span class="section-label">STOCK MANAGEMENT</span>
+            <h3 id="stockModalTitle">Update Stock</h3>
+          </div>
+
+          <button
+            type="button"
+            class="close-btn"
+            aria-label="Close popup"
+            (click)="closeStockUpdate()">
+            ×
+          </button>
+
+        </div>
+
+        <!-- PRODUCT INFORMATION -->
+        <div class="selected-product">
+
+          @if (selectedProduct.image) {
+            <img
+              [src]="selectedProduct.image"
+              [alt]="selectedProduct.name">
+          } @else {
+            <div class="image-placeholder">N</div>
+          }
+
+          <div>
+            <strong>{{ selectedProduct.name }}</strong>
+            <span>
+              {{ selectedProduct.category }} · {{ selectedProduct.weight }}
+            </span>
+          </div>
+
+        </div>
+
+        <!-- CURRENT STOCK -->
+        <div class="current-stock">
+          <span>Current Stock</span>
+          <strong>{{ selectedProduct.stock }} units</strong>
+        </div>
+
+        <!-- UPDATE FORM -->
+        <form #stockForm="ngForm" (ngSubmit)="updateStock()">
+
+          <div class="form-group">
+
+            <label for="updatedStock">
+              New Stock Quantity *
+            </label>
+
+            <input
+              id="updatedStock"
+              type="number"
+              name="updatedStock"
+              [(ngModel)]="updatedStock"
+              min="0"
+              step="1"
+              required>
+
+          </div>
+
+          @if (formError) {
+            <div class="form-error">
+              {{ formError }}
+            </div>
+          }
+
+          <div class="modal-actions">
+
+            <button
+              type="button"
+              class="cancel-btn"
+              (click)="closeStockUpdate()">
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              class="save-btn"
+              [disabled]="stockForm.invalid">
+              Update Stock
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  }
+
+</section>

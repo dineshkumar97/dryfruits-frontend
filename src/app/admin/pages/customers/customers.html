@@ -1,0 +1,334 @@
+
+<section class="customers-page">
+
+  <!-- PAGE HEADING -->
+  <div class="customers-heading">
+
+    <div>
+      <span class="section-label">STORE MANAGEMENT</span>
+      <h2>Customers</h2>
+      <p>View and manage your NutNest customers.</p>
+    </div>
+
+    <button
+      type="button"
+      class="refresh-btn"
+      (click)="loadCustomers()">
+      ↻ Refresh Customers
+    </button>
+
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="customers-summary">
+
+    <div class="summary-card">
+      <span>Total Customers</span>
+      <strong>{{ totalCustomers }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Total Orders</span>
+      <strong>{{ totalOrders }}</strong>
+    </div>
+
+    <div class="summary-card">
+      <span>Total Revenue</span>
+      <strong>₹{{ totalRevenue }}</strong>
+    </div>
+
+  </div>
+
+  <!-- CUSTOMER LIST -->
+  <div class="customers-list-card">
+
+    <div class="list-heading">
+      <div>
+        <h3>All Customers</h3>
+        <p>{{ filteredCustomers.length }} customers found</p>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="customers-toolbar">
+
+      <input
+        type="search"
+        name="search"
+        [(ngModel)]="searchTerm"
+        placeholder="Search name, mobile number, email or city...">
+
+    </div>
+
+    <!-- CUSTOMER TABLE -->
+    @if (filteredCustomers.length > 0) {
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Mobile Number</th>
+              <th>Email</th>
+              <th>Total Orders</th>
+              <th>Total Purchase</th>
+              <th>Last Order</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            @for (customer of filteredCustomers; track customer.mobile) {
+
+              <tr>
+
+                <!-- CUSTOMER -->
+                <td>
+                  <div class="customer-cell">
+
+                    <div class="customer-avatar">
+                      {{ customer.name.charAt(0).toUpperCase() }}
+                    </div>
+
+                    <strong>{{ customer.name }}</strong>
+
+                  </div>
+                </td>
+
+                <!-- MOBILE -->
+                <td>
+                  <strong class="customer-mobile">
+                    {{ customer.mobile }}
+                  </strong>
+                </td>
+
+                <!-- EMAIL -->
+                <td>
+                  {{ customer.email || 'Not provided' }}
+                </td>
+
+                <!-- ORDERS -->
+                <td>
+                  <span class="order-count">
+                    {{ customer.totalOrders }}
+                  </span>
+                </td>
+
+                <!-- PURCHASE -->
+                <td>
+                  <strong class="purchase-amount">
+                    ₹{{ customer.totalSpent }}
+                  </strong>
+                </td>
+
+                <!-- LAST ORDER -->
+                <td>
+                  {{ customer.lastOrderDate | date:'dd MMM yyyy' }}
+                </td>
+
+                <!-- ACTION -->
+                <td>
+                  <button
+                    type="button"
+                    class="view-btn"
+                    (click)="viewCustomer(customer)">
+                    View Details
+                  </button>
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    } @else {
+
+      <div class="empty-customers">
+
+        <div class="empty-icon">♙</div>
+
+        @if (customers.length === 0) {
+          <h3>No Customers Yet</h3>
+          <p>Customers will appear here after placing their first order.</p>
+        } @else {
+          <h3>No Matching Customers</h3>
+          <p>Try another name, mobile number or search keyword.</p>
+        }
+
+      </div>
+
+    }
+
+  </div>
+
+  <!-- CUSTOMER DETAILS POPUP -->
+  @if (selectedCustomer) {
+
+    <div
+      class="customer-modal-backdrop"
+      (click)="closeDetails()">
+
+      <div
+        class="customer-details-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="customerDetailsTitle"
+        (click)="$event.stopPropagation()">
+
+        <!-- MODAL HEADER -->
+        <div class="details-heading">
+
+          <div>
+            <span class="section-label">CUSTOMER INFORMATION</span>
+            <h3 id="customerDetailsTitle">
+              {{ selectedCustomer.name }}
+            </h3>
+          </div>
+
+          <button
+            type="button"
+            class="close-btn"
+            aria-label="Close customer details"
+            (click)="closeDetails()">
+            ×
+          </button>
+
+        </div>
+
+        <!-- CUSTOMER INFORMATION -->
+        <div class="details-section">
+
+          <h4>Customer Details</h4>
+
+          <div class="details-grid">
+
+            <div class="detail-item">
+              <span>Name</span>
+              <strong>{{ selectedCustomer.name }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Mobile Number</span>
+              <strong>{{ selectedCustomer.mobile }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Email</span>
+              <strong>
+                {{ selectedCustomer.email || 'Not provided' }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Address</span>
+              <strong>{{ selectedCustomer.address }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>City</span>
+              <strong>{{ selectedCustomer.city }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Pincode</span>
+              <strong>{{ selectedCustomer.pincode }}</strong>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- PURCHASE SUMMARY -->
+        <div class="details-section">
+
+          <h4>Purchase Summary</h4>
+
+          <div class="details-grid">
+
+            <div class="detail-item">
+              <span>Total Orders</span>
+              <strong>{{ selectedCustomer.totalOrders }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Total Purchase Amount</span>
+              <strong class="purchase-total">
+                ₹{{ selectedCustomer.totalSpent }}
+              </strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Last Order Date</span>
+              <strong>
+                {{ selectedCustomer.lastOrderDate | date:'dd MMM yyyy' }}
+              </strong>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- CUSTOMER ORDER HISTORY -->
+        <div class="details-section">
+
+          <h4>Order History</h4>
+
+          @for (order of selectedCustomer.orders; track order.orderId) {
+
+            <div class="customer-order">
+
+              <div class="customer-order-info">
+
+                <strong>{{ order.orderId }}</strong>
+
+                <span>
+                  {{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+                </span>
+
+              </div>
+
+              <div class="customer-order-right">
+
+                <strong>₹{{ order.subtotal }}</strong>
+
+                <span
+                  class="order-status"
+                  [class]="getStatusClass(order.status)">
+                  {{ order.status }}
+                </span>
+
+              </div>
+
+            </div>
+
+          }
+
+        </div>
+
+        <!-- MODAL FOOTER -->
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="modal-close-btn"
+            (click)="closeDetails()">
+            Close
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</section>

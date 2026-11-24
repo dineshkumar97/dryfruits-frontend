@@ -1,6 +1,15 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
+  // Common Login
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./shared/pages/login/login')
+        .then(m => m.Login)
+  },
+  // Common Profile
+
   // Customer website
   {
     path: '',
@@ -89,7 +98,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./customer/pages/refund-policy/refund-policy')
             .then(m => m.RefundPolicy)
-      }
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./shared/pages/profile/profile')
+            .then(m => m.Profile)
+      },
     ]
   },
 
@@ -106,7 +121,39 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/pages/dashboard/dashboard')
             .then(m => m.Dashboard)
-      }
+      },
+      {
+        path: 'products',
+        loadComponent: () =>
+          import('./admin/pages/products/products')
+            .then(m => m.Products)
+      }, {
+        path: 'categories',
+        loadComponent: () =>
+          import('./admin/pages/categories/categories')
+            .then(m => m.Categories)
+      }, {
+        path: 'orders',
+        loadComponent: () =>
+          import('./admin/pages/orders/orders')
+            .then(m => m.Orders)
+      }, {
+        path: 'customers',
+        loadComponent: () =>
+          import('./admin/pages/customers/customers')
+            .then(m => m.Customers)
+      }, {
+        path: 'inventory',
+        loadComponent: () =>
+          import('./admin/pages/inventory/inventory')
+            .then(m => m.Inventory)
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./shared/pages/profile/profile')
+            .then(m => m.Profile)
+      },
     ]
   },
 

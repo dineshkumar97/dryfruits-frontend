@@ -1,0 +1,166 @@
+
+<section class="login-page">
+
+  <div class="login-container">
+
+    <!-- BRAND SECTION -->
+    <div class="login-brand">
+
+      <a routerLink="/" class="brand-logo">
+        NutNest<span>.</span>
+      </a>
+
+      <span class="brand-label">PREMIUM DRY FRUITS</span>
+
+      <h1>Welcome to<br>NutNest</h1>
+
+      <p>
+        Experience the finest selection of premium dry fruits,
+        carefully selected for your everyday wellness.
+      </p>
+
+      <div class="brand-footer">
+        Freshness · Quality · Trust
+      </div>
+
+    </div>
+
+    <!-- LOGIN FORM SECTION -->
+    <div class="login-content">
+
+      <div class="login-card">
+
+        <span class="form-label">WELCOME BACK</span>
+
+        <h2>
+          {{ loginType === 'admin' ? 'Admin Login' : 'Customer Login' }}
+        </h2>
+
+        <p class="login-subtitle">
+          Sign in to continue to your NutNest account.
+        </p>
+
+        <!-- LOGIN TYPE -->
+        <div class="login-tabs">
+
+          <button
+            type="button"
+            [class.active]="loginType === 'customer'"
+            [attr.aria-pressed]="loginType === 'customer'"
+            (click)="selectLoginType('customer')">
+            Customer
+          </button>
+
+          <button
+            type="button"
+            [class.active]="loginType === 'admin'"
+            [attr.aria-pressed]="loginType === 'admin'"
+            (click)="selectLoginType('admin')">
+            Admin
+          </button>
+
+        </div>
+
+        <!-- REACTIVE LOGIN FORM -->
+        <form
+          [formGroup]="loginForm"
+          (ngSubmit)="login()"
+          novalidate>
+
+          <!-- EMAIL / MOBILE -->
+          <div class="form-group">
+
+            <label for="identifier">
+              Email or Mobile Number
+            </label>
+
+            <input
+              id="identifier"
+              type="text"
+              formControlName="identifier"
+              placeholder="Enter email or mobile number"
+              autocomplete="username"
+              [class.invalid]="identifier?.touched && identifier?.invalid">
+
+            @if (identifier?.touched && identifier?.hasError('required')) {
+              <span class="error-text">
+                Email or mobile number is required.
+              </span>
+            }
+
+            @if (identifier?.touched && identifier?.hasError('invalidEmailOrMobile')) {
+              <span class="error-text">
+                Enter a valid email or 10-digit mobile number.
+              </span>
+            }
+
+          </div>
+
+          <!-- PASSWORD -->
+          <div class="form-group">
+
+            <label for="password">
+              Password
+            </label>
+
+            <div class="password-wrapper">
+
+              <input
+                id="password"
+                [type]="showPassword ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                [class.invalid]="password?.touched && password?.invalid">
+
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="togglePassword()"
+                [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+
+                {{ showPassword ? 'Hide' : 'Show' }}
+
+              </button>
+
+            </div>
+
+            @if (password?.touched && password?.hasError('required')) {
+              <span class="error-text">
+                Password is required.
+              </span>
+            }
+
+            @if (password?.touched && password?.hasError('minlength')) {
+              <span class="error-text">
+                Password must contain at least 6 characters.
+              </span>
+            }
+
+          </div>
+
+          <!-- BACKEND MESSAGE -->
+          @if (errorMessage) {
+            <div class="login-error">
+              {{ errorMessage }}
+            </div>
+          }
+
+          <!-- SUBMIT -->
+          <button type="submit" class="login-btn">
+            {{ loginType === 'admin' ? 'Login as Admin' : 'Login' }}
+          </button>
+
+        </form>
+
+        <div class="login-bottom">
+          <span>NutNest Premium Dry Fruits Store</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
