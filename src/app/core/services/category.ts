@@ -3,7 +3,7 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable, map, tap } from 'rxjs';
-
+import { environment } from '../../../environments/environment';
 export interface StoreCategory {
   id: string;
   name: string;
@@ -30,8 +30,8 @@ interface CategoryApiItem {
 })
 export class CategoryService {
 
-  private readonly apiUrl =
-    'http://localhost:3000/dry-fruits-be-nut/category';
+  
+      private apiUrl = `${environment.apiUrl}/category`;
 
   private readonly cacheKey = 'nutnest-categories-cache';
 

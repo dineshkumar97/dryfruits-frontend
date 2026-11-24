@@ -3,7 +3,7 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { Observable, tap } from 'rxjs';
-
+import { environment } from '../../../environments/environment';
 export interface LoginResponse {
   message: string;
   token: string;
@@ -22,9 +22,7 @@ export interface LoginResponse {
   providedIn: 'root'
 })
 export class AuthService {
-
-  private readonly apiUrl =
-    'http://localhost:3000/dry-fruits-be-nut/user';
+  private apiUrl = `${environment.apiUrl}/user`;
 
   private readonly isBrowser: boolean;
 

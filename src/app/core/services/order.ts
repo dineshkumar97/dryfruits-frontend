@@ -5,6 +5,7 @@ import { isPlatformBrowser } from '@angular/common';
 
 import { Observable, map } from 'rxjs';
 import { CartItem } from './cart';
+import { environment } from '../../../environments/environment';
 
 export interface Order {
   orderId: string;
@@ -57,9 +58,7 @@ interface OrdersApiResponse {
 })
 export class OrderService {
 
-  private readonly apiUrl =
-    'http://localhost:3000/dry-fruits-be-nut/order';
-
+      private apiUrl = `${environment.apiUrl}/order`;
   private readonly isBrowser: boolean;
 
   constructor(

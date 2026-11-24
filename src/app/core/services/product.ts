@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 
 import { Observable, map, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Product {
   id: number;
@@ -45,9 +46,7 @@ export class ProductService {
   private readonly storageKey = 'nutnest-admin-products';
   private readonly migrationKey = 'nutnest-product-catalog-initialized';
 
-  private readonly apiUrl =
-    'http://localhost:3000/dry-fruits-be-nut/product';
-
+  private apiUrl = `${environment.apiUrl}/product`;
   private readonly isBrowser: boolean;
 
   private readonly defaultProducts: Product[] = [
