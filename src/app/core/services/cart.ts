@@ -1,10 +1,18 @@
 
-import { Injectable, Inject, PLATFORM_ID, signal } from '@angular/core';
+import {
+  Injectable,
+  Inject,
+  PLATFORM_ID,
+  signal,
+  computed
+} from '@angular/core';
+
 import { isPlatformBrowser } from '@angular/common';
 import { ProductService, Product } from './product';
 
 export interface CartItem {
   productId: number;
+  mongoId?: string;
   name: string;
   image: string;
   category: string;
@@ -24,12 +32,42 @@ export interface CartActionResult {
 })
 export class Cart {
 
-  cartCount = signal(0);
-
   private readonly storageKey = 'nutnest-cart';
   private readonly isBrowser: boolean;
 
-  private items: CartItem[] = [];
+  // Cart items Signal
+  private items = signal<CartItem[]>([]);
+
+  // Computed Cart Signals
+  cartItems = computed(() =>
+    this.items().map(item => ({ ...item }))
+  );
+
+  cartCount = computed(() =>
+    this.items().length
+  );
+
+  totalQuantity = computed(() =>
+    this.items().reduce(
+      (total, item) => total + item.quantity,
+      0
+    )
+  );
+
+  subtotal = computed(() =>
+    this.items().reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    )
+  );
+
+  totalSavings = computed(() =>
+    this.items().reduce(
+      (total, item) =>
+        total + (item.oldPrice - item.price) * item.quantity,
+      0
+    )
+  );
 
   constructor(
     private productService: ProductService,
@@ -38,16 +76,15 @@ export class Cart {
     this.isBrowser = isPlatformBrowser(platformId);
 
     if (this.isBrowser) {
-      this.items = this.loadCart();
+      this.items.set(this.loadCart());
       this.syncCartPrices();
-      this.cartCount.set(this.getCartCount());
+      this.saveCart();
     }
   }
 
-  // Get cart items with latest product information
+  // Get cart items
   getCartItems(): CartItem[] {
-    this.syncCartPrices();
-    return this.items.map(item => ({ ...item }));
+    return this.cartItems();
   }
 
   // Add product to cart
@@ -69,6 +106,20 @@ export class Cart {
       };
     }
 
+    // Check whether the same product and weight already exist
+    const existingItem = this.items().find(
+      cartItem =>
+        cartItem.productId === item.productId &&
+        cartItem.weight === item.weight
+    );
+
+    if (existingItem) {
+      return {
+        success: false,
+        message: 'This product is already in your cart. Update quantity from your cart.'
+      };
+    }
+
     const updatedItem = this.getLatestCartItem(item, product);
 
     const usedGrams = this.getUsedStockGrams(item.productId);
@@ -76,7 +127,8 @@ export class Cart {
     const requestedGrams =
       this.getWeightInGrams(item.weight) * item.quantity;
 
-    const availableGrams = product.stock * this.getWeightInGrams(product.weight);
+    const availableGrams =
+      product.stock * this.getWeightInGrams(product.weight);
 
     if (usedGrams + requestedGrams > availableGrams) {
       const availableQuantity = Math.floor(
@@ -92,24 +144,11 @@ export class Cart {
       };
     }
 
-    const existingItem = this.items.find(
-      cartItem =>
-        cartItem.productId === item.productId &&
-        cartItem.weight === item.weight
-    );
-
-    if (existingItem) {
-      existingItem.quantity += item.quantity;
-
-      existingItem.price = updatedItem.price;
-      existingItem.oldPrice = updatedItem.oldPrice;
-      existingItem.name = updatedItem.name;
-      existingItem.image = updatedItem.image;
-      existingItem.category = updatedItem.category;
-
-    } else {
-      this.items.push(updatedItem);
-    }
+    // Add new product to cart
+    this.items.update(items => [
+      ...items,
+      updatedItem
+    ]);
 
     this.saveCart();
 
@@ -126,7 +165,7 @@ export class Cart {
     quantity: number
   ): CartActionResult {
 
-    const item = this.items.find(
+    const item = this.items().find(
       cartItem =>
         cartItem.productId === productId &&
         cartItem.weight === weight
@@ -180,7 +219,14 @@ export class Cart {
       };
     }
 
-    item.quantity = quantity;
+    this.items.update(items =>
+      items.map(cartItem =>
+        cartItem.productId === productId &&
+        cartItem.weight === weight
+          ? { ...cartItem, quantity }
+          : cartItem
+      )
+    );
 
     this.syncCartPrices();
     this.saveCart();
@@ -194,10 +240,12 @@ export class Cart {
   // Remove cart item
   removeItem(productId: number, weight: string): void {
 
-    this.items = this.items.filter(
-      item =>
-        !(item.productId === productId &&
-          item.weight === weight)
+    this.items.update(items =>
+      items.filter(
+        item =>
+          !(item.productId === productId &&
+            item.weight === weight)
+      )
     );
 
     this.saveCart();
@@ -205,25 +253,17 @@ export class Cart {
 
   // Get number of cart lines
   getCartCount(): number {
-    return this.items.length;
+    return this.cartCount();
   }
 
-  // Get subtotal using current prices
+  // Get subtotal
   getSubtotal(): number {
-    this.syncCartPrices();
-
-    return this.items.reduce(
-      (total, item) => total + item.price * item.quantity,
-      0
-    );
+    return this.subtotal();
   }
 
   // Get total quantity
   getTotalQuantity(): number {
-    return this.items.reduce(
-      (total, item) => total + item.quantity,
-      0
-    );
+    return this.totalQuantity();
   }
 
   // Get remaining quantity for selected weight
@@ -255,7 +295,7 @@ export class Cart {
 
     this.syncCartPrices();
 
-    for (const item of this.items) {
+    for (const item of this.items()) {
 
       const product = this.productService.getProductById(
         item.productId
@@ -287,7 +327,7 @@ export class Cart {
 
   // Clear cart
   clearCart(): void {
-    this.items = [];
+    this.items.set([]);
     this.saveCart();
   }
 
@@ -307,7 +347,7 @@ export class Cart {
     excludeWeight?: string
   ): number {
 
-    return this.items
+    return this.items()
       .filter(item =>
         item.productId === productId &&
         item.weight !== excludeWeight
@@ -338,6 +378,7 @@ export class Cart {
 
     return {
       productId: product.id,
+      mongoId: product.mongoId,
       name: product.name,
       image: product.image,
       category: product.category,
@@ -351,18 +392,20 @@ export class Cart {
   // Refresh cart prices after Admin changes
   private syncCartPrices(): void {
 
-    this.items = this.items.map(item => {
+    this.items.update(items =>
+      items.map(item => {
 
-      const product = this.productService.getProductById(
-        item.productId
-      );
+        const product = this.productService.getProductById(
+          item.productId
+        );
 
-      if (!product) {
-        return item;
-      }
+        if (!product) {
+          return item;
+        }
 
-      return this.getLatestCartItem(item, product);
-    });
+        return this.getLatestCartItem(item, product);
+      })
+    );
   }
 
   // Save cart
@@ -371,12 +414,16 @@ export class Cart {
     if (!this.isBrowser) return;
 
     try {
+
       localStorage.setItem(
         this.storageKey,
-        JSON.stringify(this.items)
+        JSON.stringify(this.items())
       );
 
-      this.cartCount.set(this.getCartCount());
+      console.log(
+        'Cart saved successfully. Count:',
+        this.cartCount()
+      );
 
     } catch (error) {
       console.error('Unable to save cart:', error);

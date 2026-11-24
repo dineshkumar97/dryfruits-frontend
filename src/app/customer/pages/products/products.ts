@@ -1,5 +1,5 @@
 
-import { Component } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { Product, ProductService } from '../../../core/services/product';
@@ -16,11 +16,11 @@ export class Products {
 
   private readonly wishlistKey = 'nutnest-wishlist';
 
-  wishlistIds: number[] = this.loadWishlist();
+  wishlistIds = signal<number[]>(this.loadWishlist());
 
-  selectedCategory = 'All Products';
+selectedCategory = signal('All Products');
 
-  products: Product[] = [];
+products = signal<Product[]>([]);
 
   private activeCategoryNames: string[] = [];
 
@@ -43,48 +43,51 @@ export class Products {
   }
 
   // Load active products belonging to active categories
+  // Load active products from MongoDB API
   loadProducts(): void {
 
-    const activeCategories = this.categoryService
-      .getCategories()
-      .filter(category => category.active);
+    this.productService.getActiveProducts().subscribe({
 
-    this.activeCategoryNames = activeCategories.map(
-      category => category.name.toLowerCase()
-    );
+      next: (products: Product[]) => {
 
-    this.products = this.productService
-      .getProducts()
-      .filter(product =>
-        product.active &&
-        this.activeCategoryNames.includes(product.category.toLowerCase())
-      );
+        this.products.set(products.filter(
+          product => product.active
+        ));
 
-    // Reset selection if its category is no longer active
-    if (
-      this.selectedCategory !== 'All Products' &&
-      !activeCategories.some(
-        category => category.name === this.selectedCategory
-      )
-    ) {
-      this.selectedCategory = 'All Products';
-    }
+        console.log('Customer products loaded:', this.products());
+      },
+
+      error: (error) => {
+
+        console.error('Customer products API error:', error);
+
+        this.products.set([]);
+
+      }
+
+    });
+
   }
 
   // Filter products by category
-  get filteredProducts(): Product[] {
+ 
+  filteredProducts = computed(() => {
 
-    if (this.selectedCategory === 'All Products') {
-      return this.products;
-    }
+  const selected = this.selectedCategory();
+  const products = this.products();
 
-    return this.products.filter(
-      product => product.category === this.selectedCategory
-    );
+  if (selected === 'All Products') {
+    return products;
   }
 
+  return products.filter(
+    product => product.category === selected
+  );
+
+});
+
   selectCategory(category: string): void {
-    this.selectedCategory = category;
+    this.selectedCategory.set(category);
   }
 
   // Wishlist
@@ -93,23 +96,23 @@ export class Products {
     event.stopPropagation();
 
     if (this.isWishlisted(productId)) {
-      this.wishlistIds = this.wishlistIds.filter(
+      this.wishlistIds.set(this.wishlistIds().filter(
         id => id !== productId
-      );
+      ));
     } else {
-      this.wishlistIds = [...this.wishlistIds, productId];
+      this.wishlistIds.set([...this.wishlistIds(), productId]);
     }
 
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(
         this.wishlistKey,
-        JSON.stringify(this.wishlistIds)
+        JSON.stringify(this.wishlistIds())
       );
     }
   }
 
   isWishlisted(productId: number): boolean {
-    return this.wishlistIds.includes(productId);
+    return this.wishlistIds().includes(productId);
   }
 
   private loadWishlist(): number[] {
@@ -125,8 +128,8 @@ export class Products {
 
       return Array.isArray(saved)
         ? saved.filter((id): id is number =>
-            Number.isInteger(id) && id > 0
-          )
+          Number.isInteger(id) && id > 0
+        )
         : [];
 
     } catch {

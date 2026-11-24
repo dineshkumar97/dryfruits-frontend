@@ -1,20 +1,10 @@
 
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 
-interface InventoryProduct {
-  id: number;
-  name: string;
-  category: string;
-  image: string;
-  weight: string;
-  price: number;
-  oldPrice: number;
-  stock: number;
-  active: boolean;
-}
+import { Product, ProductService } from '../../../core/services/product';
 
 @Component({
   selector: 'app-inventory',
@@ -25,22 +15,80 @@ interface InventoryProduct {
 })
 export class Inventory {
 
-  private readonly storageKey = 'nutnest-admin-products';
   private readonly lowStockLimit = 5;
   private readonly isBrowser: boolean;
 
-  products: InventoryProduct[] = [];
+  // STATE
+  products = signal<Product[]>([]);
 
-  searchTerm = '';
-  selectedFilter = 'All';
+  searchTerm = signal('');
+  selectedFilter = signal('All');
 
-  selectedProduct: InventoryProduct | null = null;
-  updatedStock = 0;
+  selectedProduct = signal<Product | null>(null);
+  updatedStock = signal(0);
 
-  formError = '';
-  successMessage = '';
+  formError = signal('');
+  successMessage = signal('');
 
-  constructor(@Inject(PLATFORM_ID) platformId: object) {
+  isLoading = signal(false);
+  isSaving = signal(false);
+
+  // SUMMARY
+  totalProducts = computed(
+    () => this.products().length
+  );
+
+  totalStock = computed(
+    () => this.products().reduce(
+      (total, product) => total + Number(product.stock || 0),
+      0
+    )
+  );
+
+  lowStockCount = computed(
+    () => this.products().filter(
+      product =>
+        product.stock > 0 &&
+        product.stock <= this.lowStockLimit
+    ).length
+  );
+
+  outOfStockCount = computed(
+    () => this.products().filter(
+      product => product.stock === 0
+    ).length
+  );
+
+  // SEARCH AND FILTER
+  filteredProducts = computed(() => {
+
+    const search = this.searchTerm().trim().toLowerCase();
+    const filter = this.selectedFilter();
+
+    return this.products().filter(product => {
+
+      const matchesSearch =
+        product.name.toLowerCase().includes(search) ||
+        product.category.toLowerCase().includes(search);
+
+      const matchesFilter =
+        filter === 'All' ||
+        (filter === 'In Stock' && product.stock > this.lowStockLimit) ||
+        (
+          filter === 'Low Stock' &&
+          product.stock > 0 &&
+          product.stock <= this.lowStockLimit
+        ) ||
+        (filter === 'Out of Stock' && product.stock === 0);
+
+      return matchesSearch && matchesFilter;
+    });
+  });
+
+  constructor(
+    @Inject(PLATFORM_ID) platformId: object,
+    private productService: ProductService
+  ) {
     this.isBrowser = isPlatformBrowser(platformId);
 
     if (this.isBrowser) {
@@ -48,75 +96,39 @@ export class Inventory {
     }
   }
 
-  // Load products from Admin Products storage
+  // LOAD PRODUCTS FROM BACKEND
   loadProducts(): void {
+
     if (!this.isBrowser) return;
 
-    try {
-      const savedProducts = localStorage.getItem(this.storageKey);
+    this.isLoading.set(true);
+    this.successMessage.set('');
+    this.formError.set('');
 
-      this.products = savedProducts
-        ? JSON.parse(savedProducts)
-        : [];
+    this.productService.getAdminProducts().subscribe({
 
-      this.successMessage = '';
-      this.formError = '';
+      next: (products) => {
+        this.products.set(products);
+        this.isLoading.set(false);
+      },
 
-    } catch (error) {
-      console.error('Unable to load inventory:', error);
-      this.products = [];
-    }
-  }
+      error: (error) => {
 
-  // Summary calculations
-  get totalProducts(): number {
-    return this.products.length;
-  }
+        console.error('Unable to load inventory:', error);
 
-  get totalStock(): number {
-    return this.products.reduce(
-      (total, product) => total + Number(product.stock || 0),
-      0
-    );
-  }
+        this.products.set([]);
+        this.isLoading.set(false);
 
-  get lowStockCount(): number {
-    return this.products.filter(
-      product => product.stock > 0 &&
-        product.stock <= this.lowStockLimit
-    ).length;
-  }
+        this.formError.set(
+          error.error?.message ||
+          'Unable to load inventory. Please try again.'
+        );
+      }
 
-  get outOfStockCount(): number {
-    return this.products.filter(
-      product => product.stock === 0
-    ).length;
-  }
-
-  // Product search and stock filter
-  get filteredProducts(): InventoryProduct[] {
-
-    return this.products.filter(product => {
-
-      const search = this.searchTerm.trim().toLowerCase();
-
-      const matchesSearch =
-        product.name.toLowerCase().includes(search) ||
-        product.category.toLowerCase().includes(search);
-
-      const matchesFilter =
-        this.selectedFilter === 'All' ||
-        (this.selectedFilter === 'In Stock' && product.stock > this.lowStockLimit) ||
-        (this.selectedFilter === 'Low Stock' &&
-          product.stock > 0 &&
-          product.stock <= this.lowStockLimit) ||
-        (this.selectedFilter === 'Out of Stock' && product.stock === 0);
-
-      return matchesSearch && matchesFilter;
     });
   }
 
-  // Stock status
+  // STOCK STATUS
   getStockStatus(stock: number): string {
 
     if (stock === 0) {
@@ -131,6 +143,7 @@ export class Inventory {
   }
 
   getStockClass(stock: number): string {
+
     if (stock === 0) {
       return 'out-of-stock';
     }
@@ -142,72 +155,80 @@ export class Inventory {
     return 'in-stock';
   }
 
-  // Open stock update popup
-  openStockUpdate(product: InventoryProduct): void {
+  // OPEN STOCK UPDATE POPUP
+  openStockUpdate(product: Product): void {
 
-    this.selectedProduct = { ...product };
-    this.updatedStock = product.stock;
-    this.formError = '';
-    this.successMessage = '';
+    this.selectedProduct.set({ ...product });
+    this.updatedStock.set(product.stock);
+
+    this.formError.set('');
+    this.successMessage.set('');
   }
 
-  // Save updated stock
+  // UPDATE STOCK THROUGH BACKEND
   updateStock(): void {
 
-    this.formError = '';
+    this.formError.set('');
 
-    if (!this.selectedProduct) {
-      return;
-    }
+    const selected = this.selectedProduct();
 
-    const stock = Number(this.updatedStock);
+    if (!selected) return;
+
+    const stock = Number(this.updatedStock());
 
     if (!Number.isInteger(stock) || stock < 0) {
-      this.formError = 'Please enter a valid stock quantity.';
+      this.formError.set('Please enter a valid stock quantity.');
       return;
     }
 
-    const productExists = this.products.some(
-      product => product.id === this.selectedProduct!.id
-    );
+    const mongoId = selected.mongoId;
 
-    if (!productExists) {
-      this.formError = 'Product not found. Please refresh inventory.';
-      return;
-    }
-
-    this.products = this.products.map(product =>
-      product.id === this.selectedProduct!.id
-        ? { ...product, stock }
-        : product
-    );
-
-    this.saveToStorage();
-
-    this.selectedProduct = null;
-
-    this.successMessage = 'Stock updated successfully.';
-  }
-
-  // Save shared product data
-  private saveToStorage(): void {
-
-    if (!this.isBrowser) return;
-
-    try {
-      localStorage.setItem(
-        this.storageKey,
-        JSON.stringify(this.products)
+    if (!mongoId) {
+      this.formError.set(
+        'Product ID is missing. Please refresh inventory.'
       );
-    } catch (error) {
-      console.error('Unable to save inventory:', error);
-      this.formError = 'Unable to save stock. Please try again.';
+      return;
     }
+
+    this.isSaving.set(true);
+
+    this.productService.updateProduct(mongoId, { stock }).subscribe({
+
+      next: (updatedProduct) => {
+
+        this.products.update(products =>
+          products.map(product =>
+            product.mongoId === mongoId
+              ? { ...product, ...updatedProduct, stock }
+              : product
+          )
+        );
+
+        this.selectedProduct.set(null);
+        this.successMessage.set('Stock updated successfully.');
+
+        this.isSaving.set(false);
+      },
+
+      error: (error) => {
+
+        console.error('Unable to update stock:', error);
+
+        this.formError.set(
+          error.error?.message ||
+          'Unable to update stock. Please try again.'
+        );
+
+        this.isSaving.set(false);
+      }
+
+    });
   }
 
+  // CLOSE POPUP
   closeStockUpdate(): void {
-    this.selectedProduct = null;
-    this.formError = '';
+    this.selectedProduct.set(null);
+    this.formError.set('');
   }
 
 }

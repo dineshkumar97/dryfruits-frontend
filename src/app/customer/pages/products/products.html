@@ -13,7 +13,7 @@
     <div class="category-filter">
 
       @for (category of categories; track category) {
-      <button [class.active]="selectedCategory === category" (click)="selectCategory(category)">
+      <button [class.active]="selectedCategory() === category" (click)="selectCategory(category)">
         {{ category }}
       </button>
       }
@@ -22,14 +22,14 @@
 
     <!-- Product Count -->
     <div class="products-heading">
-      <h2>{{ selectedCategory }}</h2>
-      <span>{{ filteredProducts.length }} Products</span>
+      <h2>{{ selectedCategory() }}</h2>
+      <span>{{ filteredProducts().length }} Products</span>
     </div>
 
     <!-- Product Grid -->
     <div class="product-grid">
 
-      @for (product of filteredProducts; track product.id) {
+      @for (product of filteredProducts(); track product.id) {
 
       <div class="product-card" [routerLink]="['/product-details', product.id]">
 

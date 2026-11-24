@@ -1,5 +1,5 @@
 
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe, isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
@@ -14,17 +14,17 @@ import { OrderService, Order } from '../../../core/services/order';
 })
 export class Orders {
 
-  orders: Order[] = [];
-
-  searchTerm = '';
-  selectedStatus = 'All';
-
-  selectedOrder: Order | null = null;
-
-  errorMessage = '';
-  successMessage = '';
-
   private readonly isBrowser: boolean;
+
+  orders = signal<Order[]>([]);
+
+  searchTerm = signal('');
+  selectedStatus = signal('All');
+
+  selectedOrder = signal<Order | null>(null);
+
+  errorMessage = signal('');
+  successMessage = signal('');
 
   statusOptions = [
     'Confirmed',
@@ -34,6 +34,47 @@ export class Orders {
     'Delivered',
     'Cancelled'
   ];
+
+  filteredOrders = computed(() => {
+
+    const search = this.searchTerm().trim().toLowerCase();
+    const status = this.selectedStatus();
+
+    return this.orders().filter(order => {
+
+      const matchesSearch =
+        order.orderId.toLowerCase().includes(search) ||
+        order.customer.name.toLowerCase().includes(search) ||
+        order.customer.mobile.includes(search);
+
+      const matchesStatus =
+        status === 'All' || order.status === status;
+
+      return matchesSearch && matchesStatus;
+    });
+  });
+
+  // Dashboard summary
+
+  totalOrders = computed(() => this.orders().length);
+
+  activeOrders = computed(() =>
+    this.orders().filter(order =>
+      !['Delivered', 'Cancelled'].includes(order.status)
+    ).length
+  );
+
+  deliveredOrders = computed(() =>
+    this.orders().filter(
+      order => order.status === 'Delivered'
+    ).length
+  );
+
+  totalOrderValue = computed(() =>
+    this.orders()
+      .filter(order => order.status !== 'Cancelled')
+      .reduce((total, order) => total + order.subtotal, 0)
+  );
 
   constructor(
     private orderService: OrderService,
@@ -46,93 +87,95 @@ export class Orders {
     }
   }
 
-  // Load customer orders
+  // Load all orders from MongoDB
+
   loadOrders(): void {
-    this.orders = [...this.orderService.getOrders()].reverse();
-  }
 
-  // Filter orders
-  get filteredOrders(): Order[] {
-    return this.orders.filter(order => {
+    if (!this.isBrowser) return;
 
-      const search = this.searchTerm.trim().toLowerCase();
+    this.orderService.getAdminOrders().subscribe({
 
-      const matchesSearch =
-        order.orderId.toLowerCase().includes(search) ||
-        order.customer.name.toLowerCase().includes(search) ||
-        order.customer.mobile.includes(search);
+      next: (orders) => {
+        this.orders.set(orders);
+      },
 
-      const matchesStatus =
-        this.selectedStatus === 'All' ||
-        order.status === this.selectedStatus;
+      error: (error) => {
+        console.error('Error loading admin orders:', error);
 
-      return matchesSearch && matchesStatus;
+        this.errorMessage.set(
+          error.error?.message || 'Unable to load orders.'
+        );
+      }
+
     });
   }
 
-  // Dashboard summary
-  get totalOrders(): number {
-    return this.orders.length;
-  }
-
-  get activeOrders(): number {
-    return this.orders.filter(order =>
-      !['Delivered', 'Cancelled'].includes(order.status)
-    ).length;
-  }
-
-  get deliveredOrders(): number {
-    return this.orders.filter(
-      order => order.status === 'Delivered'
-    ).length;
-  }
-
-  get totalOrderValue(): number {
-    return this.orders
-      .filter(order => order.status !== 'Cancelled')
-      .reduce((total, order) => total + order.subtotal, 0);
-  }
-
   // View order details
+
   viewOrder(order: Order): void {
-    this.selectedOrder = order;
-    this.errorMessage = '';
-    this.successMessage = '';
+
+    this.selectedOrder.set(order);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
   }
 
   // Close order details
+
   closeDetails(): void {
-    this.selectedOrder = null;
+    this.selectedOrder.set(null);
   }
 
-  // Update order status
-  updateStatus(order: Order, status: string): void {
-    this.errorMessage = '';
-    this.successMessage = '';
+  // Update order status in MongoDB
 
-    const updated = this.orderService.updateOrderStatus(
+  updateStatus(order: Order, status: string): void {
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.orderService.updateOrderStatus(
       order.orderId,
       status
-    );
+    ).subscribe({
 
-    if (!updated) {
-      this.errorMessage = 'Unable to update order status. Please try again.';
-      this.loadOrders();
-      return;
-    }
+      next: (updatedOrder) => {
 
-    this.loadOrders();
+        this.orders.update(orders =>
+          orders.map(item =>
+            item.orderId === updatedOrder.orderId
+              ? updatedOrder
+              : item
+          )
+        );
 
-    if (this.selectedOrder?.orderId === order.orderId) {
-      this.selectedOrder =
-        this.orders.find(item => item.orderId === order.orderId) ?? null;
-    }
+        const selected = this.selectedOrder();
 
-    this.successMessage =
-      `Order ${order.orderId} status updated successfully.`;
+        if (selected?.orderId === updatedOrder.orderId) {
+          this.selectedOrder.set(updatedOrder);
+        }
+
+        this.successMessage.set(
+          `Order ${updatedOrder.orderId} status updated successfully.`
+        );
+
+      },
+
+      error: (error) => {
+
+        console.error('Error updating order status:', error);
+
+        this.errorMessage.set(
+          error.error?.message ||
+          'Unable to update order status. Please try again.'
+        );
+
+      }
+
+    });
   }
 
   // Status CSS class
+
   getStatusClass(status: string): string {
     return status.toLowerCase().replace(/\s+/g, '-');
   }

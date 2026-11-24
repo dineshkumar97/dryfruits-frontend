@@ -1,10 +1,20 @@
 
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import {
+  Component,
+  Inject,
+  PLATFORM_ID,
+  signal,
+  computed
+} from '@angular/core';
+
 import { RouterLink } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
+
 import { Cart as CartService } from '../../../core/services/cart';
-import { Product, ProductService } from '../../../core/services/product';
-import { CategoryService } from '../../../core/services/category';
+import {
+  Product,
+  ProductService
+} from '../../../core/services/product';
 
 @Component({
   selector: 'app-wishlist',
@@ -18,54 +28,73 @@ export class Wishlist {
   private readonly wishlistKey = 'nutnest-wishlist';
   private readonly isBrowser: boolean;
 
-  products: Product[] = [];
-  wishlistIds: number[] = [];
+  // Signals
+  products = signal<Product[]>([]);
+  wishlistIds = signal<number[]>([]);
+
+  // Computed wishlist products
+  wishlistProducts = computed(() =>
+    this.products().filter(product =>
+      this.wishlistIds().includes(product.id)
+    )
+  );
 
   constructor(
     private cartService: CartService,
     private productService: ProductService,
-    private categoryService: CategoryService,
     @Inject(PLATFORM_ID) platformId: object
   ) {
+
     this.isBrowser = isPlatformBrowser(platformId);
 
     if (this.isBrowser) {
       this.loadWishlist();
       this.loadProducts();
     }
+
   }
 
-  // Load active products from shared catalogue
+  // Load active products from MongoDB API
   loadProducts(): void {
 
-    const activeCategories = this.categoryService
-      .getCategories()
-      .filter(category => category.active)
-      .map(category => category.name.toLowerCase());
+    this.productService.getActiveProducts().subscribe({
 
-    this.products = this.productService
-      .getProducts()
-      .filter(product =>
-        product.active &&
-        activeCategories.includes(product.category.toLowerCase())
-      );
-  }
+      next: (products: Product[]) => {
 
-  // Get products saved in wishlist
-  get wishlistProducts(): Product[] {
-    return this.products.filter(product =>
-      this.wishlistIds.includes(product.id)
-    );
+        this.products.set(
+          products.filter(product => product.active)
+        );
+
+        console.log('Wishlist IDs:', this.wishlistIds());
+        console.log(
+          'Available product IDs:',
+          this.products().map(product => product.id)
+        );
+        console.log('Wishlist products:', this.wishlistProducts());
+
+      },
+
+      error: (error) => {
+
+        console.error('Wishlist products API error:', error);
+
+        this.products.set([]);
+
+      }
+
+    });
+
   }
 
   // Remove product from wishlist
   removeFromWishlist(productId: number): void {
 
-    this.wishlistIds = this.wishlistIds.filter(
-      id => id !== productId
+    this.wishlistIds.update(ids =>
+      ids.filter(id => id !== productId)
     );
 
     this.saveWishlist();
+
   }
 
   // Add wishlist product to cart
@@ -73,6 +102,7 @@ export class Wishlist {
 
     this.cartService.addToCart({
       productId: product.id,
+      mongoId: product.mongoId,
       name: product.name,
       image: product.image,
       category: product.category,
@@ -81,6 +111,7 @@ export class Wishlist {
       quantity: 1,
       oldPrice: product.oldPrice
     });
+
   }
 
   // Load saved wishlist IDs
@@ -92,15 +123,20 @@ export class Wishlist {
         localStorage.getItem(this.wishlistKey) || '[]'
       );
 
-      this.wishlistIds = Array.isArray(saved)
-        ? saved.filter((id): id is number =>
-            Number.isInteger(id) && id > 0
-          )
-        : [];
+      this.wishlistIds.set(
+        Array.isArray(saved)
+          ? saved.filter((id): id is number =>
+              Number.isInteger(id) && id > 0
+            )
+          : []
+      );
 
     } catch {
-      this.wishlistIds = [];
+
+      this.wishlistIds.set([]);
+
     }
+
   }
 
   // Save wishlist IDs
@@ -110,8 +146,9 @@ export class Wishlist {
 
     localStorage.setItem(
       this.wishlistKey,
-      JSON.stringify(this.wishlistIds)
+      JSON.stringify(this.wishlistIds())
     );
+
   }
 
 }

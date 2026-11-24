@@ -32,6 +32,9 @@ export class Customers {
   searchTerm = '';
   selectedCustomer: CustomerRecord | null = null;
 
+  isLoading = true;
+  errorMessage = '';
+
   private readonly isBrowser: boolean;
 
   constructor(
@@ -45,60 +48,84 @@ export class Customers {
     }
   }
 
-  // Load customers from existing orders
+  // Load customers from MongoDB orders
   loadCustomers(): void {
 
-    const orders = this.orderService.getOrders();
+    if (!this.isBrowser) return;
 
-    const groupedOrders = new Map<string, Order[]>();
+    this.isLoading = true;
+    this.errorMessage = '';
 
-    orders.forEach(order => {
+    this.orderService.getAdminOrders().subscribe({
 
-      const mobile = order.customer.mobile.trim();
+      next: (orders) => {
 
-      if (!mobile) return;
+        const groupedOrders = new Map<string, Order[]>();
 
-      if (!groupedOrders.has(mobile)) {
-        groupedOrders.set(mobile, []);
-      }
+        orders.forEach(order => {
 
-      groupedOrders.get(mobile)!.push(order);
+          const mobile = order.customer.mobile.trim();
 
-    });
+          if (!mobile) return;
 
-    this.customers = Array.from(groupedOrders.entries())
-      .map(([mobile, customerOrders]) => {
+          if (!groupedOrders.has(mobile)) {
+            groupedOrders.set(mobile, []);
+          }
 
-        const sortedOrders = [...customerOrders].sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() -
-            new Date(a.createdAt).getTime()
-        );
+          groupedOrders.get(mobile)!.push(order);
 
-        const latestOrder = sortedOrders[0];
+        });
 
-        const totalSpent = sortedOrders
-          .filter(order => order.status !== 'Cancelled')
-          .reduce(
-            (total, order) => total + order.subtotal,
-            0
+        this.customers = Array.from(groupedOrders.entries())
+          .map(([mobile, customerOrders]) => {
+
+            const sortedOrders = [...customerOrders].sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            );
+
+            const latestOrder = sortedOrders[0];
+
+            const totalSpent = sortedOrders
+              .filter(order => order.status !== 'Cancelled')
+              .reduce(
+                (total, order) => total + order.subtotal,
+                0
+              );
+
+            return {
+              ...latestOrder.customer,
+              mobile,
+              totalOrders: sortedOrders.length,
+              totalSpent,
+              lastOrderDate: latestOrder.createdAt,
+              orders: sortedOrders
+            };
+
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.lastOrderDate).getTime() -
+              new Date(a.lastOrderDate).getTime()
           );
 
-        return {
-          ...latestOrder.customer,
-          mobile,
-          totalOrders: sortedOrders.length,
-          totalSpent,
-          lastOrderDate: latestOrder.createdAt,
-          orders: sortedOrders
-        };
+        this.isLoading = false;
 
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.lastOrderDate).getTime() -
-          new Date(a.lastOrderDate).getTime()
-      );
+      },
+
+      error: (error) => {
+
+        console.error('Error loading customers:', error);
+
+        this.errorMessage =
+          error.error?.message || 'Unable to load customers.';
+
+        this.isLoading = false;
+
+      }
+
+    });
   }
 
   // Search customers

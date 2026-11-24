@@ -1,5 +1,5 @@
 
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   FormBuilder,
@@ -10,15 +10,12 @@ import {
 } from '@angular/forms';
 
 import { isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { PLATFORM_ID } from '@angular/core';
-
-interface AdminCategory {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-  active: boolean;
-}
+import {
+  CategoryService,
+  StoreCategory
+} from '../../../core/services/category';
 
 type CategoryFormGroup = FormGroup<{
   name: FormControl<string>;
@@ -36,24 +33,71 @@ type CategoryFormGroup = FormGroup<{
 })
 export class Categories {
 
-  private readonly storageKey = 'nutnest-admin-categories';
   private readonly isBrowser: boolean;
 
-  categories: AdminCategory[] = [];
+  // =====================================
+  // SIGNALS
+  // =====================================
 
-  searchTerm = '';
+  categories = signal<StoreCategory[]>([]);
+
+  searchTerm = signal('');
+
+  isLoading = signal(false);
+  isSaving = signal(false);
+
+  pageError = signal('');
+  formError = signal('');
+
+  // =====================================
+  // COMPUTED SUMMARY
+  // =====================================
+
+  totalCategories = computed(
+    () => this.categories().length
+  );
+
+  activeCategories = computed(
+    () => this.categories().filter(
+      category => category.active
+    ).length
+  );
+
+  inactiveCategories = computed(
+    () => this.categories().filter(
+      category => !category.active
+    ).length
+  );
+
+  // =====================================
+  // FILTERED CATEGORIES
+  // =====================================
+
+  filteredCategories = computed(() => {
+
+    const search = this.searchTerm()
+      .toLowerCase()
+      .trim();
+
+    return this.categories().filter(category =>
+      category.name.toLowerCase().includes(search)
+    );
+
+  });
+
+  // =====================================
+  // POPUP STATE
+  // =====================================
 
   isFormOpen = false;
   isEditing = false;
-  editingId: number | null = null;
+  editingId: string | null = null;
 
-  formError = '';
-
-  // Reactive Form
   categoryForm!: CategoryFormGroup;
 
   constructor(
     private fb: FormBuilder,
+    private categoryService: CategoryService,
     @Inject(PLATFORM_ID) platformId: object
   ) {
 
@@ -76,87 +120,57 @@ export class Categories {
 
     });
 
-    if (this.isBrowser) {
-      this.loadCategories();
-    }
+    this.loadCategories();
+
   }
 
-  // Filter Categories
-  get filteredCategories(): AdminCategory[] {
-    return this.categories.filter(category =>
-      category.name.toLowerCase().includes(
-        this.searchTerm.toLowerCase()
-      )
-    );
-  }
+  // =====================================
+  // LOAD CATEGORIES
+  // =====================================
 
-  // Summary
-  get totalCategories(): number {
-    return this.categories.length;
-  }
-
-  get activeCategories(): number {
-    return this.categories.filter(
-      category => category.active
-    ).length;
-  }
-
-  get inactiveCategories(): number {
-    return this.categories.filter(
-      category => !category.active
-    ).length;
-  }
-
-  // Load Categories
-  private loadCategories(): void {
-
-    try {
-
-      const savedCategories = localStorage.getItem(
-        this.storageKey
-      );
-
-      if (savedCategories) {
-        const parsed: unknown = JSON.parse(savedCategories);
-
-        this.categories = Array.isArray(parsed)
-          ? parsed
-          : [];
-      }
-
-    } catch (error) {
-
-      console.error('Unable to load categories:', error);
-      this.categories = [];
-
-    }
-  }
-
-  // Save Categories
-  private saveToStorage(): void {
+  loadCategories(): void {
 
     if (!this.isBrowser) return;
 
-    try {
+    this.isLoading.set(true);
+    this.pageError.set('');
 
-      localStorage.setItem(
-        this.storageKey,
-        JSON.stringify(this.categories)
-      );
+    this.categoryService.getAdminCategories().subscribe({
 
-    } catch (error) {
+      next: (categories) => {
 
-      console.error('Unable to save categories:', error);
+        this.categories.set(categories);
+        this.isLoading.set(false);
 
-    }
+      },
+
+      error: (error: HttpErrorResponse) => {
+
+        console.error('Unable to load categories:', error);
+
+        this.pageError.set(
+          error.error?.message ||
+          'Unable to load categories. Please try again.'
+        );
+
+        this.isLoading.set(false);
+
+      }
+
+    });
+
   }
 
-  // Add Category
+  // =====================================
+  // ADD CATEGORY
+  // =====================================
+
   addCategory(): void {
 
     this.isEditing = false;
     this.editingId = null;
-    this.formError = '';
+
+    this.formError.set('');
 
     this.categoryForm.reset({
 
@@ -168,14 +182,19 @@ export class Categories {
     });
 
     this.isFormOpen = true;
+
   }
 
-  // Edit Category
-  editCategory(category: AdminCategory): void {
+  // =====================================
+  // EDIT CATEGORY
+  // =====================================
+
+  editCategory(category: StoreCategory): void {
 
     this.isEditing = true;
     this.editingId = category.id;
-    this.formError = '';
+
+    this.formError.set('');
 
     this.categoryForm.reset({
 
@@ -187,12 +206,16 @@ export class Categories {
     });
 
     this.isFormOpen = true;
+
   }
 
-  // Save Category
+  // =====================================
+  // SAVE CATEGORY
+  // =====================================
+
   saveCategory(): void {
 
-    this.formError = '';
+    this.formError.set('');
 
     if (this.categoryForm.invalid) {
 
@@ -202,10 +225,11 @@ export class Categories {
     }
 
     const formValue = this.categoryForm.getRawValue();
+
     const categoryName = formValue.name.trim();
 
-    // Duplicate Category Validation
-    const duplicateCategory = this.categories.some(category =>
+    // Check Duplicate Category
+    const duplicateCategory = this.categories().some(category =>
 
       category.name.toLowerCase() === categoryName.toLowerCase() &&
       category.id !== this.editingId
@@ -214,52 +238,110 @@ export class Categories {
 
     if (duplicateCategory) {
 
-      this.formError = 'This category already exists.';
+      this.formError.set('This category already exists.');
       return;
 
     }
 
+    const categoryData = {
+
+      name: categoryName,
+      description: formValue.description.trim(),
+      image: formValue.image.trim(),
+      active: formValue.active
+
+    };
+
+    this.isSaving.set(true);
+
+    // UPDATE CATEGORY
     if (this.isEditing && this.editingId !== null) {
 
-      this.categories = this.categories.map(category =>
+      this.categoryService.updateCategory(
+        this.editingId,
+        categoryData
+      ).subscribe({
 
-        category.id === this.editingId
+        next: (updatedCategory) => {
 
-          ? {
-              ...category,
-              ...formValue,
-              name: categoryName,
-              id: this.editingId
-            }
+          this.categories.update(categories =>
+            categories.map(category =>
+              category.id === updatedCategory.id
+                ? updatedCategory
+                : category
+            )
+          );
 
-          : category
+          this.isSaving.set(false);
 
-      );
+          this.closeForm();
 
-    } else {
+        },
 
-      const newCategory: AdminCategory = {
+        error: (error: HttpErrorResponse) => {
 
-        ...formValue,
-        id: Date.now(),
-        name: categoryName
+          this.handleSaveError(error);
 
-      };
+        }
 
-      this.categories = [
-        ...this.categories,
-        newCategory
-      ];
+      });
 
     }
 
-    this.saveToStorage();
-    this.closeForm();
+    // CREATE CATEGORY
+    else {
+
+      this.categoryService.createCategory(
+        categoryData
+      ).subscribe({
+
+        next: (newCategory) => {
+
+          this.categories.update(categories => [
+            newCategory,
+            ...categories
+          ]);
+
+          this.isSaving.set(false);
+
+          this.closeForm();
+
+        },
+
+        error: (error: HttpErrorResponse) => {
+
+          this.handleSaveError(error);
+
+        }
+
+      });
+
+    }
 
   }
 
-  // Delete Category
-  deleteCategory(id: number): void {
+  // =====================================
+  // HANDLE SAVE ERROR
+  // =====================================
+
+  private handleSaveError(error: HttpErrorResponse): void {
+
+    console.error('Category save error:', error);
+
+    this.formError.set(
+      error.error?.message ||
+      'Unable to save category. Please try again.'
+    );
+
+    this.isSaving.set(false);
+
+  }
+
+  // =====================================
+  // DELETE CATEGORY
+  // =====================================
+
+  deleteCategory(id: string): void {
 
     if (!this.isBrowser) return;
 
@@ -269,30 +351,85 @@ export class Categories {
 
     if (!confirmed) return;
 
-    this.categories = this.categories.filter(
-      category => category.id !== id
-    );
+    this.categoryService.deleteCategory(id).subscribe({
 
-    this.saveToStorage();
+      next: () => {
+
+        this.categories.update(categories =>
+          categories.filter(category => category.id !== id)
+        );
+
+      },
+
+      error: (error: HttpErrorResponse) => {
+
+        console.error('Delete category error:', error);
+
+        window.alert(
+          error.error?.message ||
+          'Unable to delete category. Please try again.'
+        );
+
+      }
+
+    });
 
   }
 
-  // Toggle Availability
-  toggleAvailability(category: AdminCategory): void {
+  // =====================================
+  // TOGGLE AVAILABILITY
+  // =====================================
 
-    category.active = !category.active;
+  toggleAvailability(category: StoreCategory): void {
 
-    this.saveToStorage();
+    const updatedStatus = !category.active;
+
+    this.categoryService.updateCategory(
+      category.id,
+      {
+        active: updatedStatus
+      }
+    ).subscribe({
+
+      next: (updatedCategory) => {
+
+        this.categories.update(categories =>
+          categories.map(item =>
+            item.id === updatedCategory.id
+              ? updatedCategory
+              : item
+          )
+        );
+
+      },
+
+      error: (error: HttpErrorResponse) => {
+
+        console.error('Category status error:', error);
+
+        window.alert(
+          error.error?.message ||
+          'Unable to update category status.'
+        );
+
+      }
+
+    });
 
   }
 
-  // Close Form
+  // =====================================
+  // CLOSE POPUP
+  // =====================================
+
   closeForm(): void {
 
     this.isFormOpen = false;
     this.isEditing = false;
     this.editingId = null;
-    this.formError = '';
+
+    this.formError.set('');
+    this.isSaving.set(false);
 
     this.categoryForm.reset({
 

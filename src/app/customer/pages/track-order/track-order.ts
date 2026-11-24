@@ -1,7 +1,8 @@
 
-import { Component } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { OrderService, Order } from '../../../core/services/order';
 
 @Component({
@@ -13,56 +14,119 @@ import { OrderService, Order } from '../../../core/services/order';
 })
 export class TrackOrder {
 
-  orderId = '';
-  mobile = '';
-  order: Order | null = null;
-  errorMessage = '';
+  // Form Signals
+  orderId = signal('');
+  mobile = signal('');
+
+  // State Signals
+  order = signal<Order | null>(null);
+  errorMessage = signal('');
+  isLoading = signal(false);
+
+  // Computed Signals
+  totalDiscount = computed(() => {
+
+    const currentOrder = this.order();
+
+    if (!currentOrder) return 0;
+
+    return currentOrder.items.reduce((total, item) => {
+
+      const savings = Math.max(
+        0,
+        (item.oldPrice ?? item.price) - item.price
+      );
+
+      return total + savings * item.quantity;
+
+    }, 0);
+  });
+
+  originalSubtotal = computed(() => {
+
+    const currentOrder = this.order();
+
+    if (!currentOrder) return 0;
+
+    return currentOrder.subtotal + this.totalDiscount();
+  });
+
+  discountPercentage = computed(() => {
+
+    const original = this.originalSubtotal();
+
+    if (original === 0) return 0;
+
+    return Math.round(
+      (this.totalDiscount() / original) * 100
+    );
+  });
 
   constructor(private orderService: OrderService) {}
 
-  get totalDiscount(): number {
-    if (!this.order) return 0;
-
-    return this.order.items.reduce((total, item) => {
-      const savings = Math.max(0, (item.oldPrice ?? item.price) - item.price);
-      return total + savings * item.quantity;
-    }, 0);
-  }
-
-  get originalSubtotal(): number {
-    if (!this.order) return 0;
-
-    return this.order.subtotal + this.totalDiscount;
-  }
-
-  get discountPercentage(): number {
-    if (this.originalSubtotal === 0) return 0;
-
-    return Math.round(
-      (this.totalDiscount / this.originalSubtotal) * 100
-    );
-  }
-
+  // Get individual item savings
   getItemSavings(item: Order['items'][number]): number {
-    return Math.max(0, (item.oldPrice ?? item.price) - item.price);
+
+    return Math.max(
+      0,
+      (item.oldPrice ?? item.price) - item.price
+    );
   }
 
+  // Track customer order
   trackOrder(): void {
-    this.errorMessage = '';
-    this.order = null;
 
-    const orders = this.orderService.getOrders();
+    this.errorMessage.set('');
+    this.order.set(null);
 
-    const foundOrder = orders.find(order =>
-      order.orderId.toLowerCase() === this.orderId.trim().toLowerCase() &&
-      order.customer.mobile === this.mobile.trim()
-    );
+    if (!this.orderId().trim() || !this.mobile().trim()) {
 
-    if (foundOrder) {
-      this.order = foundOrder;
-    } else {
-      this.errorMessage =
-        'Order not found. Please check your Order ID and mobile number.';
+      this.errorMessage.set(
+        'Please enter your Order ID and mobile number.'
+      );
+
+      return;
     }
+
+    this.isLoading.set(true);
+
+    this.orderService
+      .getOrderById(this.orderId().trim())
+      .subscribe({
+
+        next: (foundOrder) => {
+
+          this.isLoading.set(false);
+
+          // Verify registered mobile number
+          if (
+            foundOrder.customer.mobile !== this.mobile().trim()
+          ) {
+
+            this.errorMessage.set(
+              'Order not found. Please check your Order ID and mobile number.'
+            );
+
+            return;
+          }
+
+          this.order.set(foundOrder);
+          console.log('Order found:', foundOrder);
+
+        },
+
+        error: (error) => {
+
+          console.error('Order tracking failed:', error);
+
+          this.isLoading.set(false);
+
+          this.errorMessage.set(
+            'Order not found or unable to track your order. Please check your details and try again.'
+          );
+
+        }
+
+      });
   }
 }

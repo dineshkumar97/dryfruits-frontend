@@ -1,4 +1,9 @@
-import { Injectable } from '@angular/core';
+
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { isPlatformBrowser } from '@angular/common';
+
+import { Observable, map } from 'rxjs';
 import { CartItem } from './cart';
 
 export interface Order {
@@ -9,13 +14,42 @@ export interface Order {
     email: string;
     address: string;
     city: string;
-    pincode: string;
+    pincode: string ;
   };
-  items: CartItem[];
+  items: {
+    productId: string;
+    name: string;
+    image: string;
+    weight: string;
+    price: number;
+    oldPrice: number;
+    quantity: number;
+  }[];
   subtotal: number;
   paymentMethod: 'COD' | 'ONLINE';
   createdAt: string;
   status: string;
+}
+
+interface OrderApiItem {
+  productId: string;
+  name: string;
+  image: string;
+  weight: string;
+  price: number;
+  oldPrice: number;
+  quantity: number;
+}
+
+interface OrderApiResponse {
+  success: boolean;
+  message: string;
+  order: Order;
+}
+
+interface OrdersApiResponse {
+  success: boolean;
+  orders: Order[];
 }
 
 @Injectable({
@@ -23,63 +57,135 @@ export interface Order {
 })
 export class OrderService {
 
-  private readonly storageKey = 'nutnest-orders';
+  private readonly apiUrl =
+    'http://localhost:3000/dry-fruits-be-nut/order';
 
-  createOrder(orderData: Omit<Order, 'orderId' | 'createdAt' | 'status'>): Order {
-    const order: Order = {
-      ...orderData,
-      orderId: 'NN' + Date.now(),
-      createdAt: new Date().toISOString(),
-      status: 'Confirmed'
-    };
+  private readonly isBrowser: boolean;
 
-    const orders = this.getOrders();
-
-    orders.push(order);
-
-    localStorage.setItem(this.storageKey, JSON.stringify(orders));
-
-    return order;
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
   }
 
-  getOrders(): Order[] {
-    try {
-      return JSON.parse(
-        localStorage.getItem(this.storageKey) || '[]'
-      );
-    } catch {
-      return [];
-    }
-  }
+  // AUTHORIZATION HEADER
 
-  getLatestOrder(): Order | null {
-    const orders = this.getOrders();
+  private getHeaders(): HttpHeaders {
 
-    return orders.length
-      ? orders[orders.length - 1]
+    const token = this.isBrowser
+      ? localStorage.getItem('nutnest-access-token')
       : null;
-  }
-  updateOrderStatus(orderId: string, status: string): boolean {
-  const orders = this.getOrders();
 
-  const orderIndex = orders.findIndex(
-    order => order.orderId === orderId
-  );
+    return token
+      ? new HttpHeaders({
+        Authorization: `Bearer ${token}`
+      })
+      : new HttpHeaders();
 
-  if (orderIndex === -1) {
-    return false;
   }
 
-  orders[orderIndex] = {
-    ...orders[orderIndex],
-    status
-  };
+  // CREATE ORDER
 
-  localStorage.setItem(
-    this.storageKey,
-    JSON.stringify(orders)
-  );
+  createOrder(orderData: {
+    customer: Order['customer'];
+    items: CartItem[];
+    subtotal: number;
+    paymentMethod: 'COD' | 'ONLINE';
+  }): Observable<Order> {
 
-  return true;
-}
+    const items: OrderApiItem[] = orderData.items.map(item => {
+
+      if (!item.mongoId) {
+        throw new Error(
+          `MongoDB ID is missing for ${item.name}. Please refresh the product catalogue.`
+        );
+      }
+
+      return {
+        productId: item.mongoId,
+        name: item.name,
+        image: item.image,
+        weight: item.weight,
+        price: item.price,
+        oldPrice: item.oldPrice,
+        quantity: item.quantity
+      };
+
+    });
+
+    return this.http.post<OrderApiResponse>(
+      this.apiUrl,
+      {
+        ...orderData,
+        items
+      },
+      {
+        headers: this.getHeaders()
+      }
+    ).pipe(
+      map(response => response.order)
+    );
+
+  }
+
+  // GET ALL ADMIN ORDERS
+
+  getAdminOrders(): Observable<Order[]> {
+
+    return this.http.get<OrdersApiResponse>(
+      `${this.apiUrl}/admin`,
+      {
+        headers: this.getHeaders()
+      }
+    ).pipe(
+      map(response => response.orders)
+    );
+
+  }
+
+  // GET ORDER BY ID
+
+  getOrderById(orderId: string): Observable<Order> {
+
+    return this.http.get<OrderApiResponse>(
+      `${this.apiUrl}/${orderId}`,
+      {
+        headers: this.getHeaders()
+      }
+    ).pipe(
+      map(response => response.order)
+    );
+
+  }
+
+  // UPDATE ORDER STATUS
+
+  updateOrderStatus(
+    orderId: string,
+    status: string
+  ): Observable<Order> {
+
+    return this.http.put<OrderApiResponse>(
+      `${this.apiUrl}/${orderId}/status`,
+      { status },
+      {
+        headers: this.getHeaders()
+      }
+    ).pipe(
+      map(response => response.order)
+    );
+
+  }
+  
+  getMyOrders(): Observable<Order[]> {
+    return this.http
+      .get<OrdersApiResponse>(
+        `${this.apiUrl}/my-orders`,
+        { headers: this.getHeaders() }
+      )
+      .pipe(
+        map(response => response.orders)
+      );
+  }
 }

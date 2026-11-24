@@ -24,30 +24,30 @@
 
     <div class="summary-card">
       <span>Total Products</span>
-      <strong>{{ totalProducts }}</strong>
+      <strong>{{ totalProducts() }}</strong>
     </div>
 
     <div class="summary-card">
       <span>Total Stock Units</span>
-      <strong>{{ totalStock }}</strong>
+      <strong>{{ totalStock() }}</strong>
     </div>
 
     <div class="summary-card low-stock-card">
       <span>Low Stock Products</span>
-      <strong>{{ lowStockCount }}</strong>
+      <strong>{{ lowStockCount() }}</strong>
     </div>
 
     <div class="summary-card out-stock-card">
       <span>Out of Stock</span>
-      <strong>{{ outOfStockCount }}</strong>
+      <strong>{{ outOfStockCount() }}</strong>
     </div>
 
   </div>
 
   <!-- SUCCESS MESSAGE -->
-  @if (successMessage) {
+  @if (successMessage()) {
     <div class="success-message">
-      {{ successMessage }}
+      {{ successMessage() }}
     </div>
   }
 
@@ -57,7 +57,7 @@
     <div class="list-heading">
       <div>
         <h3>Stock Overview</h3>
-        <p>{{ filteredProducts.length }} products found</p>
+        <p>{{ filteredProducts().length }} products found</p>
       </div>
     </div>
 
@@ -67,12 +67,14 @@
       <input
         type="search"
         name="search"
-        [(ngModel)]="searchTerm"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
         placeholder="Search product or category...">
 
       <select
         name="stockFilter"
-        [(ngModel)]="selectedFilter">
+        [ngModel]="selectedFilter()"
+        (ngModelChange)="selectedFilter.set($event)">
 
         <option value="All">All Stock Status</option>
         <option value="In Stock">In Stock</option>
@@ -84,7 +86,13 @@
     </div>
 
     <!-- INVENTORY TABLE -->
-    @if (filteredProducts.length > 0) {
+    @if (isLoading()) {
+
+      <div class="empty-inventory">
+        <p>Loading inventory...</p>
+      </div>
+
+    } @else if (filteredProducts().length > 0) {
 
       <div class="table-wrapper">
 
@@ -104,7 +112,7 @@
 
           <tbody>
 
-            @for (product of filteredProducts; track product.id) {
+            @for (product of filteredProducts(); track product.id) {
 
               <tr>
 
@@ -180,7 +188,7 @@
 
         <div class="empty-icon">◷</div>
 
-        @if (products.length === 0) {
+        @if (products().length === 0) {
           <h3>No Products Available</h3>
           <p>Add products through Admin Product Management to manage their stock.</p>
         } @else {
@@ -195,7 +203,7 @@
   </div>
 
   <!-- UPDATE STOCK POPUP -->
-  @if (selectedProduct) {
+  @if (selectedProduct(); as product) {
 
     <div
       class="inventory-modal-backdrop"
@@ -229,18 +237,18 @@
         <!-- PRODUCT INFORMATION -->
         <div class="selected-product">
 
-          @if (selectedProduct.image) {
+          @if (product.image) {
             <img
-              [src]="selectedProduct.image"
-              [alt]="selectedProduct.name">
+              [src]="product.image"
+              [alt]="product.name">
           } @else {
             <div class="image-placeholder">N</div>
           }
 
           <div>
-            <strong>{{ selectedProduct.name }}</strong>
+            <strong>{{ product.name }}</strong>
             <span>
-              {{ selectedProduct.category }} · {{ selectedProduct.weight }}
+              {{ product.category }} · {{ product.weight }}
             </span>
           </div>
 
@@ -249,7 +257,7 @@
         <!-- CURRENT STOCK -->
         <div class="current-stock">
           <span>Current Stock</span>
-          <strong>{{ selectedProduct.stock }} units</strong>
+          <strong>{{ product.stock }} units</strong>
         </div>
 
         <!-- UPDATE FORM -->
@@ -265,16 +273,17 @@
               id="updatedStock"
               type="number"
               name="updatedStock"
-              [(ngModel)]="updatedStock"
+              [ngModel]="updatedStock()"
+              (ngModelChange)="updatedStock.set($event)"
               min="0"
               step="1"
               required>
 
           </div>
 
-          @if (formError) {
+          @if (formError()) {
             <div class="form-error">
-              {{ formError }}
+              {{ formError() }}
             </div>
           }
 
@@ -290,8 +299,8 @@
             <button
               type="submit"
               class="save-btn"
-              [disabled]="stockForm.invalid">
-              Update Stock
+              [disabled]="stockForm.invalid || isSaving()">
+              {{ isSaving() ? 'Updating...' : 'Update Stock' }}
             </button>
 
           </div>

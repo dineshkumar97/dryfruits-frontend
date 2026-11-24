@@ -9,7 +9,8 @@ import {
   Validators
 } from '@angular/forms';
 
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth';
 
 const emailOrMobileValidator: ValidatorFn = (
   control: AbstractControl
@@ -30,7 +31,7 @@ const emailOrMobileValidator: ValidatorFn = (
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })
@@ -39,14 +40,15 @@ export class Login {
   loginType: 'customer' | 'admin' = 'customer';
 
   showPassword = false;
-
+  isLoading = false;
   errorMessage = '';
 
   loginForm;
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
 
     this.loginForm = this.fb.group({
@@ -57,7 +59,7 @@ export class Login {
 
       password: ['', [
         Validators.required,
-        Validators.minLength(6)
+        Validators.minLength(4)
       ]]
     });
 
@@ -74,7 +76,6 @@ export class Login {
   selectLoginType(type: 'customer' | 'admin'): void {
 
     this.loginType = type;
-
     this.loginForm.reset();
 
     this.showPassword = false;
@@ -97,11 +98,65 @@ export class Login {
 
     const formValue = this.loginForm.getRawValue();
 
-    console.log('Login Type:', this.loginType);
-    console.log('Login Details:', formValue.identifier);
+    const identifier = formValue.identifier?.trim() ?? '';
+    const password = formValue.password ?? '';
 
-    this.errorMessage =
-      'Authentication will be enabled after backend integration.';
+    // Backend currently supports email login only
+    if (!identifier.includes('@')) {
+      this.errorMessage = 'Please enter your registered email address.';
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.authService.login(identifier, password).subscribe({
+
+      next: (response) => {
+
+        const userRole = response.data.role;
+
+        if (
+          this.loginType === 'admin' &&
+          !['ADMIN', 'STAFF'].includes(userRole)
+        ) {
+          this.authService.logout();
+          this.errorMessage = 'You are not authorized to access the admin portal.';
+          this.isLoading = false;
+          return;
+        }
+
+        if (
+          this.loginType === 'customer' &&
+          userRole !== 'CUSTOMER'
+        ) {
+          this.authService.logout();
+          this.errorMessage = 'Please use the admin login option.';
+          this.isLoading = false;
+          return;
+        }
+
+        this.isLoading = false;
+
+        if (userRole === 'ADMIN' || userRole === 'STAFF') {
+          this.router.navigate(['/admin']);
+        } else {
+          this.router.navigate(['/home']);
+        }
+
+      },
+
+      error: (error) => {
+
+        console.error('Login error:', error);
+
+        this.errorMessage =
+          error.error?.message || 'Invalid email or password.';
+
+        this.isLoading = false;
+
+      }
+
+    });
 
   }
 

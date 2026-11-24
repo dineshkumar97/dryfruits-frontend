@@ -1,9 +1,13 @@
 
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
+
+import { Observable, map, tap } from 'rxjs';
 
 export interface Product {
   id: number;
+  mongoId?: string;
   name: string;
   category: string;
   weight: string;
@@ -15,6 +19,24 @@ export interface Product {
   active: boolean;
 }
 
+interface ProductApiItem {
+  _id: string;
+  name: string;
+  category: string;
+  weight: string;
+  price: number;
+  oldPrice: number;
+  image: string;
+  description: string;
+  stock: number;
+  active: boolean;
+}
+
+interface ProductApiResponse<T> {
+  message: string;
+  data: T;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -22,6 +44,9 @@ export class ProductService {
 
   private readonly storageKey = 'nutnest-admin-products';
   private readonly migrationKey = 'nutnest-product-catalog-initialized';
+
+  private readonly apiUrl =
+    'http://localhost:3000/dry-fruits-be-nut/product';
 
   private readonly isBrowser: boolean;
 
@@ -100,9 +125,218 @@ export class ProductService {
     }
   ];
 
-  constructor(@Inject(PLATFORM_ID) platformId: object) {
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
+
+  // =====================================
+  // AUTHORIZATION HEADER
+  // =====================================
+
+  private getHeaders(): HttpHeaders {
+
+    const token = this.isBrowser
+      ? localStorage.getItem('nutnest-access-token')
+      : null;
+
+    return token
+      ? new HttpHeaders({
+          Authorization: `Bearer ${token}`
+        })
+      : new HttpHeaders();
+
+  }
+
+  // =====================================
+  // MAP MONGODB PRODUCT
+  // =====================================
+
+  private mapProduct(
+    product: ProductApiItem
+  ): Product {
+
+    // Numeric compatibility ID for existing Angular components.
+    // mongoId is the actual MongoDB ID used for API operations.
+    const id = Number.parseInt(
+      product._id.slice(-8),
+      16
+    );
+
+    return {
+      id,
+      mongoId: product._id,
+      name: product.name,
+      category: product.category,
+      weight: product.weight,
+      price: product.price,
+      oldPrice: product.oldPrice,
+      image: product.image || '',
+      description: product.description || '',
+      stock: product.stock,
+      active: product.active
+    };
+
+  }
+
+  // =====================================
+  // GET ADMIN PRODUCTS
+  // =====================================
+
+  getAdminProducts(): Observable<Product[]> {
+
+    return this.http.get<ProductApiResponse<ProductApiItem[]>>(
+      `${this.apiUrl}/admin`,
+      {
+        headers: this.getHeaders()
+      }
+    ).pipe(
+
+      map(response =>
+        response.data.map(product =>
+          this.mapProduct(product)
+        )
+      ),
+
+      tap(products => {
+        this.saveProducts(products);
+      })
+
+    );
+
+  }
+
+  // =====================================
+  // GET ACTIVE PRODUCTS
+  // =====================================
+
+  getActiveProducts(): Observable<Product[]> {
+
+    return this.http.get<ProductApiResponse<ProductApiItem[]>>(
+      this.apiUrl
+    ).pipe(
+
+      map(response =>
+        response.data.map(product =>
+          this.mapProduct(product)
+        )
+      ),
+
+      tap(products => {
+        this.saveProducts(products);
+      })
+
+    );
+
+  }
+
+  // =====================================
+  // CREATE PRODUCT
+  // =====================================
+
+  createProduct(
+    product: Omit<Product, 'id' | 'mongoId'>
+  ): Observable<Product> {
+
+    return this.http.post<ProductApiResponse<ProductApiItem>>(
+      this.apiUrl,
+      product,
+      {
+        headers: this.getHeaders()
+      }
+    ).pipe(
+
+      map(response =>
+        this.mapProduct(response.data)
+      ),
+
+      tap(newProduct => {
+
+        const products = this.getProducts();
+
+        this.saveProducts([
+          ...products,
+          newProduct
+        ]);
+
+      })
+
+    );
+
+  }
+
+  // =====================================
+  // UPDATE PRODUCT
+  // =====================================
+
+  updateProduct(
+    mongoId: string,
+    product: Partial<Omit<Product, 'id' | 'mongoId'>>
+  ): Observable<Product> {
+
+    return this.http.put<ProductApiResponse<ProductApiItem>>(
+      `${this.apiUrl}/${mongoId}`,
+      product,
+      {
+        headers: this.getHeaders()
+      }
+    ).pipe(
+
+      map(response =>
+        this.mapProduct(response.data)
+      ),
+
+      tap(updatedProduct => {
+
+        const products = this.getProducts().map(item =>
+          item.mongoId === mongoId
+            ? updatedProduct
+            : item
+        );
+
+        this.saveProducts(products);
+
+      })
+
+    );
+
+  }
+
+  // =====================================
+  // DELETE PRODUCT
+  // =====================================
+
+  deleteProduct(mongoId: string): Observable<void> {
+
+    return this.http.delete<ProductApiResponse<unknown>>(
+      `${this.apiUrl}/${mongoId}`,
+      {
+        headers: this.getHeaders()
+      }
+    ).pipe(
+
+      map(() => undefined),
+
+      tap(() => {
+
+        const products = this.getProducts().filter(
+          item => item.mongoId !== mongoId
+        );
+
+        this.saveProducts(products);
+
+      })
+
+    );
+
+  }
+
+  // =====================================
+  // EXISTING LOCAL PRODUCT METHODS
+  // Retained for Customer components
+  // =====================================
 
   getProducts(): Product[] {
 
@@ -113,7 +347,10 @@ export class ProductService {
     try {
 
       const savedProducts = localStorage.getItem(this.storageKey);
-      const initialized = localStorage.getItem(this.migrationKey);
+
+      const initialized = localStorage.getItem(
+        this.migrationKey
+      );
 
       let products: Product[] = savedProducts
         ? JSON.parse(savedProducts)
@@ -123,7 +360,6 @@ export class ProductService {
         products = [];
       }
 
-      // Preserve existing products and initialize the six original products once.
       if (initialized !== 'true') {
 
         const mergedProducts = this.defaultProducts.map(defaultProduct => {
@@ -145,55 +381,71 @@ export class ProductService {
             )
         );
 
-        products = [...mergedProducts, ...additionalProducts];
+        products = [
+          ...mergedProducts,
+          ...additionalProducts
+        ];
 
-        localStorage.setItem(
-          this.storageKey,
-          JSON.stringify(products)
-        );
+        this.saveProducts(products);
 
-        localStorage.setItem(this.migrationKey, 'true');
       }
 
       return products;
 
     } catch (error) {
+
       console.error('Unable to load product catalogue:', error);
+
       return this.defaultProducts;
+
     }
+
   }
 
   getProductById(id: number): Product | undefined {
-    return this.getProducts().find(product => product.id === id);
+
+    return this.getProducts().find(
+      product => product.id === id
+    );
+
   }
 
   saveProducts(products: Product[]): void {
-
     if (!this.isBrowser) return;
-
     try {
+
       localStorage.setItem(
         this.storageKey,
         JSON.stringify(products)
       );
-
-      localStorage.setItem(this.migrationKey, 'true');
+      localStorage.setItem(
+        this.migrationKey,
+        'true'
+      );
 
     } catch (error) {
+
       console.error('Unable to save product catalogue:', error);
+
     }
+
   }
 
-  // Convert product weight into grams
+  // =====================================
+  // EXISTING STOCK CALCULATION
+  // Retained for legacy Customer flow
+  // =====================================
+
   private getWeightInGrams(weight: string): number {
+
     if (weight === '1kg') {
       return 1000;
     }
 
     return Number(weight.replace('g', ''));
+
   }
 
-  // Deduct purchased quantities from inventory
   deductStock(
     items: {
       productId: number;
@@ -206,7 +458,6 @@ export class ProductService {
 
     const requiredStock = new Map<number, number>();
 
-    // Group quantities by product, accounting for different weights
     for (const item of items) {
 
       const product = products.find(
@@ -240,9 +491,10 @@ export class ProductService {
         item.productId,
         (requiredStock.get(item.productId) || 0) + totalGrams
       );
+
     }
 
-    // Validate all products before changing any stock
+    // Validate before deducting
     for (const [productId, requiredGrams] of requiredStock) {
 
       const product = products.find(
@@ -259,6 +511,7 @@ export class ProductService {
           message: `Insufficient stock for ${product.name}.`
         };
       }
+
     }
 
     // Deduct stock
@@ -275,6 +528,7 @@ export class ProductService {
           product.stock - requiredGrams / baseGrams
         ).toFixed(3)
       );
+
     }
 
     this.saveProducts(products);
@@ -283,6 +537,7 @@ export class ProductService {
       success: true,
       message: 'Inventory updated successfully.'
     };
+
   }
 
 }

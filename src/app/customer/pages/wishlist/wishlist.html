@@ -9,16 +9,16 @@
 
   <div class="container">
 
-    @if (wishlistProducts.length > 0) {
+    @if (wishlistProducts().length > 0) {
 
       <div class="wishlist-heading">
         <h2>Saved Products</h2>
-        <span>{{ wishlistProducts.length }} Products</span>
+        <span>{{ wishlistProducts().length }} Products</span>
       </div>
 
       <div class="wishlist-grid">
 
-        @for (product of wishlistProducts; track product.id) {
+        @for (product of wishlistProducts(); track product.id) {
 
           <div class="wishlist-card">
 

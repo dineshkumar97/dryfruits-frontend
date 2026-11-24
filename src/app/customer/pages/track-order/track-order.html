@@ -30,24 +30,24 @@
 
     </form>
 
-    @if (errorMessage) {
+    @if (errorMessage()) {
     <div class="error-message">
-      {{ errorMessage }}
+      {{ errorMessage() }}
     </div>
     }
 
     <!-- ORDER RESULT -->
-    @if (order) {
+    @if (order()) {
 
     <div class="order-result">
 
       <div class="result-header">
         <div>
           <span class="section-label">ORDER NUMBER</span>
-          <h2>{{ order.orderId }}</h2>
+          <h2>{{ order()?.orderId }}</h2>
         </div>
 
-        <span class="status">{{ order.status }}</span>
+        <span class="status">{{ order()?.status }}</span>
       </div>
 
       <!-- ORDER INFORMATION -->
@@ -56,19 +56,19 @@
 
         <div class="info-row">
           <span>Order Date</span>
-          <strong>{{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}</strong>
+          <strong>{{ order()?.createdAt | date:'dd MMM yyyy, hh:mm a' }}</strong>
         </div>
 
         <div class="info-row">
           <span>Payment Method</span>
           <strong>
-            {{ order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment' }}
+            {{ order()?.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment' }}
           </strong>
         </div>
 
         <div class="info-row">
           <span>Order Status</span>
-          <strong>{{ order.status }}</strong>
+          <strong>{{ order()?.status }}</strong>
         </div>
       </div>
 
@@ -78,27 +78,27 @@
 
         <div class="info-row">
           <span>Name</span>
-          <strong>{{ order.customer.name }}</strong>
+          <strong>{{ order()?.customer?.name }}</strong>
         </div>
 
         <div class="info-row">
           <span>Mobile</span>
-          <strong>{{ order.customer.mobile }}</strong>
+          <strong>{{ order()?.customer?.mobile }}</strong>
         </div>
 
         <div class="info-row">
           <span>Address</span>
-          <strong>{{ order.customer.address }}</strong>
+          <strong>{{ order()?.customer?.address }}</strong>
         </div>
 
         <div class="info-row">
           <span>City</span>
-          <strong>{{ order.customer.city }}</strong>
+          <strong>{{ order()?.customer?.city }}</strong>
         </div>
 
         <div class="info-row">
           <span>Pincode</span>
-          <strong>{{ order.customer.pincode }}</strong>
+          <strong>{{ order()?.customer?.pincode }}</strong>
         </div>
       </div>
 
@@ -108,7 +108,7 @@
       <div class="result-section">
         <h3>Ordered Products</h3>
 
-        @for (item of order.items; track item.productId + item.weight) {
+        @for (item of order()?.items; track item.productId + item.weight) {
         <div class="product-row">
 
           <img class="product-image" [src]="item.image" [alt]="item.name">
@@ -154,19 +154,19 @@
 
         <div class="info-row">
           <span>Original Price</span>
-          <strong>₹{{ originalSubtotal }}</strong>
+          <strong>₹{{ originalSubtotal() }}</strong>
         </div>
 
         <div class="info-row">
-          <span>Total Discount ({{ discountPercentage }}%)</span>
+          <span>Total Discount ({{ discountPercentage() }}%)</span>
           <strong class="discount-info">
-            -₹{{ totalDiscount }}
+            -₹{{ totalDiscount() }}
           </strong>
         </div>
 
         <div class="total-row">
           <span>Total Amount</span>
-          <strong>₹{{ order.subtotal }}</strong>
+          <strong>₹{{ order()?.subtotal }}</strong>
         </div>
 
       </div>

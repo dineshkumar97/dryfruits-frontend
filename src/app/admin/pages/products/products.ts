@@ -1,5 +1,5 @@
 
-import { Component } from '@angular/core';
+import { Component, Inject, signal, computed,PLATFORM_ID } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -11,9 +11,19 @@ import {
   ValidatorFn,
   Validators
 } from '@angular/forms';
+import { isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 
-import { Product, ProductService } from '../../../core/services/product';
-import { CategoryService } from '../../../core/services/category';
+import {
+  Product,
+  ProductService
+} from '../../../core/services/product';
+
+import {
+  CategoryService
+} from '../../../core/services/category';
+
+import { StoreCategory } from '../../../core/services/category';
 
 // Typed Product Form
 type ProductFormGroup = FormGroup<{
@@ -43,6 +53,7 @@ const priceValidator: ValidatorFn = (
   return oldPrice >= price
     ? null
     : { invalidPrice: true };
+
 };
 
 @Component({
@@ -54,27 +65,98 @@ const priceValidator: ValidatorFn = (
 })
 export class Products {
 
-  products: Product[] = [];
+  private readonly isBrowser: boolean;
 
-  searchTerm = '';
-  selectedCategory = 'All';
+  // =====================================
+  // SIGNALS
+  // =====================================
+
+  products = signal<Product[]>([]);
+
+  categories = signal<string[]>([]);
+
+  searchTerm = signal('');
+
+  selectedCategory = signal('All');
+
+  isLoading = signal(false);
+
+  isSaving = signal(false);
+
+  pageError = signal('');
+
+  formError = signal('');
+
+  // =====================================
+  // COMPUTED PRODUCTS
+  // =====================================
+
+  filteredProducts = computed(() => {
+
+    const search = this.searchTerm()
+      .toLowerCase()
+      .trim();
+
+    const category = this.selectedCategory();
+
+    return this.products().filter(product => {
+
+      const matchesSearch =
+        product.name.toLowerCase().includes(search);
+
+      const matchesCategory =
+        category === 'All' ||
+        product.category === category;
+
+      return matchesSearch && matchesCategory;
+
+    });
+
+  });
+
+  // =====================================
+  // COMPUTED SUMMARY
+  // =====================================
+
+  totalProducts = computed(
+    () => this.products().length
+  );
+
+  availableProducts = computed(
+    () => this.products().filter(
+      product => product.active
+    ).length
+  );
+
+  totalStock = computed(
+    () => this.products().reduce(
+      (total, product) => total + product.stock,
+      0
+    )
+  );
+
+  // =====================================
+  // POPUP STATE
+  // =====================================
 
   isFormOpen = false;
+
   isEditing = false;
-  editingId: number | null = null;
 
-  formError = '';
+  editingId: string | null = null;
 
-  categories: string[] = [];
 
-  // Reactive Form declaration
+  // Reactive Form
   productForm!: ProductFormGroup;
 
   constructor(
     private fb: FormBuilder,
     private productService: ProductService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    @Inject(PLATFORM_ID) platformId: object
   ) {
+
+    this.isBrowser = isPlatformBrowser(platformId);
 
     // Initialize Reactive Form
     this.productForm = this.fb.nonNullable.group({
@@ -118,84 +200,118 @@ export class Products {
       validators: priceValidator
     });
 
-    // Initial data loading
+    // Initial Data Loading
     this.loadCategories();
     this.loadProducts();
+
   }
 
-  // Load Categories
+  // =====================================
+  // LOAD CATEGORIES FROM MONGODB
+  // =====================================
+
   loadCategories(): void {
 
-    this.categories = this.categoryService
-      .getCategories()
-      .map(category => category.name);
+    if (!this.isBrowser) return;
 
-  }
+    this.categoryService.getAdminCategories().subscribe({
 
-  // Load Products
-  loadProducts(): void {
+      next: (categories: StoreCategory[]) => {
 
-    this.products = this.productService.getProducts();
+        // Only active categories can be assigned to products.
+        const activeCategories = categories
+          .filter(category => category.active)
+          .map(category => category.name);
 
-  }
+        this.categories.set(activeCategories);
 
-  // Filter Products
-  get filteredProducts(): Product[] {
+        // Set default category when opening Add Product.
+        if (
+          this.isFormOpen &&
+          !this.isEditing &&
+          !this.productForm.controls.category.value
+        ) {
 
-    return this.products.filter(product => {
+          this.productForm.controls.category.setValue(
+            activeCategories[0] ?? ''
+          );
 
-      const matchesSearch =
-        product.name.toLowerCase().includes(
-          this.searchTerm.toLowerCase()
+        }
+
+      },
+
+      error: (error: HttpErrorResponse) => {
+
+        console.error('Unable to load categories:', error);
+
+        this.pageError.set(
+          error.error?.message ||
+          'Unable to load product categories.'
         );
 
-      const matchesCategory =
-        this.selectedCategory === 'All' ||
-        product.category === this.selectedCategory;
-
-      return matchesSearch && matchesCategory;
+      }
 
     });
 
   }
 
-  // Summary
-  get totalProducts(): number {
+  // =====================================
+  // LOAD PRODUCTS FROM MONGODB
+  // =====================================
 
-    return this.products.length;
+  loadProducts(): void {
+
+    if (!this.isBrowser) return;
+
+    this.isLoading.set(true);
+
+    this.pageError.set('');
+
+    this.productService.getAdminProducts().subscribe({
+
+      next: (products: Product[]) => {
+
+        this.products.set(products);
+
+        this.isLoading.set(false);
+
+      },
+
+      error: (error: HttpErrorResponse) => {
+
+        console.error('Unable to load products:', error);
+
+        this.pageError.set(
+          error.error?.message ||
+          'Unable to load products. Please try again.'
+        );
+
+        this.isLoading.set(false);
+
+      }
+
+    });
 
   }
 
-  get availableProducts(): number {
+  // =====================================
+  // ADD PRODUCT
+  // =====================================
 
-    return this.products.filter(
-      product => product.active
-    ).length;
-
-  }
-
-  get totalStock(): number {
-
-    return this.products.reduce(
-      (total, product) => total + product.stock,
-      0
-    );
-
-  }
-
-  // Add Product
   addProduct(): void {
 
     this.loadCategories();
 
     this.isEditing = false;
+
     this.editingId = null;
-    this.formError = '';
+
+    this.formError.set('');
 
     this.productForm.reset({
 
       name: '',
-      category: this.categories[0] ?? '',
+      category: this.categories()[0] ?? '',
       image: '',
       description: '',
       weight: '250g',
@@ -210,14 +326,29 @@ export class Products {
 
   }
 
-  // Edit Product
+  // =====================================
+  // EDIT PRODUCT
+  // =====================================
+
   editProduct(product: Product): void {
 
     this.loadCategories();
 
+    if (!product.mongoId) {
+
+      this.formError.set(
+        'Invalid MongoDB product ID. Please reload products.'
+      );
+
+      return;
+
+    }
+
     this.isEditing = true;
-    this.editingId = product.id;
-    this.formError = '';
+
+    this.editingId = product.mongoId;
+
+    this.formError.set('');
 
     this.productForm.reset({
 
@@ -237,63 +368,148 @@ export class Products {
 
   }
 
-  // Save Product
+  // =====================================
+  // SAVE PRODUCT
+  // =====================================
+
   saveProduct(): void {
 
-    this.formError = '';
+    this.formError.set('');
 
     if (this.productForm.invalid) {
 
       this.productForm.markAllAsTouched();
+
       return;
 
     }
 
     const formValue = this.productForm.getRawValue();
 
+    const productData = {
+
+      name: formValue.name.trim(),
+      category: formValue.category,
+      image: formValue.image.trim(),
+      description: formValue.description.trim(),
+      weight: formValue.weight,
+      price: formValue.price,
+      oldPrice: formValue.oldPrice,
+      stock: formValue.stock,
+      active: formValue.active
+
+    };
+
+    this.isSaving.set(true);
+
+    // =====================================
+    // UPDATE PRODUCT
+    // =====================================
+
     if (this.isEditing && this.editingId !== null) {
 
-      this.products = this.products.map(product =>
+      this.productService.updateProduct(
+        this.editingId,
+        productData
+      ).subscribe({
 
-        product.id === this.editingId
+        next: (updatedProduct) => {
 
-          ? {
-              ...product,
-              ...formValue,
-              id: this.editingId
-            }
+          this.products.update(products =>
+            products.map(product =>
+              product.mongoId === updatedProduct.mongoId
+                ? updatedProduct
+                : product
+            )
+          );
 
-          : product
+          this.isSaving.set(false);
 
-      );
+          this.closeForm();
 
-    } else {
+        },
 
-      const newId = Math.max(
-        0,
-        ...this.products.map(product => product.id)
-      ) + 1;
+        error: (error: HttpErrorResponse) => {
 
-      const newProduct: Product = {
-        ...formValue,
-        id: newId
-      };
+          this.handleSaveError(error);
 
-      this.products = [
-        ...this.products,
-        newProduct
-      ];
+        }
+
+      });
 
     }
 
-    this.productService.saveProducts(this.products);
+    // =====================================
+    // CREATE PRODUCT
+    // =====================================
 
-    this.closeForm();
+    else {
+
+      this.productService.createProduct(
+        productData
+      ).subscribe({
+
+        next: (newProduct) => {
+
+          this.products.update(products => [
+            newProduct,
+            ...products
+          ]);
+
+          this.isSaving.set(false);
+
+          this.closeForm();
+
+        },
+
+        error: (error: HttpErrorResponse) => {
+
+          this.handleSaveError(error);
+
+        }
+
+      });
+
+    }
 
   }
 
-  // Delete Product
+  // =====================================
+  // HANDLE SAVE ERROR
+  // =====================================
+
+  private handleSaveError(error: HttpErrorResponse): void {
+
+    console.error('Product save error:', error);
+
+    this.formError.set(
+      error.error?.message ||
+      'Unable to save product. Please try again.'
+    );
+
+    this.isSaving.set(false);
+
+  }
+
+  // =====================================
+  // DELETE PRODUCT
+  // =====================================
+
   deleteProduct(id: number): void {
+
+    const product = this.products().find(
+      item => item.id === id
+    );
+
+    if (!product?.mongoId) {
+
+      window.alert(
+        'Product ID is missing. Please reload the product list.'
+      );
+
+      return;
+
+    }
 
     const confirmed = window.confirm(
       'Are you sure you want to delete this product?'
@@ -301,30 +517,100 @@ export class Products {
 
     if (!confirmed) return;
 
-    this.products = this.products.filter(
-      product => product.id !== id
-    );
+    this.productService.deleteProduct(
+      product.mongoId
+    ).subscribe({
 
-    this.productService.saveProducts(this.products);
+      next: () => {
+
+        this.products.update(products =>
+          products.filter(
+            item => item.mongoId !== product.mongoId
+          )
+        );
+
+      },
+
+      error: (error: HttpErrorResponse) => {
+
+        console.error('Delete product error:', error);
+
+        window.alert(
+          error.error?.message ||
+          'Unable to delete product. Please try again.'
+        );
+
+      }
+
+    });
 
   }
 
-  // Toggle Availability
+  // =====================================
+  // TOGGLE PRODUCT AVAILABILITY
+  // =====================================
+
   toggleAvailability(product: Product): void {
 
-    product.active = !product.active;
+    if (!product.mongoId) {
 
-    this.productService.saveProducts(this.products);
+      window.alert('Product ID is missing. Please reload products.');
+
+      return;
+
+    }
+
+    const updatedStatus = !product.active;
+
+    this.productService.updateProduct(
+      product.mongoId,
+      {
+        active: updatedStatus
+      }
+    ).subscribe({
+
+      next: (updatedProduct) => {
+
+        this.products.update(products =>
+          products.map(item =>
+            item.mongoId === updatedProduct.mongoId
+              ? updatedProduct
+              : item
+          )
+        );
+
+      },
+
+      error: (error: HttpErrorResponse) => {
+
+        console.error('Product status update error:', error);
+
+        window.alert(
+          error.error?.message ||
+          'Unable to update product availability.'
+        );
+
+      }
+
+    });
 
   }
 
-  // Close Popup
+  // =====================================
+  // CLOSE POPUP
+  // =====================================
+
   closeForm(): void {
 
     this.isFormOpen = false;
+
     this.isEditing = false;
+
     this.editingId = null;
-    this.formError = '';
+
+    this.formError.set('');
+
+    this.isSaving.set(false);
 
     this.productForm.reset({
 

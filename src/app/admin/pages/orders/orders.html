@@ -24,37 +24,37 @@
 
     <div class="summary-card">
       <span>Total Orders</span>
-      <strong>{{ totalOrders }}</strong>
+      <strong>{{ totalOrders() }}</strong>
     </div>
 
     <div class="summary-card">
       <span>Active Orders</span>
-      <strong>{{ activeOrders }}</strong>
+      <strong>{{ activeOrders() }}</strong>
     </div>
 
     <div class="summary-card">
       <span>Delivered Orders</span>
-      <strong>{{ deliveredOrders }}</strong>
+      <strong>{{ deliveredOrders() }}</strong>
     </div>
 
     <div class="summary-card">
       <span>Total Order Value</span>
-      <strong>₹{{ totalOrderValue }}</strong>
+      <strong>₹{{ totalOrderValue() }}</strong>
     </div>
 
   </div>
 
   <!-- SUCCESS MESSAGE -->
-  @if (successMessage) {
+  @if (successMessage()) {
     <div class="success-message">
-      {{ successMessage }}
+      {{ successMessage() }}
     </div>
   }
 
   <!-- ERROR MESSAGE -->
-  @if (errorMessage) {
+  @if (errorMessage()) {
     <div class="error-message">
-      {{ errorMessage }}
+      {{ errorMessage() }}
     </div>
   }
 
@@ -64,7 +64,7 @@
     <div class="list-heading">
       <div>
         <h3>All Orders</h3>
-        <p>{{ filteredOrders.length }} orders found</p>
+        <p>{{ filteredOrders().length }} orders found</p>
       </div>
     </div>
 
@@ -74,12 +74,14 @@
       <input
         type="search"
         name="search"
-        [(ngModel)]="searchTerm"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
         placeholder="Search Order ID, customer or mobile number">
 
       <select
         name="status"
-        [(ngModel)]="selectedStatus">
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)">
 
         <option value="All">All Statuses</option>
 
@@ -94,7 +96,7 @@
     </div>
 
     <!-- ORDERS TABLE -->
-    @if (filteredOrders.length > 0) {
+    @if (filteredOrders().length > 0) {
 
       <div class="table-wrapper">
 
@@ -115,7 +117,7 @@
 
           <tbody>
 
-            @for (order of filteredOrders; track order.orderId) {
+            @for (order of filteredOrders(); track order.orderId) {
 
               <tr>
 
@@ -201,7 +203,7 @@
 
         <div class="empty-icon">▤</div>
 
-        @if (orders.length === 0) {
+        @if (orders().length === 0) {
           <h3>No Orders Yet</h3>
           <p>Customer orders will appear here when they place an order.</p>
         } @else {
@@ -216,7 +218,7 @@
   </div>
 
   <!-- ORDER DETAILS POPUP -->
-  @if (selectedOrder) {
+  @if (selectedOrder(); as order) {
 
     <div
       class="order-modal-backdrop"
@@ -234,7 +236,7 @@
 
           <div>
             <span class="section-label">ORDER INFORMATION</span>
-            <h3 id="orderDetailsTitle">{{ selectedOrder.orderId }}</h3>
+            <h3 id="orderDetailsTitle">{{ order.orderId }}</h3>
           </div>
 
           <button
@@ -256,32 +258,32 @@
 
             <div class="detail-item">
               <span>Name</span>
-              <strong>{{ selectedOrder.customer.name }}</strong>
+              <strong>{{ order.customer.name }}</strong>
             </div>
 
             <div class="detail-item">
               <span>Mobile</span>
-              <strong>{{ selectedOrder.customer.mobile }}</strong>
+              <strong>{{ order.customer.mobile }}</strong>
             </div>
 
             <div class="detail-item">
               <span>Email</span>
-              <strong>{{ selectedOrder.customer.email || 'Not provided' }}</strong>
+              <strong>{{ order.customer.email || 'Not provided' }}</strong>
             </div>
 
             <div class="detail-item">
               <span>Address</span>
-              <strong>{{ selectedOrder.customer.address }}</strong>
+              <strong>{{ order.customer.address }}</strong>
             </div>
 
             <div class="detail-item">
               <span>City</span>
-              <strong>{{ selectedOrder.customer.city }}</strong>
+              <strong>{{ order.customer.city }}</strong>
             </div>
 
             <div class="detail-item">
               <span>Pincode</span>
-              <strong>{{ selectedOrder.customer.pincode }}</strong>
+              <strong>{{ order.customer.pincode }}</strong>
             </div>
 
           </div>
@@ -298,14 +300,14 @@
             <div class="detail-item">
               <span>Order Date</span>
               <strong>
-                {{ selectedOrder.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+                {{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}
               </strong>
             </div>
 
             <div class="detail-item">
               <span>Payment Method</span>
               <strong>
-                {{ selectedOrder.paymentMethod === 'COD'
+                {{ order.paymentMethod === 'COD'
                   ? 'Cash on Delivery'
                   : 'Online Payment' }}
               </strong>
@@ -314,14 +316,14 @@
             <div class="detail-item">
               <span>Order Status</span>
               <strong class="details-status">
-                {{ selectedOrder.status }}
+                {{ order.status }}
               </strong>
             </div>
 
             <div class="detail-item">
               <span>Total Amount</span>
               <strong class="details-amount">
-                ₹{{ selectedOrder.subtotal }}
+                ₹{{ order.subtotal }}
               </strong>
             </div>
 
@@ -335,7 +337,7 @@
           <h4>Ordered Products</h4>
 
           @for (
-            item of selectedOrder.items;
+            item of order.items;
             track item.productId + item.weight
           ) {
 
@@ -360,7 +362,7 @@
 
           <div class="order-total">
             <span>Order Total</span>
-            <strong>₹{{ selectedOrder.subtotal }}</strong>
+            <strong>₹{{ order.subtotal }}</strong>
           </div>
 
         </div>
@@ -372,8 +374,8 @@
 
           <select
             class="details-status-select"
-            [ngModel]="selectedOrder.status"
-            (ngModelChange)="updateStatus(selectedOrder!, $event)"
+            [ngModel]="order.status"
+            (ngModelChange)="updateStatus(order, $event)"
             name="detailOrderStatus">
 
             @for (status of statusOptions; track status) {
@@ -400,6 +402,5 @@
     </div>
 
   }
-
 
 </section>

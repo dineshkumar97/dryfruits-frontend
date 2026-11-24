@@ -10,7 +10,6 @@ import { DecimalPipe } from '@angular/common';
 
 import { Cart as CartService } from '../../../core/services/cart';
 import { OrderService } from '../../../core/services/order';
-import { ProductService } from '../../../core/services/product';
 
 @Component({
   selector: 'app-checkout',
@@ -23,12 +22,12 @@ export class Checkout {
 
   checkoutForm;
   stockError = '';
+  isSubmitting = false;
 
   constructor(
     private fb: FormBuilder,
     public cartService: CartService,
     private orderService: OrderService,
-    private productService: ProductService,
     private router: Router
   ) {
     this.checkoutForm = this.fb.group({
@@ -93,6 +92,10 @@ export class Checkout {
 
     this.stockError = '';
 
+    if (this.isSubmitting) {
+      return;
+    }
+
     if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
       return;
@@ -104,7 +107,7 @@ export class Checkout {
       return;
     }
 
-    // Step 1: Validate current stock
+    // Step 1: Validate current cart
     const stockValidation = this.cartService.validateCart();
 
     if (!stockValidation.success) {
@@ -115,24 +118,13 @@ export class Checkout {
     // Step 2: Get latest cart information
     const currentCartItems = this.cartService.getCartItems();
 
-    // Step 3: Deduct stock before creating the order
-    const stockResult = this.productService.deductStock(
-      currentCartItems.map(item => ({
-        productId: item.productId,
-        weight: item.weight,
-        quantity: item.quantity
-      }))
-    );
-
-    if (!stockResult.success) {
-      this.stockError = stockResult.message;
-      return;
-    }
-
-    // Step 4: Create the confirmed order
+    // Step 3: Prepare customer details
     const formValue = this.checkoutForm.getRawValue();
 
-    const order = this.orderService.createOrder({
+    this.isSubmitting = true;
+
+    // Step 4: Create order in MongoDB
+    this.orderService.createOrder({
 
       customer: {
         name: formValue.name!,
@@ -144,6 +136,7 @@ export class Checkout {
       },
 
       items: currentCartItems,
+
       subtotal: currentCartItems.reduce(
         (total, item) => total + item.price * item.quantity,
         0
@@ -151,13 +144,34 @@ export class Checkout {
 
       paymentMethod: formValue.paymentMethod as 'COD' | 'ONLINE'
 
-    });
+    }).subscribe({
 
-    // Step 5: Clear cart and navigate
-    this.cartService.clearCart();
+      next: (order) => {
 
-    this.router.navigate(['/order-success'], {
-      state: { orderId: order.orderId }
+        // Step 5: Clear cart after successful API response
+        this.cartService.clearCart();
+
+        // Step 6: Navigate to success page
+        this.router.navigate(['/order-success'], {
+          state: {
+            orderId: order.orderId
+          }
+        });
+
+      },
+
+      error: (error) => {
+
+        console.error('Order creation failed:', error);
+
+        this.stockError =
+          error.error?.message ||
+          'Unable to place your order. Please try again.';
+
+        this.isSubmitting = false;
+
+      }
+
     });
 
   }

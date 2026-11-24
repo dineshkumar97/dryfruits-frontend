@@ -1,8 +1,9 @@
 
 import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { OrderService, Order } from '../../../core/services/order';
 import { DatePipe } from '@angular/common';
+
+import { OrderService, Order } from '../../../core/services/order';
 
 @Component({
   selector: 'app-order-success',
@@ -14,20 +15,24 @@ import { DatePipe } from '@angular/common';
 export class OrderSuccess {
 
   order: Order | null = null;
+  isLoading = true;
+  errorMessage = '';
 
   constructor(
     private orderService: OrderService,
     private router: Router
   ) {
-    this.order = this.orderService.getLatestOrder();
 
-    if (!this.order) {
-      this.router.navigate(['/home']);
-    }
+   
+
   }
 
+
   getItemSavings(item: Order['items'][number]): number {
-    return Math.max(0, (item.oldPrice ?? item.price) - item.price);
+    return Math.max(
+      0,
+      (item.oldPrice ?? item.price) - item.price
+    );
   }
 
   get totalDiscount(): number {
@@ -51,4 +56,5 @@ export class OrderSuccess {
       (this.totalDiscount / this.originalSubtotal) * 100
     );
   }
+
 }

@@ -294,3 +294,152 @@
 }
 
 }
+
+
+
+/* CUSTOMER PROFILE DROPDOWN */
+
+.customer-profile-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.customer-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 5px 9px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #173d2c;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+ background: #f7f2e8;
+  &:hover {
+    background: #f7f2e8;
+  }
+}
+
+.customer-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  background: #173d2c;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-chevron {
+  color: #777;
+  transition: transform 0.2s ease;
+
+  &.open {
+    transform: rotate(180deg);
+  }
+}
+
+/* DROPDOWN */
+
+.customer-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  width: 225px;
+  padding: 10px;
+  border: 1px solid #eee8dc;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+}
+
+.dropdown-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+
+  strong {
+    color: #173d2c;
+    font-size: 13px;
+  }
+
+  span {
+    color: #999;
+    font-size: 11px;
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #44594b;
+  text-align: left;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  > span:first-child {
+    width: 18px;
+    color: #a68d53;
+    font-size: 17px;
+    text-align: center;
+  }
+
+  &:hover {
+    background: #f7f2e8;
+  }
+}
+
+.dropdown-divider {
+  height: 1px;
+  margin: 7px 0;
+  background: #eee8dc;
+}
+
+.logout-item {
+  color: #dc3545;
+
+  > span:first-child {
+    color: #dc3545;
+  }
+
+  &:hover {
+    background: #fff0f0;
+  }
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 600px) {
+
+  .customer-profile-dropdown {
+    right: 0;
+    width: 210px;
+  }
+
+  .profile-label {
+    display: none;
+  }
+
+}
