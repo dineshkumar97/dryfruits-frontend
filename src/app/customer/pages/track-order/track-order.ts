@@ -79,7 +79,7 @@ export class TrackOrder {
     this.errorMessage.set('');
     this.order.set(null);
 
-    if (!this.orderId().trim() || !this.mobile().trim()) {
+    if (!this.orderId().trim()) {
 
       this.errorMessage.set(
         'Please enter your Order ID and mobile number.'
@@ -99,16 +99,16 @@ export class TrackOrder {
           this.isLoading.set(false);
 
           // Verify registered mobile number
-          if (
-            foundOrder.customer.mobile !== this.mobile().trim()
-          ) {
+          // if (
+          //   foundOrder.customer.mobile !== this.mobile().trim()
+          // ) {
 
-            this.errorMessage.set(
-              'Order not found. Please check your Order ID and mobile number.'
-            );
+          //   this.errorMessage.set(
+          //     'Order not found. Please check your Order ID and mobile number.'
+          //   );
 
-            return;
-          }
+          //   return;
+          // }
 
           this.order.set(foundOrder);
           console.log('Order found:', foundOrder);

@@ -1,1 +1,36 @@
+
+@if (loadingService.isLoading()) {
+  <div class="global-loader">
+    <div class="loader-spinner"></div>
+    <p>Please wait...</p>
+  </div>
+}
+
+<!-- Common Toast Notifications -->
+<div class="toast-container" aria-live="polite">
+  @for (toast of toastService.messages(); track toast.id) {
+    <div class="toast-message" [class]=" 'toast-message toast-' + toast.type ">
+
+      <span class="toast-icon">
+        @switch (toast.type) {
+          @case ('success') { ✓ }
+          @case ('error') { ✕ }
+          @case ('warning') { ! }
+          @case ('info') { i }
+        }
+      </span>
+
+      <span class="toast-text">{{ toast.message }}</span>
+
+      <button
+        type="button"
+        class="toast-close"
+        (click)="toastService.remove(toast.id)">
+        ×
+      </button>
+
+    </div>
+  }
+</div>
+
 <router-outlet />
