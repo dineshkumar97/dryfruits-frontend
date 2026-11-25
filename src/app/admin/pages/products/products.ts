@@ -1,5 +1,5 @@
 
-import { Component, Inject, signal, computed,PLATFORM_ID } from '@angular/core';
+import { Component, Inject, signal, computed, PLATFORM_ID } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -210,6 +210,22 @@ export class Products {
   // LOAD CATEGORIES FROM MONGODB
   // =====================================
 
+  // Auto populate product image based on category
+  onCategoryChange(): void {
+    const category = this.productForm.controls.category.value;
+    const categoryImages: Record<string, string> = {
+      'Premium Seedless Dates': 'images/black_dates.png',
+      'Premium Walnut Kernels': 'images/walnuts.png',
+      'Golden Raisins': 'images/golden_raisins.png',
+      'Premium Iranian Pistachios': 'images/pistachios.png',
+      'Premium Whole Cashews': 'images/cashews.png',
+      'Dry Mix Fruits': 'images/dry_mix.png'
+    };
+    this.productForm.patchValue({
+      image: categoryImages[category] || ''
+    });
+  }
+  
   loadCategories(): void {
 
     if (!this.isBrowser) return;

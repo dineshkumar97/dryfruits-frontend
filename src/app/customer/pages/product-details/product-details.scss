@@ -1,4 +1,3 @@
-
 .product-details-page {
   width: 100%;
   min-height: 100vh;
@@ -405,6 +404,7 @@
     color: #fff;
   }
 }
+
 /* Mobile Action Buttons */
 
 @media (max-width: 768px) {
@@ -526,4 +526,16 @@
   opacity: 0.55;
   cursor: not-allowed;
   transform: none;
+}
+
+.weight-options .weight-btn {
+  cursor: pointer;
+}
+
+.weight-options .weight-btn.weight-disabled {
+  cursor: not-allowed !important;
+  opacity: 0.4;
+  background: #fff;
+  color: #000;
+  border: 1px solid #d8d0bf;
 }

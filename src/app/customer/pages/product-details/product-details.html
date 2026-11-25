@@ -1,4 +1,3 @@
-
 <section class="product-details-page">
 
   <div class="container">
@@ -33,9 +32,7 @@
         <!-- STOCK AVAILABILITY -->
         <div class="stock-information">
 
-          <span
-            class="stock-status"
-            [class.in-stock]="availableQuantity > 5"
+          <span class="stock-status" [class.in-stock]="availableQuantity > 5"
             [class.low-stock]="availableQuantity > 0 && availableQuantity <= 5"
             [class.out-of-stock]="availableQuantity === 0">
 
@@ -45,9 +42,9 @@
           </span>
 
           @if (availableQuantity > 0) {
-            <span class="available-quantity">
-              {{ availableQuantity }} packs available for {{ selectedWeight }}
-            </span>
+          <span class="available-quantity">
+            {{ availableQuantity }} packs available for {{ selectedWeight }}
+          </span>
           }
 
         </div>
@@ -62,21 +59,21 @@
             </strong>
 
             @if (oldPrice > price) {
-              <del class="old-price">
-                ₹{{ oldPrice * quantity }}
-              </del>
+            <del class="old-price">
+              ₹{{ oldPrice * quantity }}
+            </del>
 
-              <span class="discount">
-                {{ discountPercentage }}% OFF
-              </span>
+            <span class="discount">
+              {{ discountPercentage }}% OFF
+            </span>
             }
 
           </div>
 
           @if (savings > 0) {
-            <small class="savings">
-              You save ₹{{ savings * quantity }}
-            </small>
+          <small class="savings">
+            You save ₹{{ savings * quantity }}
+          </small>
           }
 
         </div>
@@ -87,23 +84,15 @@
           <h3>Select Weight</h3>
 
           <div class="weight-options">
-
             @for (weight of weights; track weight) {
-
-              <button
-                type="button"
-                [class.active]="selectedWeight === weight"
-                [disabled]="false"
-                (click)="selectWeight(weight)">
-
-                {{ weight }}
-
-              </button>
-
+            <button type="button" class="weight-btn" [class.active]="selectedWeight === weight"
+              [class.weight-disabled]="selectedWeight !== weight "
+              [disabled]="selectedWeight !== weight"
+              (click)="selectWeight(weight)">
+              {{ weight }}
+            </button>
             }
-
           </div>
-
         </div>
 
         <!-- QUANTITY -->
@@ -113,28 +102,22 @@
 
           <div class="quantity-control">
 
-            <button
-              type="button"
-              (click)="decreaseQuantity()"
-              [disabled]="quantity <= 1">
+            <button type="button" (click)="decreaseQuantity()" [disabled]="quantity <= 1">
               −
             </button>
 
             <span>{{ quantity }}</span>
 
-            <button
-              type="button"
-              (click)="increaseQuantity()"
-              [disabled]="quantity >= availableQuantity">
+            <button type="button" (click)="increaseQuantity()" [disabled]="quantity >= availableQuantity">
               +
             </button>
 
           </div>
 
           @if (availableQuantity > 0) {
-            <small class="quantity-note">
-              Maximum available: {{ availableQuantity }} packs
-            </small>
+          <small class="quantity-note">
+            Maximum available: {{ availableQuantity }} packs
+          </small>
           }
 
         </div>
@@ -146,36 +129,30 @@
 
         <!-- SUCCESS MESSAGE -->
         @if (successMessage) {
-          <div class="cart-success-message">
-            <span>✓</span>
-            {{ successMessage }}
-          </div>
+        <div class="cart-success-message">
+          <span>✓</span>
+          {{ successMessage }}
+        </div>
         }
 
         <!-- ERROR MESSAGE -->
         @if (errorMessage) {
-          <div class="cart-error-message">
-            {{ errorMessage }}
-          </div>
+        <div class="cart-error-message">
+          {{ errorMessage }}
+        </div>
         }
 
         <!-- ACTION BUTTONS -->
         <div class="product-actions">
 
-          <button
-            type="button"
-            class="add-cart-btn"
-            (click)="addToCart()"
+          <button type="button" class="add-cart-btn" (click)="addToCart()"
             [disabled]="availableQuantity === 0 || quantity > availableQuantity">
 
             {{ availableQuantity === 0 ? 'Out of Stock' : 'Add to Cart' }}
 
           </button>
 
-          <button
-            type="button"
-            class="back-btn"
-            routerLink="/products">
+          <button type="button" class="back-btn" routerLink="/products">
             ← Back to Products
           </button>
 

@@ -189,5 +189,14 @@ export class ProductDetails {
       this.errorMessage = result.message;
     }
   }
+  variants: Product[] = [];
+getVariant(weight: string): Product | undefined {
+  return this.variants.find(
+    item => item.weight === weight && item.active
+  );
+}
+
+
+
 
 }
