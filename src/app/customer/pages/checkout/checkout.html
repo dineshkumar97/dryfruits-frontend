@@ -42,7 +42,7 @@
 
               <label>Mobile Number *</label>
 
-              <input type="tel" formControlName="mobile" maxlength="10" placeholder="10-digit mobile number">
+              <input type="tel" formControlName="mobile" maxlength="10"  placeholder="10-digit mobile number">
 
               @if (checkoutForm.get('mobile')?.touched && checkoutForm.get('mobile')?.invalid) {
               <small class="error-message">
@@ -220,7 +220,7 @@
 
             </label>
 
-            <label class="payment-option">
+            <!-- <label class="payment-option">
 
               <input type="radio" formControlName="paymentMethod" value="ONLINE">
 
@@ -229,7 +229,7 @@
                 <small>UPI, Google Pay, PhonePe, Cards</small>
               </span>
 
-            </label>
+            </label> -->
 
           </div>
 

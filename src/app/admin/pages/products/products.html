@@ -1,30 +1,28 @@
+
 <section class="products-page">
 
   <!-- PAGE HEADING -->
   <div class="products-heading">
-
     <div>
       <span class="section-label">STORE MANAGEMENT</span>
       <h2>Products</h2>
-      <p>Manage your NutNest product catalogue.</p>
+      <p>Manage your RATASREE. product catalogue.</p>
     </div>
 
     <button type="button" class="add-product-btn" (click)="addProduct()">
       + Add Product
     </button>
-
   </div>
 
   <!-- PAGE ERROR -->
   @if (pageError()) {
-  <div class="form-error">
-    {{ pageError() }}
-  </div>
+    <div class="form-error page-error">
+      {{ pageError() }}
+    </div>
   }
 
   <!-- SUMMARY CARDS -->
   <div class="product-summary">
-
     <div class="summary-card">
       <span>Total Products</span>
       <strong>{{ totalProducts() }}</strong>
@@ -39,229 +37,278 @@
       <span>Total Stock</span>
       <strong>{{ totalStock() }}</strong>
     </div>
-
   </div>
 
   <!-- ADD / EDIT PRODUCT POPUP -->
   @if (isFormOpen) {
+    <div class="product-modal-backdrop" (click)="closeForm()">
 
-  <div class="product-modal-backdrop" (click)="closeForm()">
+      <div
+        class="product-form-card product-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="productFormTitle"
+        (click)="$event.stopPropagation()">
 
-    <div class="product-form-card product-modal" role="dialog" aria-modal="true" aria-labelledby="productFormTitle"
-      (click)="$event.stopPropagation()">
+        <!-- MODAL HEADER -->
+        <div class="form-heading">
+          <div>
+            <span class="section-label">PRODUCT MANAGEMENT</span>
 
-      <!-- MODAL HEADER -->
-      <div class="form-heading">
+            <h3 id="productFormTitle">
+              {{ isEditing ? 'Edit Product' : 'Add New Product' }}
+            </h3>
 
-        <div>
-          <span class="section-label">PRODUCT MANAGEMENT</span>
-
-          <h3 id="productFormTitle">
-            {{ isEditing ? 'Edit Product' : 'Add New Product' }}
-          </h3>
-
-          <p>Enter the product information below.</p>
-        </div>
-
-        <button type="button" class="close-btn" aria-label="Close popup" (click)="closeForm()">
-          ×
-        </button>
-
-      </div>
-
-      <!-- PRODUCT FORM -->
-      <form [formGroup]="productForm" (ngSubmit)="saveProduct()" novalidate>
-
-        <div class="form-grid">
-
-          <!-- PRODUCT NAME -->
-          <div class="form-group">
-            <label for="name">Product Name *</label>
-
-            <input id="name" type="text" formControlName="name" placeholder="Enter product name">
-
-            @if (
-            productForm.controls.name.touched &&
-            productForm.controls.name.hasError('required')
-            ) {
-            <small class="form-error">
-              Product name is required.
-            </small>
-            }
-
-            @if (
-            productForm.controls.name.touched &&
-            productForm.controls.name.hasError('minlength')
-            ) {
-            <small class="form-error">
-              Minimum 3 characters required.
-            </small>
-            }
+            <p>Enter the product information below.</p>
           </div>
 
-          <!-- CATEGORY -->
-          <div class="form-group">
-            <label for="category">Category *</label>
+          <button
+            type="button"
+            class="close-btn"
+            aria-label="Close popup"
+            (click)="closeForm()">
+            ×
+          </button>
+        </div>
 
-            <select id="category" formControlName="category" (change)="onCategoryChange()">
+        <!-- PRODUCT FORM -->
+        <form
+          [formGroup]="productForm"
+          (ngSubmit)="saveProduct()"
+          novalidate>
 
-              <option value="">Select Category</option>
+          <div class="form-grid">
 
-              @for (category of categories(); track category) {
-              <option [value]="category">
-                {{ category }}
-              </option>
+            <!-- PRODUCT NAME -->
+            <div class="form-group">
+              <label for="name">Product Name *</label>
+
+              <input
+                id="name"
+                type="text"
+                formControlName="name"
+                placeholder="Enter product name">
+
+              @if (
+                productForm.controls.name.touched &&
+                productForm.controls.name.hasError('required')
+              ) {
+                <small class="form-error">
+                  Product name is required.
+                </small>
               }
 
-            </select>
+              @if (
+                productForm.controls.name.touched &&
+                productForm.controls.name.hasError('minlength')
+              ) {
+                <small class="form-error">
+                  Minimum 3 characters required.
+                </small>
+              }
+            </div>
 
-            @if (
-            productForm.controls.category.touched &&
-            productForm.controls.category.hasError('required')
-            ) {
-            <small class="form-error">
-              Please select a category.
-            </small>
-            }
+            <!-- CATEGORY -->
+            <div class="form-group">
+              <label for="category">Category *</label>
+
+              <select
+                id="category"
+                formControlName="category"
+                (change)="onCategoryChange()">
+
+                <option value="">Select Category</option>
+
+                @for (category of categories(); track category) {
+                  <option [value]="category">
+                    {{ category }}
+                  </option>
+                }
+              </select>
+
+              @if (
+                productForm.controls.category.touched &&
+                productForm.controls.category.hasError('required')
+              ) {
+                <small class="form-error">
+                  Please select a category.
+                </small>
+              }
+            </div>
+
+            <!-- IMAGE -->
+            <div class="form-group full-width">
+              <label for="image">Product Image Path</label>
+
+              <input
+                id="image"
+                type="text"
+                formControlName="image"
+                placeholder="Example: images/almonds.png">
+
+              <!-- @if (productForm.controls.image.value) {
+                <div class="product-image-preview">
+                  <img
+                    [src]="productForm.controls.image.value"
+                    alt="Product preview"
+                    (error)="onPreviewError($event)">
+
+                  <span>Image Preview</span>
+                </div>
+              } -->
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="form-group full-width">
+              <label for="description">Product Description</label>
+
+              <textarea
+                id="description"
+                formControlName="description"
+                rows="3"
+                placeholder="Enter product description"></textarea>
+            </div>
+
+            <!-- WEIGHT -->
+            <div class="form-group">
+              <label for="weight">Weight *</label>
+
+              <select id="weight" formControlName="weight">
+                <option value="50g">50g</option>
+                <option value="100g">100g</option>
+                <option value="250g">250g</option>
+                <option value="500g">500g</option>
+                <option value="1kg">1kg</option>
+              </select>
+
+              @if (
+                productForm.controls.weight.touched &&
+                productForm.controls.weight.invalid
+              ) {
+                <small class="form-error">
+                  Please select a valid weight.
+                </small>
+              }
+            </div>
+
+            <!-- SELLING PRICE -->
+            <div class="form-group">
+              <label for="price">Selling Price (₹) *</label>
+
+              <input
+                id="price"
+                type="number"
+                formControlName="price"
+                min="1"
+                placeholder="Enter selling price">
+
+              @if (
+                productForm.controls.price.touched &&
+                productForm.controls.price.invalid
+              ) {
+                <small class="form-error">
+                  Enter a selling price greater than zero.
+                </small>
+              }
+            </div>
+
+            <!-- ORIGINAL PRICE -->
+            <div class="form-group">
+              <label for="oldPrice">Original Price (₹) *</label>
+
+              <input
+                id="oldPrice"
+                type="number"
+                formControlName="oldPrice"
+                min="0"
+                placeholder="Enter original price">
+
+              @if (
+                productForm.controls.oldPrice.touched &&
+                productForm.controls.oldPrice.invalid
+              ) {
+                <small class="form-error">
+                  Enter a valid original price.
+                </small>
+              }
+
+              @if (
+                productForm.hasError('invalidPrice') &&
+                productForm.controls.oldPrice.touched
+              ) {
+                <small class="form-error">
+                  Original price must be equal to or greater than selling price.
+                </small>
+              }
+            </div>
+
+            <!-- STOCK -->
+            <div class="form-group">
+              <label for="stock">Available Stock *</label>
+
+              <input
+                id="stock"
+                type="number"
+                formControlName="stock"
+                min="0"
+                step="0.001"
+                placeholder="Enter available stock">
+
+              @if (
+                productForm.controls.stock.touched &&
+                productForm.controls.stock.invalid
+              ) {
+                <small class="form-error">
+                  Stock cannot be negative.
+                </small>
+              }
+            </div>
+
+            <!-- AVAILABILITY -->
+            <div class="form-group">
+              <label for="active">Product Availability</label>
+
+              <select id="active" formControlName="active">
+                <option [ngValue]="true">Active</option>
+                <option [ngValue]="false">Inactive</option>
+              </select>
+            </div>
+
           </div>
 
-          <!-- IMAGE -->
-          <div class="form-group full-width">
-            <label for="image">Product Image Path</label>
-            <input id="image" type="text" formControlName="image" placeholder="Example: images/almonds.png">
+          <!-- FORM ERROR -->
+          @if (formError()) {
+            <div class="form-error form-error-box">
+              {{ formError() }}
+            </div>
+          }
+
+          <!-- FORM ACTIONS -->
+          <div class="form-actions">
+            <button
+              type="button"
+              class="cancel-btn"
+              (click)="closeForm()">
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              class="save-btn"
+              [disabled]="productForm.invalid || isSaving()">
+
+              @if (isSaving()) {
+                <span class="button-loader"></span>
+                Saving...
+              } @else {
+                {{ isEditing ? 'Update Product' : 'Save Product' }}
+              }
+            </button>
           </div>
 
-          <!-- DESCRIPTION -->
-          <div class="form-group full-width">
-            <label for="description">Product Description</label>
-
-            <textarea id="description" formControlName="description" rows="3" placeholder="Enter product description">
-              </textarea>
-          </div>
-
-          <!-- WEIGHT -->
-          <div class="form-group">
-            <label for="weight">Weight *</label>
-
-            <select id="weight" formControlName="weight">
-              <option value="50g">50g</option>
-              <option value="100g">100g</option>
-              <option value="250g">250g</option>
-              <option value="500g">500g</option>
-              <option value="1kg">1kg</option>
-            </select>
-
-            @if (
-            productForm.controls.weight.touched &&
-            productForm.controls.weight.invalid
-            ) {
-            <small class="form-error">
-              Please select a valid weight.
-            </small>
-            }
-          </div>
-
-          <!-- SELLING PRICE -->
-          <div class="form-group">
-            <label for="price">Selling Price (₹) *</label>
-
-            <input id="price" type="number" formControlName="price" min="1">
-
-            @if (
-            productForm.controls.price.touched &&
-            productForm.controls.price.invalid
-            ) {
-            <small class="form-error">
-              Enter a selling price greater than zero.
-            </small>
-            }
-          </div>
-
-          <!-- ORIGINAL PRICE -->
-          <div class="form-group">
-            <label for="oldPrice">Original Price (₹) *</label>
-
-            <input id="oldPrice" type="number" formControlName="oldPrice" min="0">
-
-            @if (
-            productForm.controls.oldPrice.touched &&
-            productForm.controls.oldPrice.invalid
-            ) {
-            <small class="form-error">
-              Enter a valid original price.
-            </small>
-            }
-
-            @if (
-            productForm.hasError('invalidPrice') &&
-            productForm.controls.oldPrice.touched
-            ) {
-            <small class="form-error">
-              Original price must be equal to or greater than selling price.
-            </small>
-            }
-          </div>
-
-          <!-- STOCK -->
-          <div class="form-group">
-            <label for="stock">Available Stock *</label>
-
-            <input id="stock" type="number" formControlName="stock" min="0" step="0.001">
-
-            @if (
-            productForm.controls.stock.touched &&
-            productForm.controls.stock.invalid
-            ) {
-            <small class="form-error">
-              Stock cannot be negative.
-            </small>
-            }
-          </div>
-
-          <!-- AVAILABILITY -->
-          <div class="form-group">
-            <label for="active">Product Availability</label>
-
-            <select id="active" formControlName="active">
-              <option [ngValue]="true">Active</option>
-              <option [ngValue]="false">Inactive</option>
-            </select>
-          </div>
-
-        </div>
-
-        <!-- FORM ERROR -->
-        @if (formError()) {
-        <div class="form-error">
-          {{ formError() }}
-        </div>
-        }
-
-        <!-- ACTIONS -->
-        <div class="form-actions">
-
-          <button type="button" class="cancel-btn" (click)="closeForm()">
-            Cancel
-          </button>
-
-          <button type="submit" class="save-btn" [disabled]="productForm.invalid || isSaving()">
-
-            @if (isSaving()) {
-            Saving...
-            } @else {
-            {{ isEditing ? 'Update Product' : 'Save Product' }}
-            }
-
-          </button>
-
-        </div>
-
-      </form>
-
+        </form>
+      </div>
     </div>
-
-  </div>
-
   }
 
   <!-- PRODUCT LIST -->
@@ -278,144 +325,147 @@
     <div class="products-toolbar">
 
       <div class="search-box">
-        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+        <input
+          type="search"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
           placeholder="Search products...">
       </div>
 
-      <select class="category-filter" [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event)">
+      <select
+        class="category-filter"
+        [ngModel]="selectedCategory()"
+        (ngModelChange)="selectedCategory.set($event)">
 
         <option value="All">All Categories</option>
 
         @for (category of categories(); track category) {
-        <option [value]="category">
-          {{ category }}
-        </option>
+          <option [value]="category">
+            {{ category }}
+          </option>
         }
-
       </select>
 
     </div>
 
     <!-- LOADING -->
     @if (isLoading()) {
-
-    <div class="empty-products">
-      <p>Loading products...</p>
-    </div>
-
+      <div class="empty-products">
+        <p>Loading products...</p>
+      </div>
     } @else {
 
-    <!-- PRODUCT TABLE -->
-    @if (products().length > 0 && filteredProducts().length > 0) {
+      @if (products().length > 0 && filteredProducts().length > 0) {
 
-    <div class="table-wrapper">
+        <!-- PRODUCT TABLE -->
+        <div class="table-wrapper">
+          <table>
 
-      <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Weight</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
 
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Category</th>
-            <th>Weight</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+            <tbody>
+              @for (product of filteredProducts(); track product.id) {
+                <tr>
 
-        <tbody>
+                  <td>
+                    <div class="product-cell">
 
-          @for (product of filteredProducts(); track product.id) {
+                      @if (product.image) {
+                        <img
+                          [src]="product.image"
+                          [alt]="product.name">
+                      } @else {
+                        <div class="image-placeholder">N</div>
+                      }
 
-          <tr>
+                      <strong>{{ product.name }}</strong>
+                    </div>
+                  </td>
 
-            <td>
-              <div class="product-cell">
+                  <td>{{ product.category }}</td>
+                  <td>{{ product.weight }}</td>
 
-                @if (product.image) {
-                <img [src]="product.image" [alt]="product.name">
-                } @else {
-                <div class="image-placeholder">N</div>
-                }
+                  <td>
+                    <div class="price-cell">
+                      <strong>₹{{ product.price }}</strong>
+                      <del>₹{{ product.oldPrice }}</del>
+                    </div>
+                  </td>
 
-                <strong>{{ product.name }}</strong>
+                  <td>{{ product.stock }}</td>
 
-              </div>
-            </td>
+                  <td>
+                    <button
+                      type="button"
+                      class="status-btn"
+                      [class.inactive]="!product.active"
+                      (click)="toggleAvailability(product)">
 
-            <td>{{ product.category }}</td>
+                      {{ product.active ? 'Active' : 'Inactive' }}
+                    </button>
+                  </td>
 
-            <td>{{ product.weight }}</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button
+                        type="button"
+                        class="edit-btn"
+                        (click)="editProduct(product)">
+                        Edit
+                      </button>
 
-            <td>
-              <div class="price-cell">
-                <strong>₹{{ product.price }}</strong>
-                <del>₹{{ product.oldPrice }}</del>
-              </div>
-            </td>
+                      <button
+                        type="button"
+                        class="delete-btn"
+                        (click)="deleteProduct(product.id)">
+                        Delete
+                      </button>
+                    </div>
+                  </td>
 
-            <td>{{ product.stock }}</td>
+                </tr>
+              }
+            </tbody>
 
-            <td>
-              <button type="button" class="status-btn" [class.inactive]="!product.active"
-                (click)="toggleAvailability(product)">
+          </table>
+        </div>
 
-                {{ product.active ? 'Active' : 'Inactive' }}
+      } @else {
 
-              </button>
-            </td>
+        <!-- EMPTY STATE -->
+        <div class="empty-products">
 
-            <td>
-              <div class="action-buttons">
+          <div class="empty-icon">▣</div>
 
-                <button type="button" class="edit-btn" (click)="editProduct(product)">
-                  Edit
-                </button>
+          @if (products().length === 0) {
+            <h3>No Products Added Yet</h3>
+            <p>Start building your product catalogue by adding your first product.</p>
 
-                <button type="button" class="delete-btn" (click)="deleteProduct(product.id)">
-                  Delete
-                </button>
-
-              </div>
-            </td>
-
-          </tr>
-
+            <button
+              type="button"
+              class="add-product-btn"
+              (click)="addProduct()">
+              + Add Your First Product
+            </button>
+          } @else {
+            <h3>No Matching Products</h3>
+            <p>Try changing your search or category filter.</p>
           }
 
-        </tbody>
+        </div>
 
-      </table>
-
-    </div>
-
-    } @else {
-
-    <div class="empty-products">
-
-      <div class="empty-icon">▣</div>
-
-      @if (products().length === 0) {
-      <h3>No Products Added Yet</h3>
-      <p>Start building your product catalogue by adding your first product.</p>
-      } @else {
-      <h3>No Matching Products</h3>
-      <p>Try changing your search or category filter.</p>
       }
-
-      @if (products().length === 0) {
-      <button type="button" class="add-product-btn" (click)="addProduct()">
-        + Add Your First Product
-      </button>
-      }
-
-    </div>
-
     }
-
-    }
-
   </div>
 
 </section>

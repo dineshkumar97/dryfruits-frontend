@@ -7,7 +7,7 @@
     <div>
       <span class="section-label">STORE MANAGEMENT</span>
       <h2>Customers</h2>
-      <p>View and manage your NutNest customers.</p>
+      <p>View and manage your RATASREE. customers.</p>
     </div>
 
     <button
@@ -169,29 +169,23 @@
 
   </div>
 
-  <!-- CUSTOMER DETAILS POPUP -->
-  @if (selectedCustomer) {
+
+<!-- CUSTOMER DETAILS POPUP -->
+@if (selectedCustomer) {
+  <div class="customer-modal-backdrop" (click)="closeDetails()">
 
     <div
-      class="customer-modal-backdrop"
-      (click)="closeDetails()">
+      class="customer-details-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="customerDetailsTitle"
+      (click)="$event.stopPropagation()">
 
-      <div
-        class="customer-details-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="customerDetailsTitle"
-        (click)="$event.stopPropagation()">
+      <!-- PREMIUM HEADER -->
+      <div class="customer-modal-header">
 
-        <!-- MODAL HEADER -->
-        <div class="details-heading">
-
-          <div>
-            <span class="section-label">CUSTOMER INFORMATION</span>
-            <h3 id="customerDetailsTitle">
-              {{ selectedCustomer.name }}
-            </h3>
-          </div>
+        <div class="modal-top-row">
+          <span class="modal-eyebrow">NUTNEST CUSTOMER PROFILE</span>
 
           <button
             type="button"
@@ -200,135 +194,190 @@
             (click)="closeDetails()">
             ×
           </button>
-
         </div>
 
-        <!-- CUSTOMER INFORMATION -->
-        <div class="details-section">
-
-          <h4>Customer Details</h4>
-
-          <div class="details-grid">
-
-            <div class="detail-item">
-              <span>Name</span>
-              <strong>{{ selectedCustomer.name }}</strong>
-            </div>
-
-            <div class="detail-item">
-              <span>Mobile Number</span>
-              <strong>{{ selectedCustomer.mobile }}</strong>
-            </div>
-
-            <div class="detail-item">
-              <span>Email</span>
-              <strong>
-                {{ selectedCustomer.email || 'Not provided' }}
-              </strong>
-            </div>
-
-            <div class="detail-item">
-              <span>Address</span>
-              <strong>{{ selectedCustomer.address }}</strong>
-            </div>
-
-            <div class="detail-item">
-              <span>City</span>
-              <strong>{{ selectedCustomer.city }}</strong>
-            </div>
-
-            <div class="detail-item">
-              <span>Pincode</span>
-              <strong>{{ selectedCustomer.pincode }}</strong>
-            </div>
-
+        <div class="customer-profile">
+          <div class="profile-avatar">
+            {{ selectedCustomer.name.charAt(0).toUpperCase() }}
           </div>
 
+          <div class="profile-info">
+            <h3 id="customerDetailsTitle">
+              {{ selectedCustomer.name }}
+            </h3>
+            <span>Registered Customer</span>
+            <span class="profile-mobile">
+              {{ selectedCustomer.mobile }}
+            </span>
+          </div>
         </div>
 
-        <!-- PURCHASE SUMMARY -->
-        <div class="details-section">
+      </div>
 
-          <h4>Purchase Summary</h4>
+      <!-- MODAL BODY -->
+      <div class="customer-modal-body">
 
-          <div class="details-grid">
+        <!-- PURCHASE OVERVIEW -->
+        <div class="purchase-overview">
 
-            <div class="detail-item">
+          <div class="overview-card orders-overview">
+            <div class="overview-icon">▤</div>
+            <div>
               <span>Total Orders</span>
               <strong>{{ selectedCustomer.totalOrders }}</strong>
             </div>
+          </div>
 
-            <div class="detail-item">
-              <span>Total Purchase Amount</span>
-              <strong class="purchase-total">
-                ₹{{ selectedCustomer.totalSpent }}
-              </strong>
+          <div class="overview-card spending-overview">
+            <div class="overview-icon">₹</div>
+            <div>
+              <span>Total Purchase</span>
+              <strong>₹{{ selectedCustomer.totalSpent }}</strong>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CUSTOMER DETAILS -->
+        <div class="modal-content-section">
+
+          <div class="modal-section-heading">
+            <div>
+              <span class="modal-section-label">PERSONAL INFORMATION</span>
+              <h4>Customer Details</h4>
+            </div>
+          </div>
+
+          <div class="customer-info-grid">
+
+            <div class="info-card">
+              <span class="info-icon">♙</span>
+              <div>
+                <span>Full Name</span>
+                <strong>{{ selectedCustomer.name }}</strong>
+              </div>
             </div>
 
-            <div class="detail-item">
-              <span>Last Order Date</span>
-              <strong>
-                {{ selectedCustomer.lastOrderDate | date:'dd MMM yyyy' }}
-              </strong>
+            <div class="info-card">
+              <span class="info-icon">☎</span>
+              <div>
+                <span>Mobile Number</span>
+                <strong>{{ selectedCustomer.mobile }}</strong>
+              </div>
+            </div>
+
+            <div class="info-card full-width">
+              <span class="info-icon">✉</span>
+              <div>
+                <span>Email Address</span>
+                <strong>{{ selectedCustomer.email || 'Not provided' }}</strong>
+              </div>
+            </div>
+
+            <div class="info-card full-width">
+              <span class="info-icon">⌖</span>
+              <div>
+                <span>Delivery Address</span>
+                <strong>{{ selectedCustomer.address || 'Not provided' }}</strong>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <span class="info-icon">⌖</span>
+              <div>
+                <span>City</span>
+                <strong>{{ selectedCustomer.city || 'Not provided' }}</strong>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <span class="info-icon">⌑</span>
+              <div>
+                <span>Pincode</span>
+                <strong>{{ selectedCustomer.pincode || 'Not provided' }}</strong>
+              </div>
             </div>
 
           </div>
 
         </div>
 
-        <!-- CUSTOMER ORDER HISTORY -->
-        <div class="details-section">
+        <!-- ORDER HISTORY -->
+        <div class="modal-content-section order-history-section">
 
-          <h4>Order History</h4>
+          <div class="modal-section-heading">
+            <div>
+              <span class="modal-section-label">CUSTOMER ACTIVITY</span>
+              <h4>Order History</h4>
+            </div>
+
+            <span class="history-count">
+              {{ selectedCustomer.orders.length }} Orders
+            </span>
+          </div>
 
           @for (order of selectedCustomer.orders; track order.orderId) {
 
-            <div class="customer-order">
+            <div class="customer-order-card">
 
-              <div class="customer-order-info">
+              <div class="order-card-top">
 
-                <strong>{{ order.orderId }}</strong>
-
-                <span>
-                  {{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}
-                </span>
-
-              </div>
-
-              <div class="customer-order-right">
-
-                <strong>₹{{ order.subtotal }}</strong>
+                <div class="order-reference">
+                  <span>ORDER REFERENCE</span>
+                  <strong>{{ order.orderId }}</strong>
+                </div>
 
                 <span
                   class="order-status"
-                  [class]="getStatusClass(order.status)">
+                  [class]=" 'order-status ' + getStatusClass(order.status)">
                   {{ order.status }}
                 </span>
 
               </div>
 
+              <div class="order-card-bottom">
+
+                <div class="order-date">
+                  <span>Order Date</span>
+                  <strong>
+                    {{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+                  </strong>
+                </div>
+
+                <div class="order-amount">
+                  <span>Order Amount</span>
+                  <strong>₹{{ order.subtotal }}</strong>
+                </div>
+
+              </div>
+
             </div>
 
+          } @empty {
+            <div class="no-order-history">
+              No orders found for this customer.
+            </div>
           }
-
-        </div>
-
-        <!-- MODAL FOOTER -->
-        <div class="modal-footer">
-
-          <button
-            type="button"
-            class="modal-close-btn"
-            (click)="closeDetails()">
-            Close
-          </button>
 
         </div>
 
       </div>
 
-    </div>
+      <!-- FOOTER -->
+      <div class="customer-modal-footer">
+        <span>Thank you for choosing RATASREE.</span>
 
-  }
+        <button
+          type="button"
+          class="modal-close-btn"
+          (click)="closeDetails()">
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
 
 </section>

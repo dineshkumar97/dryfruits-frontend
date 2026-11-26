@@ -15,7 +15,7 @@ interface RecentOrder {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })

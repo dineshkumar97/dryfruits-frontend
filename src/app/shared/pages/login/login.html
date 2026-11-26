@@ -6,13 +6,13 @@
     <!-- BRAND SECTION -->
     <div class="login-brand">
 
-      <a routerLink="/" class="brand-logo">
-        NutNest<span>.</span>
+      <a routerLink="/home" class="brand-logo">
+        RATASREE<span>.</span>
       </a>
 
       <span class="brand-label">PREMIUM DRY FRUITS</span>
 
-      <h1>Welcome to<br>NutNest</h1>
+      <h1>Welcome to<br>RATASREE.</h1>
 
       <p>
         Experience the finest selection of premium dry fruits,
@@ -25,121 +25,118 @@
 
     </div>
 
-    <!-- LOGIN FORM SECTION -->
+    <!-- LOGIN SECTION -->
     <div class="login-content">
 
       <div class="login-card">
 
-        <span class="form-label">WELCOME BACK</span>
+        <span class="form-label">
+          {{ loginType === 'admin' ? 'ADMINISTRATION' : 'WELCOME BACK' }}
+        </span>
 
-        <!-- <h2>
-          {{ loginType === 'admin' ? 'Admin Login' : 'Customer Login' }}
-        </h2> -->
+        <h2>
+          {{ loginType === 'admin' ? 'Admin / Staff Login' : 'Customer Login' }}
+        </h2>
 
         <p class="login-subtitle">
-          Sign in to continue to your NutNest account.
+          {{ loginType === 'admin'
+            ? 'Sign in to access the RATASREE. administration portal.'
+            : 'Sign in to continue to your RATASREE. account.' }}
         </p>
 
-        <!-- LOGIN TYPE -->
-        <!-- <div class="login-tabs">
-
-          <button
-            type="button"
-            [class.active]="loginType === 'customer'"
-            [attr.aria-pressed]="loginType === 'customer'"
-            (click)="selectLoginType('customer')">
-            Customer
-          </button>
-
-          <button
-            type="button"
-            [class.active]="loginType === 'admin'"
-            [attr.aria-pressed]="loginType === 'admin'"
-            (click)="selectLoginType('admin')">
-            Admin
-          </button>
-
-        </div> -->
-
-        <!-- REACTIVE LOGIN FORM -->
         <form
           [formGroup]="loginForm"
           (ngSubmit)="login()"
           novalidate>
 
-          <!-- EMAIL / MOBILE -->
+          <!-- MOBILE / EMAIL -->
           <div class="form-group">
 
             <label for="identifier">
-              Email or Mobile Number
+              {{ loginType === 'admin' ? 'Admin Email Address' : 'Mobile Number' }}
             </label>
 
             <input
               id="identifier"
-              type="text"
+              [type]="loginType === 'admin' ? 'email' : 'tel'"
               formControlName="identifier"
-              placeholder="Enter email or mobile number"
-              autocomplete="username"
+              [placeholder]="loginType === 'admin'
+                ? 'Enter your admin email address'
+                : 'Enter your 10-digit mobile number'"
+              [attr.maxlength]="loginType === 'customer' ? 10 : null"
+              [attr.autocomplete]="loginType === 'admin' ? 'username' : 'tel'"
               [class.invalid]="identifier?.touched && identifier?.invalid">
 
             @if (identifier?.touched && identifier?.hasError('required')) {
               <span class="error-text">
-                Email or mobile number is required.
+                {{ loginType === 'admin'
+                  ? 'Email address is required.'
+                  : 'Mobile number is required.' }}
               </span>
             }
 
-            @if (identifier?.touched && identifier?.hasError('invalidEmailOrMobile')) {
+            @if (identifier?.touched && identifier?.hasError('pattern')) {
               <span class="error-text">
-                Enter a valid email or 10-digit mobile number.
+                Enter a valid 10-digit mobile number.
+              </span>
+            }
+
+            @if (identifier?.touched && identifier?.hasError('email')) {
+              <span class="error-text">
+                Enter a valid email address.
               </span>
             }
 
           </div>
 
-          <!-- PASSWORD -->
-          <div class="form-group">
+          <!-- ADMIN PASSWORD -->
+          @if (loginType === 'admin') {
 
-            <label for="password">
-              Password
-            </label>
+            <div class="form-group">
 
-            <div class="password-wrapper">
+              <label for="password">
+                Password
+              </label>
 
-              <input
-                id="password"
-                [type]="showPassword ? 'text' : 'password'"
-                formControlName="password"
-                placeholder="Enter your password"
-                autocomplete="current-password"
-                [class.invalid]="password?.touched && password?.invalid">
+              <div class="password-wrapper">
 
-              <button
-                type="button"
-                class="password-toggle"
-                (click)="togglePassword()"
-                [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+                <input
+                  id="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  formControlName="password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                  [class.invalid]="password?.touched && password?.invalid">
 
-                {{ showPassword ? 'Hide' : 'Show' }}
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="togglePassword()"
+                  [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
 
-              </button>
+                  {{ showPassword ? 'Hide' : 'Show' }}
+
+                </button>
+
+              </div>
+
+              @if (password?.touched && password?.hasError('required')) {
+                <span class="error-text">
+                  Password is required.
+                </span>
+              }
+
+              @if (password?.touched && password?.hasError('minlength')) {
+                <span class="error-text">
+                  Password must contain at least 4 characters.
+                </span>
+              }
 
             </div>
 
-            @if (password?.touched && password?.hasError('required')) {
-              <span class="error-text">
-                Password is required.
-              </span>
-            }
+          }
 
-            @if (password?.touched && password?.hasError('minlength')) {
-              <span class="error-text">
-                Password must contain at least 6 characters.
-              </span>
-            }
-
-          </div>
-
-          <!-- BACKEND MESSAGE -->
+          <!-- ERROR MESSAGE -->
           @if (errorMessage) {
             <div class="login-error">
               {{ errorMessage }}
@@ -147,14 +144,23 @@
           }
 
           <!-- SUBMIT -->
-          <button type="submit" class="login-btn">
-            {{ loginType === 'admin' ? 'Login as Admin' : 'Login' }}
+          <button
+            type="submit"
+            class="login-btn"
+            [disabled]="isLoading">
+
+            @if (isLoading) {
+              Please wait...
+            } @else {
+              {{ loginType === 'admin' ? 'Login to Admin Portal' : 'Continue' }}
+            }
+
           </button>
 
         </form>
 
         <div class="login-bottom">
-          <span>NutNest Premium Dry Fruits Store</span>
+          <span>RATASREE. Premium Dry Fruits Store</span>
         </div>
 
       </div>

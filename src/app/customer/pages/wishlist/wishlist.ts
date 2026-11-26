@@ -1,20 +1,11 @@
 
-import {
-  Component,
-  Inject,
-  PLATFORM_ID,
-  signal,
-  computed
-} from '@angular/core';
-
+import { Component, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { isPlatformBrowser } from '@angular/common';
 
 import { Cart as CartService } from '../../../core/services/cart';
-import {
-  Product,
-  ProductService
-} from '../../../core/services/product';
+import type { Product } from '../../../core/services/product';
+import { Wishlist as WishlistService } from '../../../core/services/wishlist';
+import { Toast } from '../../../core/services/toast';
 
 @Component({
   selector: 'app-wishlist',
@@ -25,82 +16,32 @@ import {
 })
 export class Wishlist {
 
-  private readonly wishlistKey = 'nutnest-wishlist';
-  private readonly isBrowser: boolean;
-
-  // Signals
-  products = signal<Product[]>([]);
-  wishlistIds = signal<number[]>([]);
-
-  // Computed wishlist products
-  wishlistProducts = computed(() =>
-    this.products().filter(product =>
-      this.wishlistIds().includes(product.id)
-    )
-  );
-
   constructor(
     private cartService: CartService,
-    private productService: ProductService,
-    @Inject(PLATFORM_ID) platformId: object
-  ) {
+    private wishlistService: WishlistService,
+    private toastService: Toast
+  ) {}
 
-    this.isBrowser = isPlatformBrowser(platformId);
+  // Get wishlist products from shared service
+  wishlistProducts = computed(() => {
+    console.log(
+      'Wishlist page products:',
+      this.wishlistService.products()
+    );
 
-    if (this.isBrowser) {
-      this.loadWishlist();
-      this.loadProducts();
-    }
-
-  }
-
-  // Load active products from MongoDB API
-  loadProducts(): void {
-
-    this.productService.getActiveProducts().subscribe({
-
-      next: (products: Product[]) => {
-
-        this.products.set(
-          products.filter(product => product.active)
-        );
-
-        console.log('Wishlist IDs:', this.wishlistIds());
-        console.log(
-          'Available product IDs:',
-          this.products().map(product => product.id)
-        );
-        console.log('Wishlist products:', this.wishlistProducts());
-
-      },
-
-      error: (error) => {
-
-        console.error('Wishlist products API error:', error);
-
-        this.products.set([]);
-
-      }
-
-    });
-
-  }
+    return this.wishlistService.products();
+  });
 
   // Remove product from wishlist
   removeFromWishlist(productId: number): void {
-
-    this.wishlistIds.update(ids =>
-      ids.filter(id => id !== productId)
-    );
-
-    this.saveWishlist();
-
+    this.wishlistService.removeFromWishlist(productId);
+    this.toastService.success('Product removed from wishlist.');
   }
 
   // Add wishlist product to cart
   addToCart(product: Product): void {
 
-    this.cartService.addToCart({
+    const result = this.cartService.addToCart({
       productId: product.id,
       mongoId: product.mongoId,
       name: product.name,
@@ -112,43 +53,10 @@ export class Wishlist {
       oldPrice: product.oldPrice
     });
 
-  }
-
-  // Load saved wishlist IDs
-  private loadWishlist(): void {
-
-    try {
-
-      const saved = JSON.parse(
-        localStorage.getItem(this.wishlistKey) || '[]'
-      );
-
-      this.wishlistIds.set(
-        Array.isArray(saved)
-          ? saved.filter((id): id is number =>
-              Number.isInteger(id) && id > 0
-            )
-          : []
-      );
-
-    } catch {
-
-      this.wishlistIds.set([]);
-
+    if (result.success) {
+      this.toastService.success(result.message);
+    } else {
+      this.toastService.warning(result.message);
     }
-
   }
-
-  // Save wishlist IDs
-  private saveWishlist(): void {
-
-    if (!this.isBrowser) return;
-
-    localStorage.setItem(
-      this.wishlistKey,
-      JSON.stringify(this.wishlistIds())
-    );
-
-  }
-
 }

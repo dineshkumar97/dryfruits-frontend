@@ -57,6 +57,30 @@ export class AuthService {
     );
   }
 
+   checkCustomerMobile(phone: string): Observable<LoginResponse> {
+
+    return this.http.post<LoginResponse>(
+      `${this.apiUrl}/check-customer-mobile`,
+      { phone }
+    ).pipe(
+      tap(response => {
+
+        if (this.isBrowser) {
+          localStorage.setItem(
+            'nutnest-access-token',
+            response.token
+          );
+
+          localStorage.setItem(
+            'nutnest-user',
+            JSON.stringify(response.data)
+          );
+        }
+
+      })
+    );
+  }
+
   logout(): void {
 
     if (this.isBrowser) {

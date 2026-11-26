@@ -4,7 +4,7 @@ import {
   ElementRef,
   HostListener,
   ViewChild,
-  signal
+  signal,
 } from '@angular/core';
 
 import {
@@ -53,6 +53,13 @@ export class Header {
         this.updateCustomerSession();
       });
   }
+
+  isScrolled = false;
+
+@HostListener('window:scroll', [])
+onWindowScroll(): void {
+  this.isScrolled = window.scrollY > 50;
+}
 
   // Update login and customer details
   private updateCustomerSession(): void {

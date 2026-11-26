@@ -124,13 +124,13 @@ export class Cart {
 
     const usedGrams = this.getUsedStockGrams(item.productId);
 
-    const requestedGrams =
-      this.getWeightInGrams(item.weight) * item.quantity;
+   const requestedGrams =
+  this.getWeightInGrams(item.weight) * item.quantity;
 
-    const availableGrams =
-      product.stock * this.getWeightInGrams(product.weight);
+const availableGrams =
+  product.stock * this.getWeightInGrams(product.weight);
 
-    if (usedGrams + requestedGrams > availableGrams) {
+if (requestedGrams > availableGrams) {
       const availableQuantity = Math.floor(
         Math.max(0, availableGrams - usedGrams) /
         this.getWeightInGrams(item.weight)
@@ -222,7 +222,7 @@ export class Cart {
     this.items.update(items =>
       items.map(cartItem =>
         cartItem.productId === productId &&
-        cartItem.weight === weight
+          cartItem.weight === weight
           ? { ...cartItem, quantity }
           : cartItem
       )
@@ -267,27 +267,37 @@ export class Cart {
   }
 
   // Get remaining quantity for selected weight
+  /*  getAvailableQuantity(productId: number, weight: string): number {
+ 
+     const product = this.productService.getProductById(productId);
+ 
+     if (!product || !product.active) {
+       return 0;
+     }
+ 
+     const availableGrams =
+       product.stock * this.getWeightInGrams(product.weight);
+ 
+     const usedGrams = this.getUsedStockGrams(productId);
+ 
+     const remainingGrams = Math.max(
+       0,
+       availableGrams - usedGrams
+     );
+ 
+     return Math.floor(
+       remainingGrams / this.getWeightInGrams(weight)
+     );
+   } */
+
+
   getAvailableQuantity(productId: number, weight: string): number {
-
     const product = this.productService.getProductById(productId);
-
     if (!product || !product.active) {
       return 0;
     }
-
-    const availableGrams =
-      product.stock * this.getWeightInGrams(product.weight);
-
-    const usedGrams = this.getUsedStockGrams(productId);
-
-    const remainingGrams = Math.max(
-      0,
-      availableGrams - usedGrams
-    );
-
-    return Math.floor(
-      remainingGrams / this.getWeightInGrams(weight)
-    );
+    // Cart items do not reserve or deduct stock.
+    return Math.max(0, Number(product.stock) || 0);
   }
 
   // Validate entire cart before checkout
@@ -360,34 +370,7 @@ export class Cart {
   }
 
   // Get latest name, image and prices
-  private getLatestCartItem(
-    item: CartItem,
-    product: Product
-  ): CartItem {
 
-    const selectedGrams = this.getWeightInGrams(item.weight);
-    const baseGrams = this.getWeightInGrams(product.weight);
-
-    const price = Math.round(
-      (product.price / baseGrams) * selectedGrams
-    );
-
-    const oldPrice = Math.round(
-      (product.oldPrice / baseGrams) * selectedGrams
-    );
-
-    return {
-      productId: product.id,
-      mongoId: product.mongoId,
-      name: product.name,
-      image: product.image,
-      category: product.category,
-      weight: item.weight,
-      price,
-      oldPrice: Math.max(price, oldPrice),
-      quantity: item.quantity
-    };
-  }
 
   // Refresh cart prices after Admin changes
   private syncCartPrices(): void {
@@ -457,5 +440,21 @@ export class Cart {
       return [];
     }
   }
+  private getLatestCartItem(
+    item: CartItem,
+    product: Product
+  ): CartItem {
 
+    return {
+      productId: product.id,
+      mongoId: product.mongoId,
+      name: product.name,
+      image: product.image,
+      category: product.category,
+      weight: product.weight,
+      price: product.price,
+      oldPrice: product.oldPrice,
+      quantity: item.quantity
+    };
+  }
 }

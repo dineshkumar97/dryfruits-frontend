@@ -1,4 +1,3 @@
-
 <section class="dashboard-page">
 
   <!-- PAGE HEADING -->
@@ -6,29 +5,25 @@
     <div>
       <span class="section-label">OVERVIEW</span>
       <h2>Dashboard</h2>
-      <p>Welcome back! Here's what's happening with your NutNest store.</p>
+      <p>Welcome back! Here's what's happening with your RATASREE. store.</p>
     </div>
-
-    <a routerLink="/" class="view-store-btn">
-      View Store ↗
-    </a>
   </div>
 
   <!-- SUMMARY CARDS -->
   <div class="stats-grid">
 
     @for (stat of stats; track stat.title) {
-      <div class="stats-card">
+    <div class="stats-card">
 
-        <div class="stats-card-top">
-          <span>{{ stat.title }}</span>
-          <div class="stats-icon">{{ stat.icon }}</div>
-        </div>
-
-        <h3>{{ stat.value }}</h3>
-        <p>{{ stat.description }}</p>
-
+      <div class="stats-card-top">
+        <span>{{ stat.title }}</span>
+        <div class="stats-icon">{{ stat.icon }}</div>
       </div>
+
+      <h3>{{ stat.value }}</h3>
+      <p>{{ stat.description }}</p>
+
+    </div>
     }
 
   </div>
@@ -45,43 +40,43 @@
 
     @if (recentOrders.length > 0) {
 
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Customer</th>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Status</th>
-            </tr>
-          </thead>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
 
-          <tbody>
-            @for (order of recentOrders; track order.orderId) {
-              <tr>
-                <td>{{ order.orderId }}</td>
-                <td>{{ order.customer }}</td>
-                <td>{{ order.date }}</td>
-                <td>₹{{ order.amount }}</td>
-                <td>
-                  <span class="order-status">
-                    {{ order.status }}
-                  </span>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+        <tbody>
+          @for (order of recentOrders; track order.orderId) {
+          <tr>
+            <td>{{ order.orderId }}</td>
+            <td>{{ order.customer }}</td>
+            <td>{{ order.date }}</td>
+            <td>₹{{ order.amount }}</td>
+            <td>
+              <span class="order-status" [class.delivered]="order.status === 'Delivered'">
+                {{ order.status }}
+              </span>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
 
     } @else {
 
-      <div class="empty-orders">
-        <div class="empty-icon">▤</div>
-        <h4>No Orders Yet</h4>
-        <p>Customer orders will appear here once they are placed.</p>
-      </div>
+    <div class="empty-orders">
+      <div class="empty-icon">▤</div>
+      <h4>No Orders Yet</h4>
+      <p>Customer orders will appear here once they are placed.</p>
+    </div>
 
     }
 

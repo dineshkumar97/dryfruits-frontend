@@ -12,6 +12,7 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PLATFORM_ID } from '@angular/core';
+
 import {
   CategoryService,
   StoreCategory
@@ -103,7 +104,6 @@ export class Categories {
 
     this.isBrowser = isPlatformBrowser(platformId);
 
-    // Initialize Reactive Form
     this.categoryForm = this.fb.nonNullable.group({
 
       name: ['', [

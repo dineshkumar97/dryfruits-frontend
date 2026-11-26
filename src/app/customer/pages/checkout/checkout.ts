@@ -10,7 +10,7 @@ import { DecimalPipe } from '@angular/common';
 
 import { Cart as CartService } from '../../../core/services/cart';
 import { OrderService } from '../../../core/services/order';
-
+import { ProductService } from '../../../core/services/product';
 @Component({
   selector: 'app-checkout',
   standalone: true,
@@ -28,7 +28,8 @@ export class Checkout {
     private fb: FormBuilder,
     public cartService: CartService,
     private orderService: OrderService,
-    private router: Router
+    private router: Router,
+    private productService: ProductService
   ) {
     this.checkoutForm = this.fb.group({
 
@@ -66,6 +67,24 @@ export class Checkout {
       ]]
 
     });
+    const userData = localStorage.getItem('nutnest-user');
+    console.log('User Data from localStorage:', userData);
+    if (userData) {
+      try {
+        const parsedData = JSON.parse(userData);
+        console.log('Parsed User Data:', parsedData);
+        this.checkoutForm.patchValue({
+          name: parsedData.name || '',
+          mobile: parsedData.phone || '',
+          email: parsedData.email || '',
+          address: parsedData.address || '',
+          city: parsedData.city || 'Chennai',
+          pincode: parsedData.pincode || ''
+        });
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
   }
 
   get cartItems() {
@@ -148,29 +167,41 @@ export class Checkout {
 
       next: (order) => {
 
-        // Step 5: Clear cart after successful API response
+        // Clear cart only after successful order creation
         this.cartService.clearCart();
 
-        // Step 6: Navigate to success page
-        this.router.navigate(['/order-success'], {
-          state: {
-            orderId: order.orderId
+        // Fetch latest inventory from MongoDB
+        this.productService.getActiveProducts().subscribe({
+
+          next: () => {
+
+            console.log('Latest product stock refreshed.');
+
+            this.router.navigate(['/order-success'], {
+              state: {
+                orderId: order.orderId
+              }
+            });
+
+          },
+
+          error: (error) => {
+
+            console.error('Unable to refresh product stock:', error);
+
+            // Order is already successful.
+            // Do not treat this as an order failure.
+            this.router.navigate(['/order-success'], {
+              state: {
+                orderId: order.orderId
+              }
+            });
+
           }
+
         });
 
       },
-
-      error: (error) => {
-
-        console.error('Order creation failed:', error);
-
-        this.stockError =
-          error.error?.message ||
-          'Unable to place your order. Please try again.';
-
-        this.isSubmitting = false;
-
-      }
 
     });
 

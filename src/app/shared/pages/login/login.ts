@@ -1,32 +1,13 @@
 
 import { Component } from '@angular/core';
 import {
-  AbstractControl,
   FormBuilder,
   ReactiveFormsModule,
-  ValidationErrors,
-  ValidatorFn,
   Validators
 } from '@angular/forms';
 
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
-
-const emailOrMobileValidator: ValidatorFn = (
-  control: AbstractControl
-): ValidationErrors | null => {
-
-  const value = String(control.value ?? '').trim();
-
-  if (!value) return null;
-
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const mobilePattern = /^[6-9][0-9]{9}$/;
-
-  return emailPattern.test(value) || mobilePattern.test(value)
-    ? null
-    : { invalidEmailOrMobile: true };
-};
 
 @Component({
   selector: 'app-login',
@@ -48,20 +29,19 @@ export class Login {
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService
   ) {
 
-    this.loginForm = this.fb.group({
-      identifier: ['', [
-        Validators.required,
-        emailOrMobileValidator
-      ]],
+    this.loginType =
+      this.route.snapshot.data['loginType'] ?? 'customer';
 
-      password: ['', [
-        Validators.required,
-        Validators.minLength(4)
-      ]]
+    this.loginForm = this.fb.group({
+      identifier: [''],
+      password: ['']
     });
+
+    this.setLoginValidators();
 
   }
 
@@ -73,19 +53,40 @@ export class Login {
     return this.loginForm.get('password');
   }
 
-  selectLoginType(type: 'customer' | 'admin'): void {
+  setLoginValidators(): void {
 
-    this.loginType = type;
-    this.loginForm.reset();
+    if (this.loginType === 'customer') {
 
-    this.showPassword = false;
-    this.errorMessage = '';
+      this.identifier?.setValidators([
+        Validators.required,
+        Validators.pattern(/^[6-9][0-9]{9}$/)
+      ]);
+
+      this.password?.clearValidators();
+
+    } else {
+
+      this.identifier?.setValidators([
+        Validators.required,
+        Validators.email
+      ]);
+
+      this.password?.setValidators([
+        Validators.required,
+        Validators.minLength(4)
+      ]);
+
+    }
+
+    this.identifier?.updateValueAndValidity();
+    this.password?.updateValueAndValidity();
 
   }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
+
 
   login(): void {
 
@@ -97,15 +98,42 @@ export class Login {
     }
 
     const formValue = this.loginForm.getRawValue();
-
     const identifier = formValue.identifier?.trim() ?? '';
-    const password = formValue.password ?? '';
 
-    // Backend currently supports email login only
-    if (!identifier.includes('@')) {
-      this.errorMessage = 'Please enter your registered email address.';
+    // CUSTOMER LOGIN
+    if (this.loginType === 'customer') {
+
+      this.isLoading = true;
+
+      this.authService.checkCustomerMobile(identifier).subscribe({
+
+        next: () => {
+
+          this.isLoading = false;
+
+          this.router.navigate(['/home']);
+
+        },
+
+        error: (error) => {
+
+          console.error('Customer mobile verification error:', error);
+
+          this.errorMessage =
+            error.error?.message ||
+            'Unable to verify mobile number. Please try again.';
+
+          this.isLoading = false;
+
+        }
+
+      });
+
       return;
     }
+
+    // ADMIN / STAFF LOGIN
+    const password = formValue.password ?? '';
 
     this.isLoading = true;
 
@@ -115,39 +143,27 @@ export class Login {
 
         const userRole = response.data.role;
 
-        if (
-          this.loginType === 'admin' &&
-          !['ADMIN', 'STAFF'].includes(userRole)
-        ) {
-          this.authService.logout();
-          this.errorMessage = 'You are not authorized to access the admin portal.';
-          this.isLoading = false;
-          return;
-        }
+        if (!['ADMIN', 'STAFF'].includes(userRole)) {
 
-        if (
-          this.loginType === 'customer' &&
-          userRole !== 'CUSTOMER'
-        ) {
           this.authService.logout();
-          this.errorMessage = 'Please use the admin login option.';
+
+          this.errorMessage =
+            'You are not authorized to access the admin portal.';
+
           this.isLoading = false;
           return;
+
         }
 
         this.isLoading = false;
 
-        if (userRole === 'ADMIN' || userRole === 'STAFF') {
-          this.router.navigate(['/admin']);
-        } else {
-          this.router.navigate(['/home']);
-        }
+        this.router.navigate(['/nutnest-admin']);
 
       },
 
       error: (error) => {
 
-        console.error('Login error:', error);
+        console.error('Admin login error:', error);
 
         this.errorMessage =
           error.error?.message || 'Invalid email or password.';

@@ -1,16 +1,33 @@
+
 import { Routes } from '@angular/router';
+import { adminAuthGuard, adminChildAuthGuard } from './core/guards/admin-auth.guard';
 
 export const routes: Routes = [
+
+  // Root URL redirect
+  {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: 'home'
+  },
+
   // Common Login
   {
     path: 'login',
     loadComponent: () =>
       import('./shared/pages/login/login')
-        .then(m => m.Login)
+        .then(m => m.Login),
+    data: { loginType: 'customer' }
   },
-  // Common Profile
+  {
+    path: 'admin-login',
+    loadComponent: () =>
+      import('./shared/pages/login/login')
+        .then(m => m.Login),
+    data: { loginType: 'admin' }
+  },
 
-  // Customer website
+  // Customer Website
   {
     path: '',
     loadComponent: () =>
@@ -83,17 +100,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./customer/pages/contact/contact')
             .then(m => m.Contact)
-      }, {
+      },
+      {
         path: 'privacy-policy',
         loadComponent: () =>
           import('./customer/pages/privacy-policy/privacy-policy')
             .then(m => m.PrivacyPolicy)
-      }, {
+      },
+      {
         path: 'terms-conditions',
         loadComponent: () =>
           import('./customer/pages/terms-conditions/terms-conditions')
             .then(m => m.TermsConditions)
-      }, {
+      },
+      {
         path: 'refund-policy',
         loadComponent: () =>
           import('./customer/pages/refund-policy/refund-policy')
@@ -104,13 +124,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./shared/pages/profile/profile')
             .then(m => m.Profile)
-      },
+      }
     ]
   },
 
-  // Admin dashboard
+  // Admin Dashboard - Protected
   {
-    path: 'admin',
+    path: 'nutnest-admin',
+    canActivate: [adminAuthGuard],
+  canActivateChild: [adminChildAuthGuard],
+
     loadComponent: () =>
       import('./admin/layouts/admin-layout/admin-layout')
         .then(m => m.AdminLayout),
@@ -127,22 +150,26 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/pages/products/products')
             .then(m => m.Products)
-      }, {
+      },
+      {
         path: 'categories',
         loadComponent: () =>
           import('./admin/pages/categories/categories')
             .then(m => m.Categories)
-      }, {
+      },
+      {
         path: 'orders',
         loadComponent: () =>
           import('./admin/pages/orders/orders')
             .then(m => m.Orders)
-      }, {
+      },
+      {
         path: 'customers',
         loadComponent: () =>
           import('./admin/pages/customers/customers')
             .then(m => m.Customers)
-      }, {
+      },
+      {
         path: 'inventory',
         loadComponent: () =>
           import('./admin/pages/inventory/inventory')
@@ -153,13 +180,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./shared/pages/profile/profile')
             .then(m => m.Profile)
-      },
+      }
     ]
   },
 
   // Invalid routes
   {
     path: '**',
-    redirectTo: ''
+    redirectTo: 'home'
   }
 ];

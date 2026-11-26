@@ -1,5 +1,12 @@
 
-import { Component, Inject, signal, computed, PLATFORM_ID } from '@angular/core';
+import {
+  Component,
+  Inject,
+  signal,
+  computed,
+  PLATFORM_ID
+} from '@angular/core';
+
 import {
   AbstractControl,
   FormBuilder,
@@ -11,6 +18,7 @@ import {
   ValidatorFn,
   Validators
 } from '@angular/forms';
+
 import { isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -20,10 +28,9 @@ import {
 } from '../../../core/services/product';
 
 import {
-  CategoryService
+  CategoryService,
+  StoreCategory
 } from '../../../core/services/category';
-
-import { StoreCategory } from '../../../core/services/category';
 
 // Typed Product Form
 type ProductFormGroup = FormGroup<{
@@ -53,13 +60,15 @@ const priceValidator: ValidatorFn = (
   return oldPrice >= price
     ? null
     : { invalidPrice: true };
-
 };
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule
+  ],
   templateUrl: './products.html',
   styleUrl: './products.scss'
 })
@@ -67,9 +76,7 @@ export class Products {
 
   private readonly isBrowser: boolean;
 
-  // =====================================
   // SIGNALS
-  // =====================================
 
   products = signal<Product[]>([]);
 
@@ -87,9 +94,7 @@ export class Products {
 
   formError = signal('');
 
-  // =====================================
   // COMPUTED PRODUCTS
-  // =====================================
 
   filteredProducts = computed(() => {
 
@@ -114,9 +119,7 @@ export class Products {
 
   });
 
-  // =====================================
   // COMPUTED SUMMARY
-  // =====================================
 
   totalProducts = computed(
     () => this.products().length
@@ -135,9 +138,7 @@ export class Products {
     )
   );
 
-  // =====================================
   // POPUP STATE
-  // =====================================
 
   isFormOpen = false;
 
@@ -145,8 +146,6 @@ export class Products {
 
   editingId: string | null = null;
 
-
-  // Reactive Form
   productForm!: ProductFormGroup;
 
   constructor(
@@ -158,7 +157,7 @@ export class Products {
 
     this.isBrowser = isPlatformBrowser(platformId);
 
-    // Initialize Reactive Form
+    // INITIALIZE REACTIVE FORM
     this.productForm = this.fb.nonNullable.group({
 
       name: ['', [
@@ -200,32 +199,53 @@ export class Products {
       validators: priceValidator
     });
 
-    // Initial Data Loading
+    // INITIAL DATA LOADING
     this.loadCategories();
     this.loadProducts();
 
   }
 
-  // =====================================
-  // LOAD CATEGORIES FROM MONGODB
-  // =====================================
+  // CATEGORY IMAGE MAPPING
 
-  // Auto populate product image based on category
   onCategoryChange(): void {
-    const category = this.productForm.controls.category.value;
+
+    const category =
+      this.productForm.controls.category.value;
+
     const categoryImages: Record<string, string> = {
+
       'Premium Seedless Dates': 'images/black_dates.png',
+
       'Premium Walnut Kernels': 'images/walnuts.png',
+
       'Golden Raisins': 'images/golden_raisins.png',
+
       'Premium Iranian Pistachios': 'images/pistachios.png',
+
       'Premium Whole Cashews': 'images/cashews.png',
+
       'Dry Mix Fruits': 'images/dry_mix.png'
+
     };
+
     this.productForm.patchValue({
       image: categoryImages[category] || ''
     });
+
   }
-  
+
+  // IMAGE PREVIEW ERROR
+
+  onPreviewError(event: Event): void {
+
+    const image = event.target as HTMLImageElement;
+
+    image.style.display = 'none';
+
+  }
+
+  // LOAD CATEGORIES
+
   loadCategories(): void {
 
     if (!this.isBrowser) return;
@@ -234,14 +254,12 @@ export class Products {
 
       next: (categories: StoreCategory[]) => {
 
-        // Only active categories can be assigned to products.
         const activeCategories = categories
           .filter(category => category.active)
           .map(category => category.name);
 
         this.categories.set(activeCategories);
 
-        // Set default category when opening Add Product.
         if (
           this.isFormOpen &&
           !this.isEditing &&
@@ -271,9 +289,7 @@ export class Products {
 
   }
 
-  // =====================================
-  // LOAD PRODUCTS FROM MONGODB
-  // =====================================
+  // LOAD PRODUCTS
 
   loadProducts(): void {
 
@@ -310,9 +326,7 @@ export class Products {
 
   }
 
-  // =====================================
   // ADD PRODUCT
-  // =====================================
 
   addProduct(): void {
 
@@ -342,9 +356,7 @@ export class Products {
 
   }
 
-  // =====================================
   // EDIT PRODUCT
-  // =====================================
 
   editProduct(product: Product): void {
 
@@ -384,9 +396,7 @@ export class Products {
 
   }
 
-  // =====================================
   // SAVE PRODUCT
-  // =====================================
 
   saveProduct(): void {
 
@@ -405,22 +415,28 @@ export class Products {
     const productData = {
 
       name: formValue.name.trim(),
+
       category: formValue.category,
+
       image: formValue.image.trim(),
+
       description: formValue.description.trim(),
+
       weight: formValue.weight,
+
       price: formValue.price,
+
       oldPrice: formValue.oldPrice,
+
       stock: formValue.stock,
+
       active: formValue.active
 
     };
 
     this.isSaving.set(true);
 
-    // =====================================
     // UPDATE PRODUCT
-    // =====================================
 
     if (this.isEditing && this.editingId !== null) {
 
@@ -453,13 +469,9 @@ export class Products {
 
       });
 
-    }
+    } else {
 
-    // =====================================
-    // CREATE PRODUCT
-    // =====================================
-
-    else {
+      // CREATE PRODUCT
 
       this.productService.createProduct(
         productData
@@ -490,9 +502,7 @@ export class Products {
 
   }
 
-  // =====================================
   // HANDLE SAVE ERROR
-  // =====================================
 
   private handleSaveError(error: HttpErrorResponse): void {
 
@@ -507,9 +517,7 @@ export class Products {
 
   }
 
-  // =====================================
   // DELETE PRODUCT
-  // =====================================
 
   deleteProduct(id: number): void {
 
@@ -562,15 +570,15 @@ export class Products {
 
   }
 
-  // =====================================
   // TOGGLE PRODUCT AVAILABILITY
-  // =====================================
 
   toggleAvailability(product: Product): void {
 
     if (!product.mongoId) {
 
-      window.alert('Product ID is missing. Please reload products.');
+      window.alert(
+        'Product ID is missing. Please reload products.'
+      );
 
       return;
 
@@ -612,9 +620,7 @@ export class Products {
 
   }
 
-  // =====================================
   // CLOSE POPUP
-  // =====================================
 
   closeForm(): void {
 

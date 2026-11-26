@@ -3,219 +3,282 @@
 
   <div class="container">
 
+    <!-- CART HEADING -->
     <div class="cart-heading">
       <span>YOUR SELECTION</span>
       <h1>My Shopping Cart</h1>
       <p>Review your premium dry fruits before checkout.</p>
     </div>
 
-    @if (cartItems.length > 0) {
+    @if (cartItems().length > 0) {
 
-    <div class="cart-layout">
+      <div class="cart-layout">
 
-      <!-- STOCK VALIDATION MESSAGE -->
-      @if (stockError) {
-        <div class="stock-error-message">
-          <span>⚠</span>
-          <div>
-            <strong>Stock Availability Issue</strong>
-            <p>{{ stockError }}</p>
-            <small>Please update or remove the affected product before checkout.</small>
-          </div>
-        </div>
-      }
-
-      <div class="cart-items">
-
-        @for (item of cartItems; track item.productId + item.weight) {
-
-        <div class="cart-item">
-
-          <!-- PRODUCT IMAGE -->
-          <div class="cart-product-image">
-            <img [src]="item.image" [alt]="item.name">
-          </div>
-
-          <!-- PRODUCT INFORMATION -->
-          <div class="cart-item-info">
-
-            <h3>{{ item.name }}</h3>
-
-            <p class="category">
-              {{ item.category }} · {{ item.weight }}
-            </p>
-
-            <div class="cart-price">
-              <strong>₹{{ item.price }}</strong>
-              <del>₹{{ item.oldPrice }}</del>
-
-              <span class="discount">
-                {{ ((item.oldPrice - item.price) / item.oldPrice * 100) | number:'1.0-0' }}% OFF
-              </span>
+        <!-- STOCK VALIDATION MESSAGE -->
+        @if (stockError()) {
+          <div class="stock-error-message">
+            <span>⚠</span>
+            <div>
+              <strong>Stock Availability Issue</strong>
+              <p>{{ stockError() }}</p>
+              <small>
+                Please update or remove the affected product before checkout.
+              </small>
             </div>
-
-            <small class="item-savings">
-              You save ₹{{ item.oldPrice - item.price }} per pack
-            </small>
-
           </div>
+        }
 
-          <!-- QUANTITY, REMOVE AND ITEM TOTAL -->
-          <div class="cart-item-actions">
+        <!-- CART ITEMS -->
+        <div class="cart-items">
 
-            <div class="quantity-remove-row">
+          @for (item of cartItems(); track item.productId + item.weight) {
 
-              <div class="quantity-section">
-                <span class="action-label">Quantity</span>
+            @let available = getAvailableStock(item);
 
-                <div class="quantity-control">
+            <div class="cart-item">
 
-                  <button
-                    type="button"
-                    class="quantity-btn"
-                    [disabled]="item.quantity <= 1"
-                    (click)="decreaseQuantity(item)"
-                    aria-label="Decrease quantity">
-                    −
-                  </button>
+              <!-- PRODUCT IMAGE -->
+              <div class="cart-product-image">
+                <img [src]="item.image" [alt]="item.name">
+              </div>
 
-                  <span class="quantity-value">
-                    {{ item.quantity }}
+              <!-- PRODUCT INFORMATION -->
+              <div class="cart-item-info">
+
+                <h3>{{ item.name }}</h3>
+
+                <p class="category">
+                  {{ item.category }} · {{ item.weight }}
+                </p>
+
+                <!-- STOCK AVAILABILITY -->
+                <div class="cart-stock">
+
+                  <span
+                    class="stock-status"
+                    [class.in-stock]="available > 5"
+                    [class.low-stock]="available > 0 && available <= 5"
+                    [class.out-of-stock]="available === 0">
+
+                    <span class="stock-dot"></span>
+
+                    {{ getStockStatus(item) }}
+
                   </span>
 
+                  <!-- <small>
+                    @if (available > 0) {
+                      {{ available }} more packs available
+                    } @else {
+                      No additional stock available
+                    }
+                  </small> -->
+
+                </div>
+
+                <!-- PRODUCT PRICE -->
+                <div class="cart-price">
+
+                  <strong>
+                    ₹{{ item.price | number:'1.0-2' }}
+                  </strong>
+
+                  @if (item.oldPrice > item.price) {
+                    <del>
+                      ₹{{ item.oldPrice | number:'1.0-2' }}
+                    </del>
+
+                    <span class="discount">
+                      {{ ((item.oldPrice - item.price) / item.oldPrice * 100) | number:'1.0-0' }}% OFF
+                    </span>
+                  }
+
+                </div>
+
+                @if (item.oldPrice > item.price) {
+                  <small class="item-savings">
+                    You save ₹{{ item.oldPrice - item.price | number:'1.0-2' }} per pack
+                  </small>
+                }
+
+              </div>
+
+              <!-- QUANTITY AND ITEM TOTAL -->
+              <div class="cart-item-actions">
+
+                <div class="quantity-remove-row">
+
+                  <!-- QUANTITY -->
+                  <div class="quantity-section">
+
+                    <span class="action-label">Quantity</span>
+
+                    <div class="quantity-control">
+
+                      <button
+                        type="button"
+                        class="quantity-btn"
+                        [disabled]="item.quantity <= 1"
+                        (click)="decreaseQuantity(item)"
+                        aria-label="Decrease quantity">
+                        −
+                      </button>
+                      
+
+                      <span class="quantity-value">
+                        {{ item.quantity }}
+                      </span>
+
+                    <button
+  type="button"
+  class="quantity-btn"
+  [disabled]="item.quantity >= available"
+  (click)="increaseQuantity(item)"
+  aria-label="Increase quantity">
+  +
+</button>
+
+                    </div>
+
+                  </div>
+
+                  <!-- REMOVE BUTTON -->
                   <button
                     type="button"
-                    class="quantity-btn"
-                    (click)="increaseQuantity(item)"
-                    aria-label="Increase quantity">
-                    +
+                    class="remove-btn"
+                    (click)="removeItem(item)"
+                    aria-label="Remove item"
+                    title="Remove item">
+
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#dc3545"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round">
+
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4h8v2" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6" />
+                      <path d="M14 11v6" />
+
+                    </svg>
+
                   </button>
 
                 </div>
+
+                <!-- ITEM TOTAL -->
+                <div class="item-total-row">
+
+                  <span class="action-label">Item Total</span>
+
+                  <strong class="item-total-price">
+                    ₹{{ item.price * item.quantity | number:'1.0-2' }}
+                  </strong>
+
+                </div>
+
+                @if (item.oldPrice > item.price) {
+                  <small class="item-total-savings">
+                    You save ₹{{ (item.oldPrice - item.price) * item.quantity | number:'1.0-2' }}
+                  </small>
+                }
+
               </div>
 
-              <button
-                type="button"
-                class="remove-btn"
-                (click)="removeItem(item)"
-                aria-label="Remove item"
-                title="Remove item">
-
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#dc3545"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round">
-
-                  <path d="M3 6h18" />
-                  <path d="M8 6V4h8v2" />
-                  <path d="M19 6l-1 14H6L5 6" />
-                  <path d="M10 11v6" />
-                  <path d="M14 11v6" />
-
-                </svg>
-
-              </button>
-
             </div>
 
-            <!-- ITEM TOTAL -->
-            <div class="item-total-row">
-              <span class="action-label">Item Total</span>
+          }
 
-              <strong class="item-total-price">
-                ₹{{ item.price * item.quantity }}
-              </strong>
-            </div>
+        </div>
 
-            <small class="item-total-savings">
-              You save ₹{{ (item.oldPrice - item.price) * item.quantity }}
-            </small>
+        <!-- ORDER SUMMARY -->
+        <div class="cart-summary">
 
+          <h2>Order Summary</h2>
+
+          <div class="summary-row">
+            <span>Total Items</span>
+            <strong>{{ totalQuantity() }} packs</strong>
           </div>
 
-        </div>
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <strong>
+              ₹{{ subtotal() | number:'1.0-2' }}
+            </strong>
+          </div>
 
-        }
+          <div class="summary-row savings-row">
+            <span>Total Savings</span>
+            <strong>
+              ₹{{ totalSavings() | number:'1.0-2' }}
+            </strong>
+          </div>
 
-      </div>
+          @if (totalSavings() > 0) {
+            <div class="savings-message">
+              <span>✓</span>
+              You're saving ₹{{ totalSavings() | number:'1.0-2' }} on this order!
+            </div>
+          }
 
-      <!-- ORDER SUMMARY -->
-      <div class="cart-summary">
+          <!-- TOTAL PAYABLE -->
+          <div class="summary-total">
+            <span>Total Payable</span>
+            <strong>
+              ₹{{ subtotal() | number:'1.0-2' }}
+            </strong>
+          </div>
 
-        <h2>Order Summary</h2>
+          <!-- CHECKOUT BUTTON -->
+          @if (!stockError()) {
 
-        <div class="summary-row">
-          <span>Total Items</span>
-          <strong>{{ totalQuantity }} packs</strong>
-        </div>
+            <a routerLink="/checkout" class="checkout-btn">
+              Proceed to Checkout →
+            </a>
 
-        <div class="summary-row">
-          <span>Subtotal</span>
-          <strong>₹{{ subtotal }}</strong>
-        </div>
+          } @else {
 
-        <div class="summary-row savings-row">
-          <span>Total Savings</span>
-          <strong>₹{{ totalSavings }}</strong>
-        </div>
+            <button
+              type="button"
+              class="checkout-btn checkout-disabled"
+              disabled>
+              Checkout Unavailable
+            </button>
 
-        <div class="savings-message">
-          <span>✓</span>
-          You're saving ₹{{ totalSavings }} on this order!
-        </div>
+          }
 
-        <div class="summary-total">
-          <span>Total Payable</span>
-          <strong>₹{{ subtotal }}</strong>
-        </div>
-
-        <!-- CHECKOUT BUTTON -->
-        @if (!stockError) {
-
-          <a routerLink="/checkout" class="checkout-btn">
-            Proceed to Checkout →
+          <a routerLink="/products" class="continue-shopping">
+            ← Continue Shopping
           </a>
 
-        } @else {
-
-          <button
-            type="button"
-            class="checkout-btn checkout-disabled"
-            disabled>
-            Checkout Unavailable
-          </button>
-
-        }
-
-        <a routerLink="/products" class="continue-shopping">
-          ← Continue Shopping
-        </a>
+        </div>
 
       </div>
-
-    </div>
 
     } @else {
 
-    <div class="empty-cart">
+      <!-- EMPTY CART -->
+      <div class="empty-cart">
 
-      <div class="empty-icon">🛒</div>
+        <div class="empty-icon">🛒</div>
 
-      <h2>Your cart is empty</h2>
+        <h2>Your cart is empty</h2>
 
-      <p>Discover our premium dry fruits collection.</p>
+        <p>Discover our premium dry fruits collection.</p>
 
-      <a routerLink="/products">
-        Start Shopping
-      </a>
+        <a routerLink="/products">
+          Start Shopping
+        </a>
 
-    </div>
+      </div>
 
     }
 

@@ -1,5 +1,5 @@
 
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -9,8 +9,9 @@ import {
 } from '@angular/forms';
 
 import { isPlatformBrowser } from '@angular/common';
-import { PLATFORM_ID } from '@angular/core';
+import { AuthService } from '../../../core/services/auth';
 import { Router } from '@angular/router';
+
 interface UserProfile {
   name: string;
   mobile: string;
@@ -41,15 +42,7 @@ type ProfileFormGroup = FormGroup<{
 export class Profile {
 
   private readonly isBrowser: boolean;
-private get storageKey(): string {
-  return this.isAdminProfile
-    ? 'nutnest-admin-profile'
-    : 'nutnest-customer-profile';
-}
 
-get isAdminProfile(): boolean {
-  return this.router.url.startsWith('/admin/');
-}
   profileForm!: ProfileFormGroup;
 
   isEditing = true;
@@ -59,13 +52,13 @@ get isAdminProfile(): boolean {
 
   constructor(
     private fb: FormBuilder,
+    private authService: AuthService,
+    @Inject(PLATFORM_ID) platformId: object,
     private router: Router,
-    @Inject(PLATFORM_ID) platformId: object
   ) {
 
     this.isBrowser = isPlatformBrowser(platformId);
 
-    // Initialize Reactive Form
     this.profileForm = this.fb.nonNullable.group({
 
       name: ['', [
@@ -83,7 +76,6 @@ get isAdminProfile(): boolean {
       ]],
 
       address: [''],
-
       city: [''],
 
       pincode: ['', [
@@ -97,50 +89,28 @@ get isAdminProfile(): boolean {
     this.loadProfile();
   }
 
-  // Load Profile
-  loadProfile(): void {
+  // Check logged-in user role
+  get isAdminProfile(): boolean {
 
-    if (!this.isBrowser) return;
+    const user = this.authService.getUser();
 
-    try {
-
-      const savedProfile = localStorage.getItem(
-        this.storageKey
-      );
-
-      if (!savedProfile) return;
-
-      const profile: UserProfile = JSON.parse(savedProfile);
-
-      this.profileForm.patchValue({
-
-        name: profile.name ?? '',
-        mobile: profile.mobile ?? '',
-        email: profile.email ?? '',
-        address: profile.address ?? '',
-        city: profile.city ?? '',
-        pincode: profile.pincode ?? '',
-        profileImage: profile.profileImage ?? ''
-
-      });
-
-      this.hasProfile = true;
-      this.isEditing = false;
-
-    } catch (error) {
-
-      console.error('Unable to load profile:', error);
-
-    }
-
+    return user?.role === 'ADMIN' || user?.role === 'STAFF';
   }
 
-  // Get Profile Form Controls
+  // Separate profile storage based on role
+  private get storageKey(): string {
+
+    return this.isAdminProfile
+      ? 'nutnest-admin-profile'
+      : 'nutnest-customer-profile';
+  }
+
+  // Form controls
   get f() {
     return this.profileForm.controls;
   }
 
-  // Get Profile Initial
+  // Profile initial
   get profileInitial(): string {
 
     const name = this.f.name.value.trim();
@@ -148,20 +118,78 @@ get isAdminProfile(): boolean {
     return name
       ? name.charAt(0).toUpperCase()
       : 'N';
+  }
+
+  // Load profile
+  loadProfile(): void {
+
+    if (!this.isBrowser) return;
+
+    try {
+
+      const user = this.authService.getUser();
+
+      if (!user) {
+        this.hasProfile = false;
+        this.isEditing = true;
+        this.profileForm.enable();
+        return;
+      }
+
+      const savedProfile = localStorage.getItem(this.storageKey);
+
+      const profile: Partial<UserProfile> = savedProfile
+        ? JSON.parse(savedProfile)
+        : {};
+
+      this.profileForm.patchValue({
+
+        name: user.name || profile.name || '',
+
+        mobile: user.phone || profile.mobile || '',
+
+        email: user.email || profile.email || '',
+
+        address: profile.address || '',
+
+        city: profile.city || '',
+
+        pincode: profile.pincode || '',
+
+        profileImage: profile.profileImage || ''
+
+      });
+
+      this.hasProfile = true;
+      this.isEditing = false;
+
+      // Disable fields when viewing profile
+      this.profileForm.disable();
+
+    } catch (error) {
+
+      console.error('Unable to load profile:', error);
+
+      this.hasProfile = false;
+      this.isEditing = true;
+      this.profileForm.enable();
+
+    }
 
   }
 
-  // Open Edit Mode
+  // Edit profile
   editProfile(): void {
 
     this.isEditing = true;
     this.successMessage = '';
 
+    // Enable all form fields
     this.profileForm.enable();
 
   }
 
-  // Save Profile
+  // Save profile
   saveProfile(): void {
 
     if (this.profileForm.invalid) {
@@ -171,12 +199,12 @@ get isAdminProfile(): boolean {
 
     }
 
-    const profile: UserProfile =
-      this.profileForm.getRawValue();
+    if (!this.isBrowser) return;
 
     try {
 
-      if (!this.isBrowser) return;
+      const profile: UserProfile =
+        this.profileForm.getRawValue();
 
       localStorage.setItem(
         this.storageKey,
@@ -186,6 +214,7 @@ get isAdminProfile(): boolean {
       this.hasProfile = true;
       this.isEditing = false;
 
+      // Disable fields after saving
       this.profileForm.disable();
 
       this.successMessage =
@@ -202,24 +231,21 @@ get isAdminProfile(): boolean {
 
   }
 
-  // Cancel Editing
   cancelEdit(): void {
+    const currentUrl = this.router.url;
+    const user = this.authService.getUser();
 
-    if (this.hasProfile) {
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'STAFF';
 
-      this.loadProfile();
-      this.successMessage = '';
-      this.profileForm.disable();
-
+    if (currentUrl.startsWith('/admin-login')) {
+      if (isAdmin) {
+        this.router.navigate(['/admin-login']);
+      } else {
+        this.router.navigate(['/home']);
+      }
     } else {
-
-      this.profileForm.reset();
-      this.profileForm.enable();
-
+      this.router.navigate(['/home']);
     }
-
-    this.isEditing = !this.hasProfile;
-
   }
 
 }
