@@ -48,10 +48,10 @@ export class Products {
     this.productService.getActiveProducts().subscribe({
       next: (products: Product[]) => {
         this.products.set(products.filter(product => product.active));
-        console.log('Customer products loaded:', this.products());
+        // console.log('Customer products loaded:', this.products());
       },
       error: (error) => {
-        console.error('Customer products API error:', error);
+        // console.error('Customer products API error:', error);
         this.products.set([]);
         this.toastService.error('Unable to load products. Please try again.');
       }

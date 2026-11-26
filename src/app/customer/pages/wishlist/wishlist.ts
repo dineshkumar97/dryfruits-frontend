@@ -22,24 +22,38 @@ export class Wishlist {
     private toastService: Toast
   ) {}
 
-  // Get wishlist products from shared service
-  wishlistProducts = computed(() => {
-    console.log(
-      'Wishlist page products:',
-      this.wishlistService.products()
-    );
+  // Get wishlist products
+  wishlistProducts = computed(() =>
+    this.wishlistService.products()
+  );
 
-    return this.wishlistService.products();
-  });
+  // Get available stock
+  getAvailableQuantity(product: Product): number {
+    return Math.max(0, Number(product.stock) || 0);
+  }
 
-  // Remove product from wishlist
+  // Check stock availability
+  isOutOfStock(product: Product): boolean {
+    return this.getAvailableQuantity(product) <= 0;
+  }
+
+  // Remove product
   removeFromWishlist(productId: number): void {
     this.wishlistService.removeFromWishlist(productId);
     this.toastService.success('Product removed from wishlist.');
   }
 
-  // Add wishlist product to cart
+  // Add product to cart
   addToCart(product: Product): void {
+
+    const available = this.getAvailableQuantity(product);
+
+    if (available <= 0) {
+      this.toastService.warning(
+        'Sorry, this product is out of stock.'
+      );
+      return;
+    }
 
     const result = this.cartService.addToCart({
       productId: product.id,

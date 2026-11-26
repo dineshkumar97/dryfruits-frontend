@@ -11,6 +11,7 @@ import { DecimalPipe } from '@angular/common';
 import { Cart as CartService } from '../../../core/services/cart';
 import { OrderService } from '../../../core/services/order';
 import { ProductService } from '../../../core/services/product';
+
 @Component({
   selector: 'app-checkout',
   standalone: true,
@@ -24,6 +25,11 @@ export class Checkout {
   stockError = '';
   isSubmitting = false;
 
+  // Checkout charges
+  readonly deliveryCharge = 12;
+  readonly deliveryDiscount = 12;
+  readonly handlingCharge = 2;
+
   constructor(
     private fb: FormBuilder,
     public cartService: CartService,
@@ -31,6 +37,7 @@ export class Checkout {
     private router: Router,
     private productService: ProductService
   ) {
+
     this.checkoutForm = this.fb.group({
 
       name: ['', [
@@ -67,12 +74,13 @@ export class Checkout {
       ]]
 
     });
+
     const userData = localStorage.getItem('nutnest-user');
-    console.log('User Data from localStorage:', userData);
+
     if (userData) {
       try {
         const parsedData = JSON.parse(userData);
-        console.log('Parsed User Data:', parsedData);
+
         this.checkoutForm.patchValue({
           name: parsedData.name || '',
           mobile: parsedData.phone || '',
@@ -81,6 +89,7 @@ export class Checkout {
           city: parsedData.city || 'Chennai',
           pincode: parsedData.pincode || ''
         });
+
       } catch (error) {
         console.error('Error parsing user data:', error);
       }
@@ -91,19 +100,60 @@ export class Checkout {
     return this.cartService.getCartItems();
   }
 
+  // Discounted product total
   get subtotal(): number {
     return this.cartService.getSubtotal();
   }
 
+  // Original product total before discount
+  get originalSubtotal(): number {
+    return this.cartItems.reduce(
+      (total, item) =>
+        total + item.oldPrice * item.quantity,
+      0
+    );
+  }
+
+  // Total quantity
   get getTotalQuantity(): number {
     return this.cartService.getTotalQuantity();
   }
 
+  // Total product savings
   get totalSavings(): number {
     return this.cartItems.reduce(
       (total, item) =>
-        total + (item.oldPrice - item.price) * item.quantity,
+        total + Math.max(0, item.oldPrice - item.price) * item.quantity,
       0
+    );
+  }
+
+  // Final payable amount
+  get grandTotal(): number {
+    return this.subtotal + this.handlingCharge;
+  }
+
+  // Total discount percentage
+  get totalSavingsPercentage(): number {
+    if (this.originalSubtotal <= 0) {
+      return 0;
+    }
+
+    return Math.round(
+      (this.totalSavings / this.originalSubtotal) * 100
+    );
+  }
+
+  getProductDiscount(item: any): number {
+    if (!item.oldPrice || item.oldPrice <= 0) {
+      return 0;
+    }
+
+    return Math.max(
+      0,
+      Math.round(
+        ((item.oldPrice - item.price) / item.oldPrice) * 100
+      )
     );
   }
 
@@ -126,7 +176,7 @@ export class Checkout {
       return;
     }
 
-    // Step 1: Validate current cart
+    // Step 1: Validate stock
     const stockValidation = this.cartService.validateCart();
 
     if (!stockValidation.success) {
@@ -134,15 +184,15 @@ export class Checkout {
       return;
     }
 
-    // Step 2: Get latest cart information
+    // Step 2: Get latest cart
     const currentCartItems = this.cartService.getCartItems();
 
-    // Step 3: Prepare customer details
+    // Step 3: Get customer information
     const formValue = this.checkoutForm.getRawValue();
 
     this.isSubmitting = true;
 
-    // Step 4: Create order in MongoDB
+    // Step 4: Create order
     this.orderService.createOrder({
 
       customer: {
@@ -156,8 +206,10 @@ export class Checkout {
 
       items: currentCartItems,
 
+      // Keep the existing API's item subtotal field unchanged.
       subtotal: currentCartItems.reduce(
-        (total, item) => total + item.price * item.quantity,
+        (total, item) =>
+          total + item.price * item.quantity,
         0
       ),
 
@@ -170,7 +222,7 @@ export class Checkout {
         // Clear cart only after successful order creation
         this.cartService.clearCart();
 
-        // Fetch latest inventory from MongoDB
+        // Refresh inventory
         this.productService.getActiveProducts().subscribe({
 
           next: () => {
@@ -189,8 +241,6 @@ export class Checkout {
 
             console.error('Unable to refresh product stock:', error);
 
-            // Order is already successful.
-            // Do not treat this as an order failure.
             this.router.navigate(['/order-success'], {
               state: {
                 orderId: order.orderId
@@ -202,6 +252,18 @@ export class Checkout {
         });
 
       },
+
+      error: (error) => {
+
+        console.error('Order creation failed:', error);
+
+        this.stockError =
+          error?.error?.message ||
+          'Unable to place your order. Please try again.';
+
+        this.isSubmitting = false;
+
+      }
 
     });
 

@@ -4,79 +4,178 @@
   <!-- Hero Section -->
   <section class="about-hero">
     <div class="about-hero-content">
-      <span class="eyebrow">WELCOME TO NUTNEST</span>
 
-      <h1>Nature's Finest Treasures,<br>
-        Delivered with Love.</h1>
+      <span class="eyebrow">WELCOME TO RATASREE</span>
+
+      <h1>
+        A Little Goodness.<br>
+        A Lot of Happiness.
+      </h1>
 
       <p>
-        Discover the goodness of premium dry fruits,
-        carefully selected to bring natural taste and
-        everyday nutrition to your family.
+        Discover delicious premium dry fruits, thoughtfully
+        selected for your everyday snacking, family moments
+        and special occasions.
       </p>
 
       <a routerLink="/products" class="shop-btn">
-        Explore Our Products
+        Explore Our Collection
+        <span>→</span>
       </a>
+
+      <div class="hero-highlights">
+        <span>✦ Quality Selection</span>
+        <span>✦ Packed with Care</span>
+      </div>
+
     </div>
   </section>
 
   <!-- Our Story -->
   <section class="story-section">
+
     <div class="story-content">
-      <span class="section-label">OUR STORY</span>
 
-      <h2>A Little Goodness in Every Bite</h2>
+      <span class="section-label">A LITTLE ABOUT US</span>
+
+      <h2>
+        Bringing Nature's Goodness Closer to You.
+      </h2>
 
       <p>
-        RATASREE. was created with a simple idea: make quality
-        dry fruits accessible for everyone. We believe that
-        good food brings happiness, supports healthy habits
-        and makes everyday moments special.
+        At RATASREE, we believe that happiness can be found
+        in the little things — a healthy snack, a family
+        gathering or a moment shared with loved ones.
       </p>
 
       <p>
-        From crunchy almonds to delicious cashews and
-        flavourful dates, we aim to bring carefully selected
-        products to your home with care and attention.
+        That's why we bring together a delightful selection
+        of dry fruits, from crunchy almonds and delicious
+        cashews to naturally sweet dates and more.
       </p>
+
+      <p>
+        Our aim is simple: offer a convenient and enjoyable
+        shopping experience with products selected and
+        packed with care.
+      </p>
+
+      <a routerLink="/products" class="story-link">
+        Discover Our Products →
+      </a>
+
     </div>
 
     <div class="story-image">
+
       <img
         src="images/our_story.png"
-        alt="Premium assortment of nuts and dry fruits">
+        alt="Beautiful assortment of premium dry fruits">
+
+      <div class="image-caption">
+        <span>RATASREE</span>
+        <strong>Nature's Goodness in Every Bite</strong>
+      </div>
+
     </div>
+
   </section>
 
   <!-- Why Choose Us -->
   <section class="features-section">
+
     <div class="section-heading">
-      <span class="section-label">WHY NUTNEST</span>
-      <h2>Goodness You Can Feel</h2>
-      <p>We focus on the little details that make a difference.</p>
+
+      <span class="section-label">THE RATASREE DIFFERENCE</span>
+
+      <h2>Why Customers Choose Us</h2>
+
+      <p>
+        Because every little detail matters when it comes
+        to bringing you a delightful experience.
+      </p>
+
     </div>
 
     <div class="features-grid">
+
       @for (feature of features; track feature.title) {
+
         <div class="feature-card">
-          <div class="feature-icon">{{ feature.icon }}</div>
+
+          <div class="feature-icon">
+            {{ feature.icon }}
+          </div>
+
           <h3>{{ feature.title }}</h3>
+
           <p>{{ feature.description }}</p>
+
         </div>
+
       }
+
     </div>
+
   </section>
 
-  <!-- Mission -->
+  <!-- Lifestyle Section -->
+  <section class="lifestyle-section">
+
+    <div class="lifestyle-image">
+      <img
+        src="images/collection_dry_fruits.png"
+        alt="Premium collection of dry fruits">
+    </div>
+
+    <div class="lifestyle-content">
+
+      <span class="section-label">MADE FOR EVERY OCCASION</span>
+
+      <h2>
+        Share Goodness.<br>
+        Share Happiness.
+      </h2>
+
+      <p>
+        Whether it's your everyday snack, a family get-together
+        or a thoughtful gift for someone special, dry fruits
+        make every occasion a little more delightful.
+      </p>
+
+      <a type="button" routerLink="/products" class="shop-btn">
+        Shop Your Favourites →
+      </a>
+
+    </div>
+
+  </section>
+
+  <!-- Our Promise -->
   <section class="mission-section">
-    <span class="section-label">OUR PROMISE</span>
-    <h2>Making Everyday Snacking Better</h2>
+
+    <span class="section-label">OUR PROMISE TO YOU</span>
+
+    <h2>
+      Your Trust Makes Us Better.
+    </h2>
+
     <p>
-      Our goal is to make shopping for dry fruits simple,
-      enjoyable and convenient, while giving every customer
-      a quality experience.
+      At RATASREE, your satisfaction means everything to us.
+      We strive to make every order a pleasant experience
+      through thoughtful product selection, careful packaging
+      and customer-focused service.
     </p>
+
+    <div class="mission-tagline">
+      <span>RATASREE</span>
+      <strong>A Taste of Nature. A Touch of Love.</strong>
+    </div>
+
+    <a routerLink="/products" class="shop-btn">
+      Start Shopping →
+    </a>
+
   </section>
 
 </section>

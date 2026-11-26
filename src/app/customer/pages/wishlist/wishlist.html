@@ -1,4 +1,3 @@
-
 <section class="wishlist-page">
 
   <div class="wishlist-banner">
@@ -11,85 +10,95 @@
 
     @if (wishlistProducts().length > 0) {
 
-      <div class="wishlist-heading">
-        <h2>Saved Products</h2>
-        <span>{{ wishlistProducts().length }} Products</span>
+    <div class="wishlist-heading">
+      <h2>Saved Products</h2>
+      <span>{{ wishlistProducts().length }} Products</span>
+    </div>
+
+    <div class="wishlist-grid">
+
+  @for (product of wishlistProducts(); track product.id) {
+
+    <div class="wishlist-card">
+
+      <div class="wishlist-image">
+        <img [src]="product.image" [alt]="product.name">
+
+        <button
+          type="button"
+          class="remove-btn"
+          (click)="removeFromWishlist(product.id)">
+          ♥
+        </button>
       </div>
 
-      <div class="wishlist-grid">
+      <div class="wishlist-info">
 
-        @for (product of wishlistProducts(); track product.id) {
+        <span class="product-category">
+          {{ product.category }}
+        </span>
 
-          <div class="wishlist-card">
+        <h3>{{ product.name }}</h3>
 
-            <div class="wishlist-image">
-              <img [src]="product.image" [alt]="product.name">
+        <p>{{ product.weight }}</p>
 
-              <button
-                type="button"
-                class="remove-btn"
-                (click)="removeFromWishlist(product.id)"
-                aria-label="Remove from wishlist">
-                ♥
-              </button>
+        <div class="product-price">
+          <strong>₹{{ product.price }}</strong>
+          <del>₹{{ product.oldPrice }}</del>
+        </div>
+
+        <!-- Stock and Cart Actions -->
+        <div class="wishlist-actions">
+
+          @if (isOutOfStock(product)) {
+
+            <div class="stock-status out-of-stock">
+              <span class="stock-dot"></span>
+              Out of Stock
             </div>
 
-            <div class="wishlist-info">
+          } @else {
 
-              <span class="product-category">
-                {{ product.category }}
-              </span>
+            <button
+              type="button"
+              class="add-cart-btn"
+              (click)="addToCart(product)">
+              Add to Cart
+            </button>
 
-              <h3>{{ product.name }}</h3>
+          }
 
-              <p>{{ product.weight }}</p>
+          <button
+            type="button"
+            class="remove-text-btn"
+            (click)="removeFromWishlist(product.id)">
+            Remove
+          </button>
 
-              <div class="product-price">
-                <strong>₹{{ product.price }}</strong>
-                <del>₹{{ product.oldPrice }}</del>
-              </div>
-
-              <div class="wishlist-actions">
-
-                <button
-                  type="button"
-                  class="add-cart-btn"
-                  (click)="addToCart(product)">
-                  Add to Cart
-                </button>
-
-                <button
-                  type="button"
-                  class="remove-text-btn"
-                  (click)="removeFromWishlist(product.id)">
-                  Remove
-                </button>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        }
+        </div>
 
       </div>
 
+    </div>
+
+  }
+
+</div>
     } @else {
 
-      <div class="empty-wishlist">
+    <div class="empty-wishlist">
 
-        <div class="empty-icon">♡</div>
+      <div class="empty-icon">♡</div>
 
-        <h2>Your Wishlist is Empty</h2>
+      <h2>Your Wishlist is Empty</h2>
 
-        <p>You haven't saved any favourite products yet.</p>
+      <p>You haven't saved any favourite products yet.</p>
 
-        <a routerLink="/products" class="shop-btn">
-          Explore Products
-        </a>
+      <a routerLink="/products" class="shop-btn">
+        Explore Products
+      </a>
 
-      </div>
+    </div>
 
     }
 
