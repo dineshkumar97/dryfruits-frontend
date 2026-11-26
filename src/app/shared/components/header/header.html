@@ -1,4 +1,3 @@
-
 <header class="header" [class.scrolled]="isScrolled">
   <div class="container header-content">
 
@@ -11,44 +10,36 @@
     <!-- DESKTOP NAVIGATION -->
     <nav class="navigation" [class.mobile-open]="isMobileMenuOpen">
 
-      <a routerLink="/home" routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
+      <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
         (click)="closeMobileMenu()">Home</a>
 
-      <a routerLink="/products" routerLinkActive="active"
-        (click)="closeMobileMenu()">Products</a>
+      <a routerLink="/products" routerLinkActive="active" (click)="closeMobileMenu()">Products</a>
 
       @if (isLoggedIn()) {
-        <a routerLink="/my-orders" routerLinkActive="active"
-          (click)="closeMobileMenu()">My Orders</a>
+      <a routerLink="/my-orders" routerLinkActive="active" (click)="closeMobileMenu()">My Orders</a>
 
-        <!-- <a routerLink="/track-order" routerLinkActive="active"
+      <!-- <a routerLink="/track-order" routerLinkActive="active"
           (click)="closeMobileMenu()">Track Order</a> -->
       }
 
-      <a routerLink="/wishlist" routerLinkActive="active"
-        class="wishlist-link" (click)="closeMobileMenu()">
+      <a routerLink="/wishlist" routerLinkActive="active" class="wishlist-link" (click)="closeMobileMenu()">
         <span>♡</span> Wishlist
       </a>
 
-      <a routerLink="/about" routerLinkActive="active"
-        (click)="closeMobileMenu()">About Us</a>
+      <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">About Us</a>
 
-      <a routerLink="/contact" routerLinkActive="active"
-        (click)="closeMobileMenu()">Contact</a>
+      <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileMenu()">Contact</a>
 
       <!-- MOBILE CART -->
-      <a routerLink="/cart" class="mobile-cart-link"
-        (click)="closeMobileMenu()">
+      <!-- <a routerLink="/cart" class="mobile-cart-link" (click)="closeMobileMenu()">
         <span>🛒</span>
         <span>My Cart</span>
         <span class="cart-count">{{ cartService.cartCount() }}</span>
-      </a>
+      </a> -->
 
       <!-- MOBILE LOGIN -->
       @if (!isLoggedIn()) {
-        <a routerLink="/login" class="mobile-login-link"
-          (click)="closeMobileMenu()">Login</a>
+      <a routerLink="/login" class="mobile-login-link" (click)="closeMobileMenu()">Login</a>
       }
 
     </nav>
@@ -57,7 +48,7 @@
     <div class="header-actions">
 
       @if (!isLoggedIn()) {
-        <a routerLink="/login" class="login-btn">Login</a>
+      <a routerLink="/login" class="login-btn">Login</a>
       }
 
       <!-- DESKTOP CART -->
@@ -69,62 +60,65 @@
 
       <!-- CUSTOMER PROFILE -->
       @if (isLoggedIn()) {
-        <div class="customer-profile-wrapper" #customerProfile>
 
-          <button type="button" class="customer-profile-btn"
-            (click)="toggleProfileMenu()"
-            [attr.aria-expanded]="isProfileMenuOpen"
-            aria-label="Customer account menu">
+      <div class="customer-profile-wrapper" #customerProfile>
 
-            <span class="customer-avatar">{{ customerInitial() }}</span>
+        <!-- CUSTOMER CART -->
+        <a routerLink="/cart" class=" customer-cart-btn" aria-label="Shopping cart">
+          <span class="cart-icon">🛒</span>
+          <span class="cart-count">{{ cartService.cartCount() }}</span>
 
-            <span class="profile-label">{{ customerName() }}</span>
+        </a>
 
-            <span class="profile-chevron"
-              [class.open]="isProfileMenuOpen">▾</span>
+        <!-- CUSTOMER PROFILE BUTTON -->
+        <button type="button" class="customer-profile-btn" (click)="toggleProfileMenu()"
+          [attr.aria-expanded]="isProfileMenuOpen" aria-label="Customer account menu">
 
+          <span class="customer-avatar">{{ customerInitial() }}</span>
+
+          <span class="profile-label">{{ customerName() }}</span>
+
+          <span class="profile-chevron" [class.open]="isProfileMenuOpen">▾</span>
+
+        </button>
+
+        <!-- PROFILE DROPDOWN -->
+        @if (isProfileMenuOpen) {
+        <div class="customer-profile-dropdown">
+
+          <div class="dropdown-heading">
+            <strong>{{ customerName() }}</strong>
+            <span>Manage your RATASREE. account</span>
+          </div>
+
+          <button type="button" class="dropdown-item" (click)="openProfile()">
+            <span>♙</span>
+            <span>My Profile</span>
           </button>
 
-          @if (isProfileMenuOpen) {
-            <div class="customer-profile-dropdown">
+          <button type="button" class="dropdown-item" (click)="openOrders()">
+            <span>▤</span>
+            <span>My Orders</span>
+          </button>
 
-              <div class="dropdown-heading">
-                <strong>{{ customerName() }}</strong>
-                <span>Manage your RATASREE. account</span>
-              </div>
+          <div class="dropdown-divider"></div>
 
-              <button type="button" class="dropdown-item"
-                (click)="openProfile()">
-                <span>♙</span>
-                <span>My Profile</span>
-              </button>
-
-              <button type="button" class="dropdown-item"
-                (click)="openOrders()">
-                <span>▤</span>
-                <span>My Orders</span>
-              </button>
-
-              <div class="dropdown-divider"></div>
-
-              <button type="button" class="dropdown-item logout-item"
-                (click)="logout()">
-                <span>⇥</span>
-                <span>Logout</span>
-              </button>
-
-            </div>
-          }
+          <button type="button" class="dropdown-item logout-item" (click)="logout()">
+            <span>⇥</span>
+            <span>Logout</span>
+          </button>
 
         </div>
+        }
+
+      </div>
+
       }
 
     </div>
 
     <!-- MOBILE MENU BUTTON -->
-    <button type="button" class="menu-toggle"
-      (click)="toggleMobileMenu()"
-      [attr.aria-expanded]="isMobileMenuOpen"
+    <button type="button" class="menu-toggle" (click)="toggleMobileMenu()" [attr.aria-expanded]="isMobileMenuOpen"
       aria-label="Toggle navigation menu">
 
       <span>{{ isMobileMenuOpen ? '✕' : '☰' }}</span>

@@ -395,3 +395,58 @@
     letter-spacing: 1.3px;
   }
 }
+
+/* Hide cart on desktop */
+.customer-cart-btn {
+  display: none;
+}
+
+/* Show cart on mobile */
+@media (max-width: 768px) {
+  .customer-profile-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .customer-cart-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    color: #244b35;
+    text-decoration: none;
+
+    .cart-icon {
+      font-size: 22px;
+    }
+
+   .cart-count {
+    position: absolute;
+    top: 1px;
+    right: 0;
+
+    width: 19px;
+    height: 19px;
+    min-width: 19px;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #c49a45;
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+
+    border-radius: 50%;
+    box-sizing: border-box;
+  }
+  }
+}

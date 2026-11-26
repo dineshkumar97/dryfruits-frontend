@@ -1,14 +1,13 @@
 
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
-
+import { AuthService } from '../../../core/services/auth';
 import { OrderService, Order } from '../../../core/services/order';
 
 @Component({
   selector: 'app-order-success',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink],
   templateUrl: './order-success.html',
   styleUrl: './order-success.scss'
 })
@@ -20,41 +19,17 @@ export class OrderSuccess {
 
   constructor(
     private orderService: OrderService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
 
-   
-
   }
 
 
-  getItemSavings(item: Order['items'][number]): number {
-    return Math.max(
-      0,
-      (item.oldPrice ?? item.price) - item.price
-    );
+  isLoggedIn(): boolean {
+    console.log(this.authService.isLoggedIn())
+    return this.authService.isLoggedIn();
   }
 
-  get totalDiscount(): number {
-    if (!this.order) return 0;
-
-    return this.order.items.reduce((total, item) => {
-      return total + this.getItemSavings(item) * item.quantity;
-    }, 0);
-  }
-
-  get originalSubtotal(): number {
-    if (!this.order) return 0;
-
-    return this.order.subtotal + this.totalDiscount;
-  }
-
-  get discountPercentage(): number {
-    if (this.originalSubtotal === 0) return 0;
-
-    return Math.round(
-      (this.totalDiscount / this.originalSubtotal) * 100
-    );
-  }
 
 }

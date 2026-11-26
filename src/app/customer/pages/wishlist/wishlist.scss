@@ -1,9 +1,13 @@
 
 .wishlist-page {
-  min-height: 70vh;
-  padding-bottom: 60px;
+  width: 100%;
+    min-height: 70vh;
+    padding: 85px 0px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
   background: #fffdf8;
-  box-sizing: border-box;
+
 }
 
 /* Banner */

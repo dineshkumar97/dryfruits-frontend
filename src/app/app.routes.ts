@@ -132,7 +132,7 @@ export const routes: Routes = [
   {
     path: 'nutnest-admin',
     canActivate: [adminAuthGuard],
-  canActivateChild: [adminChildAuthGuard],
+    canActivateChild: [adminChildAuthGuard],
 
     loadComponent: () =>
       import('./admin/layouts/admin-layout/admin-layout')
@@ -180,7 +180,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./shared/pages/profile/profile')
             .then(m => m.Profile)
-      }
+      },
+      {
+        path: 'contact-enquiries',
+        loadComponent: () =>
+          import('./admin/pages/enquires/enquires')
+            .then(m => m.Enquires)
+      },
     ]
   },
 

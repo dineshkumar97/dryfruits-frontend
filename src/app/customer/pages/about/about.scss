@@ -3,6 +3,12 @@
   background: #fffdf8;
   color: #243b2e;
   overflow: hidden;
+   width: 100%;
+    min-height: 70vh;
+    padding: 85px 0px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
 }
 
 /* Hero */
@@ -11,7 +17,7 @@
   min-height: 430px;
   display: flex;
   align-items: center;
-  padding: 70px 8%;
+  padding: 35px;
   background:
     linear-gradient(90deg, rgba(15, 43, 29, 0.94), rgba(15, 43, 29, 0.55)),
     url('https://images.unsplash.com/photo-1505576399274-565b52d4ac71?w=1600')

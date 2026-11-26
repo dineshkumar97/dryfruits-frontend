@@ -1,161 +1,232 @@
 
 <section class="contact-page">
 
-  <!-- Hero -->
-  <div class="contact-hero">
-    <span>WE'RE HERE TO HELP</span>
-    <h1>Get in Touch</h1>
-    <p>
-      Have a question about our products or your order?
-      We'd love to hear from you.
-    </p>
-  </div>
-
   <div class="contact-container">
 
-    <!-- Contact Information -->
-    <div class="contact-info">
-      <span class="section-label">CONTACT INFORMATION</span>
-      <h2>Let's Talk</h2>
-      <p class="info-description">
-        Reach out to us for product enquiries, order support
-        or any other questions.
+    <!-- Page Header -->
+    <div class="contact-header">
+      <span class="section-label">WE'RE HERE TO HELP</span>
+
+      <h1>Get in Touch</h1>
+
+      <p>
+        Have a question about our products or your order?
+        We'd love to hear from you.
       </p>
-
-      <div class="info-card">
-        <div class="info-icon">☎</div>
-        <div>
-          <h3>Phone</h3>
-          <p>Contact number coming soon</p>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-icon">✉</div>
-        <div>
-          <h3>Email</h3>
-          <p>Email address coming soon</p>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-icon">⌖</div>
-        <div>
-          <h3>Location</h3>
-          <p>Chennai, Tamil Nadu, India</p>
-        </div>
-      </div>
-
-      <div class="contact-note">
-        <h3>RATASREE. Customer Support</h3>
-        <p>
-          Your satisfaction matters to us.
-          Send us your enquiry and we'll be happy to help.
-        </p>
-      </div>
     </div>
 
-    <!-- Contact Form -->
-    <div class="contact-form-card">
-      <span class="section-label">SEND US A MESSAGE</span>
-      <h2>How Can We Help?</h2>
+    <div class="contact-content">
 
-      <form #contactForm="ngForm"
-            (ngSubmit)="submitMessage(contactForm)">
+      <!-- Contact Information -->
+      <div class="contact-info">
 
-        <div class="form-group">
-          <label for="name">Full Name *</label>
-          <input
-            id="name"
-            type="text"
-            name="name"
-            [(ngModel)]="contact.name"
-            required
-            minlength="2"
-            #name="ngModel"
-            placeholder="Enter your name">
+        <span class="section-label">CONTACT INFORMATION</span>
 
-          @if (name.invalid && name.touched) {
-            <small>Please enter your name.</small>
-          }
-        </div>
+        <h2>Let's Talk</h2>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="mobile">Mobile Number *</label>
-            <input
-              id="mobile"
-              type="tel"
-              name="mobile"
-              [(ngModel)]="contact.mobile"
-              required
-              pattern="[0-9]{10}"
-              #mobile="ngModel"
-              placeholder="10-digit number">
+        <p class="contact-description">
+          Reach out to us for product enquiries, order support
+          or any other questions.
+        </p>
 
-            @if (mobile.invalid && mobile.touched) {
-              <small>Enter a valid 10-digit mobile number.</small>
-            }
+        <div class="contact-info-list">
+
+          <div class="contact-info-item">
+            <div class="contact-icon">☎</div>
+            <div>
+              <h3>Phone</h3>
+              <p>Contact number coming soon</p>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="email">Email Address *</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              [(ngModel)]="contact.email"
-              required
-              email
-              #email="ngModel"
-              placeholder="Enter your email">
-              
-            @if (email.invalid && email.touched) {
-              <small>Enter a valid email address.</small>
-            }
+          <div class="contact-info-item">
+            <div class="contact-icon">✉</div>
+            <div>
+              <h3>Email</h3>
+              <p>Email address coming soon</p>
+            </div>
           </div>
+
+          <div class="contact-info-item">
+            <div class="contact-icon">⌖</div>
+            <div>
+              <h3>Location</h3>
+              <p>Chennai, Tamil Nadu, India</p>
+            </div>
+          </div>
+
         </div>
 
-        <div class="form-group">
-          <label for="subject">Subject *</label>
-          <input
-            id="subject"
-            type="text"
-            name="subject"
-            [(ngModel)]="contact.subject"
-            required
-            #subject="ngModel"
-            placeholder="What is your enquiry about?">
-
-          @if (subject.invalid && subject.touched) {
-            <small>Please enter a subject.</small>
-          }
+        <div class="customer-support">
+          <h3>RATASREE. Customer Support</h3>
+          <p>
+            Your satisfaction matters to us. Send us your enquiry
+            and we'll be happy to help.
+          </p>
         </div>
 
-        <div class="form-group">
-          <label for="message">Your Message *</label>
-          <textarea
-            id="message"
-            name="message"
-            [(ngModel)]="contact.message"
-            required
-            minlength="10"
-            rows="5"
-            #message="ngModel"
-            placeholder="Write your message here...">
-          </textarea>
+      </div>
 
-          @if (message.invalid && message.touched) {
-            <small>Please enter at least 10 characters.</small>
-          }
-        </div>
+      <!-- Contact Form -->
+      <div class="contact-form-wrapper">
 
-        <button type="submit" class="submit-btn">
-          Send Message <span>→</span>
-        </button>
+        <span class="section-label">SEND US A MESSAGE</span>
 
-      </form>
+        <h2>How Can We Help?</h2>
+
+       
+<form
+  [formGroup]="contactForm"
+  (ngSubmit)="onSubmit()"
+  novalidate
+>
+
+  <!-- Full Name -->
+  <div class="form-group">
+    <label for="fullName">Full Name <span>*</span></label>
+
+    <input
+      id="fullName"
+      type="text"
+      formControlName="fullName"
+      placeholder="Enter your full name"
+      [class.invalid]="showError('fullName')"
+    >
+
+    @if (showError('fullName')) {
+      <small class="error-message">
+        @if (f['fullName'].hasError('required')) {
+          Full name is required.
+        } @else if (f['fullName'].hasError('minlength')) {
+          Name must contain at least 3 characters.
+        } @else if (f['fullName'].hasError('maxlength')) {
+          Name cannot exceed 100 characters.
+        } @else if (f['fullName'].hasError('pattern')) {
+          Only letters and spaces are allowed.
+        }
+      </small>
+    }
+  </div>
+
+  <!-- Mobile -->
+  <div class="form-group">
+    <label for="mobile">Mobile Number <span>*</span></label>
+
+    <input
+      id="mobile"
+      type="tel"
+      formControlName="mobile"
+      placeholder="Enter your mobile number"
+      maxlength="13"
+      [class.invalid]="showError('mobile')"
+    >
+
+    @if (showError('mobile')) {
+      <small class="error-message">
+        @if (f['mobile'].hasError('required')) {
+          Mobile number is required.
+        } @else {
+          Enter a valid 10-digit Indian mobile number.
+        }
+      </small>
+    }
+  </div>
+
+  <!-- Email -->
+  <div class="form-group">
+    <label for="email">Email Address <span>*</span></label>
+
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      placeholder="Enter your email address"
+      [class.invalid]="showError('email')"
+    >
+
+    @if (showError('email')) {
+      <small class="error-message">
+        @if (f['email'].hasError('required')) {
+          Email address is required.
+        } @else {
+          Please enter a valid email address.
+        }
+      </small>
+    }
+  </div>
+
+  <!-- Subject -->
+  <div class="form-group">
+    <label for="subject">Subject <span>*</span></label>
+
+    <input
+      id="subject"
+      type="text"
+      formControlName="subject"
+      placeholder="What is your enquiry about?"
+      [class.invalid]="showError('subject')"
+    >
+
+    @if (showError('subject')) {
+      <small class="error-message">
+        @if (f['subject'].hasError('required')) {
+          Subject is required.
+        } @else if (f['subject'].hasError('minlength')) {
+          Subject must contain at least 3 characters.
+        } @else {
+          Subject cannot exceed 150 characters.
+        }
+      </small>
+    }
+  </div>
+
+  <!-- Message -->
+  <div class="form-group">
+    <label for="message">Your Message <span>*</span></label>
+
+    <textarea
+      id="message"
+      formControlName="message"
+      rows="5"
+      maxlength="2000"
+      placeholder="Write your message here..."
+      [class.invalid]="showError('message')"
+    ></textarea>
+
+    @if (showError('message')) {
+      <small class="error-message">
+        @if (f['message'].hasError('required')) {
+          Message is required.
+        } @else if (f['message'].hasError('minlength')) {
+          Please enter at least 10 characters.
+        } @else {
+          Message cannot exceed 2000 characters.
+        }
+      </small>
+    }
+  </div>
+
+  <!-- Submit -->
+  <button
+    type="submit"
+    class="send-message-btn"
+    [disabled]="isLoading"
+  >
+    @if (isLoading) {
+      <span class="button-spinner"></span>
+      Sending...
+    } @else {
+      Send Message <span>→</span>
+    }
+  </button>
+
+</form>
+
+
+      </div>
+
     </div>
 
   </div>
+
 </section>

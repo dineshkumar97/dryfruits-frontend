@@ -1,0 +1,437 @@
+
+<section class="enquiries-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <span class="eyebrow">CUSTOMER MANAGEMENT</span>
+      <h1>Contact Enquiries</h1>
+      <p>Manage and respond to customer messages.</p>
+    </div>
+
+    <button type="button" class="refresh-btn" (click)="refresh()" [disabled]="isLoading">
+      <span>↻</span>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-icon total-icon">✉</div>
+      <div>
+        <span>Total Enquiries</span>
+        <h2>{{ totalRecords }}</h2>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-icon new-icon">●</div>
+      <div>
+        <span>Current Page</span>
+        <h2>{{ currentPage }} / {{ totalPages || 1 }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-card">
+
+    <div class="section-heading">
+      <div>
+        <h2>Customer Messages</h2>
+        <p>View and manage all submitted enquiries.</p>
+      </div>
+
+      <span class="record-count">{{ totalRecords }} Records</span>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="search-box">
+        <span>⌕</span>
+        <input
+          type="text"
+          placeholder="Search name, mobile, email or subject..."
+          [(ngModel)]="searchText"
+          (keyup.enter)="searchEnquiries()">
+      </div>
+
+      <select [(ngModel)]="selectedStatus" (change)="filterByStatus()">
+        <option value="">All Status</option>
+        <option value="NEW">New</option>
+        <option value="READ">Read</option>
+        <option value="REPLIED">Replied</option>
+        <option value="CLOSED">Closed</option>
+      </select>
+
+      <button type="button" class="search-btn" (click)="searchEnquiries()">
+        Search
+      </button>
+
+      <button type="button" class="clear-btn" (click)="clearFilters()">
+        Clear
+      </button>
+    </div>
+
+    <!-- Loading -->
+    @if (isLoading) {
+      <div class="loading-state">
+        <div class="loader"></div>
+        <p>Loading customer enquiries...</p>
+      </div>
+    }
+
+    <!-- Enquiries -->
+    @if (!isLoading) {
+      <div class="table-wrapper">
+
+        @if (enquiries.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Contact Details</th>
+                <th>Subject</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (enquiry of enquiries; track enquiry._id) {
+                <tr>
+                  <td>
+                    <div class="customer-cell">
+                      <div class="avatar">
+                        {{ enquiry.fullName.charAt(0).toUpperCase() }}
+                      </div>
+
+                      <div>
+                        <strong>{{ enquiry.fullName }}</strong>
+                        <small>{{ enquiry.email }}</small>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span class="mobile-number">{{ enquiry.mobile }}</span>
+                  </td>
+
+                  <td>
+                    <span class="subject-text">{{ enquiry.subject }}</span>
+                  </td>
+
+                  <td>
+                    <span class="date-text">
+                      {{ enquiry.createdAt | date:'dd MMM yyyy' }}
+                    </span>
+                    <small>{{ enquiry.createdAt | date:'hh:mm a' }}</small>
+                  </td>
+
+                  <td>
+                    <span class="status-badge" [ngClass]="getStatusClass(enquiry.status)">
+                      {{ enquiry.status }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <button
+                      type="button"
+                      class="view-btn"
+                      (click)="viewEnquiry(enquiry._id)">
+                      View Details
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="empty-state">
+            <div class="empty-icon">✉</div>
+            <h3>No enquiries found</h3>
+            <p>
+              Customer messages will appear here when someone submits
+              the Contact Us form.
+            </p>
+
+            <button type="button" class="clear-btn" (click)="clearFilters()">
+              Clear Filters
+            </button>
+          </div>
+        }
+
+      </div>
+    }
+
+    <!-- Pagination -->
+    @if (!isLoading && totalRecords > 0) {
+      <div class="pagination">
+        <p>
+          Showing
+          <strong>{{ startRecord }}–{{ endRecord }}</strong>
+          of
+          <strong>{{ totalRecords }}</strong>
+          enquiries
+        </p>
+
+        <div class="pagination-actions">
+          <button
+            type="button"
+            (click)="previousPage()"
+            [disabled]="currentPage <= 1">
+            Previous
+          </button>
+
+          <span>{{ currentPage }} / {{ totalPages }}</span>
+
+          <button
+            type="button"
+            (click)="nextPage()"
+            [disabled]="currentPage >= totalPages">
+            Next
+          </button>
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <!-- Details Modal -->
+  @if (selectedEnquiry || isDetailsLoading) {
+    <div class="modal-overlay" (click)="closeDetails()">
+
+      <div class="details-modal" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow">CUSTOMER MESSAGE</span>
+            <h2>Enquiry Details</h2>
+          </div>
+
+          <button type="button" class="close-btn" (click)="closeDetails()">
+            ×
+          </button>
+        </div>
+
+        <!-- Details Loading -->
+        @if (isDetailsLoading) {
+          <div class="modal-loading">
+            <div class="loader"></div>
+            <p>Loading enquiry details...</p>
+          </div>
+        }
+
+        <!-- Enquiry Details -->
+        @if (selectedEnquiry; as enquiry) {
+
+          <div class="customer-profile">
+            <div class="large-avatar">
+              {{ enquiry.fullName.charAt(0).toUpperCase() }}
+            </div>
+
+            <div>
+              <h3>{{ enquiry.fullName }}</h3>
+              <p>
+                Submitted
+                {{ enquiry.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Customer Information -->
+          <div class="detail-grid">
+
+            <div class="detail-item">
+              <span>Email Address</span>
+              <strong>{{ enquiry.email }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Mobile Number</span>
+              <strong>{{ enquiry.mobile }}</strong>
+            </div>
+
+            <div class="detail-item full-width">
+              <span>Subject</span>
+              <strong>{{ enquiry.subject }}</strong>
+            </div>
+
+            <div class="detail-item full-width message-item">
+              <span>Customer Message</span>
+              <p>{{ enquiry.message }}</p>
+            </div>
+
+          </div>
+
+          <!-- Reply History -->
+          <div class="reply-history-section">
+
+            <div class="history-heading">
+              <div>
+                <span class="eyebrow">COMMUNICATION RECORD</span>
+                <h3>Reply History</h3>
+                <p>Previously sent email responses to this customer.</p>
+              </div>
+
+              <span class="history-count">
+                {{ enquiry.replies?.length || 0 }} Replies
+              </span>
+            </div>
+
+            @if (enquiry.replies?.length) {
+
+              <div class="reply-timeline">
+
+                @for (reply of enquiry.replies; track reply._id || $index) {
+
+                  <div class="reply-history-item">
+
+                    <div class="timeline-marker">
+                      <span>✉</span>
+                    </div>
+
+                    <div class="reply-history-card">
+
+                      <div class="reply-history-top">
+                        <div class="admin-info">
+                          <div class="admin-avatar">
+                            {{ (reply.adminName || 'Admin').charAt(0).toUpperCase() }}
+                          </div>
+
+                          <div>
+                            <strong>{{ reply.adminName || 'Admin' }}</strong>
+                            <small>{{ reply.adminEmail || 'Support Team' }}</small>
+                          </div>
+                        </div>
+
+                        <span class="reply-date">
+                          {{ reply.sentAt | date:'dd MMM yyyy, hh:mm a' }}
+                        </span>
+                      </div>
+
+                      <div class="reply-history-message">
+                        {{ reply.message }}
+                      </div>
+
+                      <div class="reply-sent-label">
+                        <span>✓</span>
+                        Email sent
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                }
+
+              </div>
+
+            } @else {
+
+              <div class="no-replies">
+                <div class="no-replies-icon">✉</div>
+                <strong>No replies yet</strong>
+                <p>Your email responses will appear here after sending.</p>
+              </div>
+
+            }
+
+          </div>
+
+          <!-- Reply Section -->
+          <div class="reply-section">
+
+            <div class="reply-heading">
+              <div>
+                <span class="eyebrow">CUSTOMER SUPPORT</span>
+                <h3>Reply to Customer</h3>
+                <p>
+                  Your response will be sent to
+                  <strong>{{ enquiry.email }}</strong>
+                </p>
+              </div>
+
+              <span class="reply-icon">✉</span>
+            </div>
+
+            <div class="reply-editor">
+
+              <label for="replyMessage">Your Message</label>
+
+              <textarea
+                id="replyMessage"
+                [(ngModel)]="replyMessage"
+                rows="6"
+                maxlength="5000"
+                placeholder="Hello {{ enquiry.fullName }},
+
+Thank you for contacting RATASREE Premium Dry Fruits.
+
+How can we help you today?">
+              </textarea>
+
+              <div class="reply-footer">
+
+                <span>
+                  {{ replyCharacterCount }} / 5000 characters
+                </span>
+
+                <button
+                  type="button"
+                  class="send-reply-btn"
+                  (click)="sendReply()"
+                  [disabled]="isSendingReply || !replyMessage.trim()">
+
+                  @if (isSendingReply) {
+                    <span class="reply-button-loader"></span>
+                    Sending...
+                  } @else {
+                    <span>➤</span>
+                    Send Reply
+                  }
+
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Status -->
+          <div class="status-update">
+            <label for="enquiryStatus">Update Enquiry Status</label>
+
+            <select
+              id="enquiryStatus"
+              [ngModel]="enquiry.status"
+              (ngModelChange)="updateStatus(enquiry, $event)"
+              [disabled]="isUpdating">
+
+              <option value="NEW">New</option>
+              <option value="READ">Read</option>
+              <option value="REPLIED">Replied</option>
+              <option value="CLOSED">Closed</option>
+            </select>
+
+            @if (isUpdating) {
+              <small>Updating status...</small>
+            }
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="close-modal-btn" (click)="closeDetails()">
+              Close
+            </button>
+          </div>
+
+        }
+
+      </div>
+    </div>
+  }
+
+</section>

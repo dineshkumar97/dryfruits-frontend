@@ -105,5 +105,9 @@ export class AuthService {
 
     return user ? JSON.parse(user) : null;
   }
+  
+  isLoggedIn(): boolean {
+  return !!localStorage.getItem('nutnest-access-token');
+}
 
 }
