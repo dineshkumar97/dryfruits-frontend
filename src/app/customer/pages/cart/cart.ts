@@ -25,22 +25,18 @@ import {
 })
 export class Cart implements OnInit, OnDestroy {
 
-  // =====================================
-  // CART STATE
-  // =====================================
-
+  // Cart state
   cartItems = signal<CartItem[]>([]);
-
   stockError = signal('');
-
   isLoading = signal(true);
 
   private destroy$ = new Subject<void>();
 
-  // =====================================
-  // CART SUMMARY
-  // =====================================
+  constructor(
+    private cartService: CartService
+  ) {}
 
+  // Cart summary using computed signals
   totalQuantity = computed(() =>
     this.cartItems().reduce(
       (total, item) => total + item.quantity,
@@ -63,10 +59,6 @@ export class Cart implements OnInit, OnDestroy {
     )
   );
 
-  constructor(
-    private cartService: CartService
-  ) {}
-
   // =====================================
   // INITIALIZE CART
   // =====================================
@@ -76,7 +68,7 @@ export class Cart implements OnInit, OnDestroy {
   }
 
   // =====================================
-  // LOAD CART AND REFRESH API DATA
+  // LOAD CART AND REFRESH API ONCE
   // =====================================
 
   loadCart(): void {
@@ -84,17 +76,16 @@ export class Cart implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.stockError.set('');
 
-    // Show saved cart selections immediately.
+    // Load saved cart items immediately
     this.cartItems.set(this.cartService.getCartItems());
 
-    // Fetch latest products and stock from MongoDB.
+    // Fetch latest product information once
     this.cartService.refreshCart()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
 
         next: result => {
 
-          // Update cart with latest product information.
           this.cartItems.set(this.cartService.getCartItems());
 
           this.stockError.set(
@@ -102,21 +93,18 @@ export class Cart implements OnInit, OnDestroy {
           );
 
           this.isLoading.set(false);
-
         },
 
         error: error => {
 
-          console.error('Cart refresh error:', error);
+          console.error('Cart API error:', error);
 
           this.stockError.set(
             'Unable to refresh product availability. Please try again.'
           );
 
           this.isLoading.set(false);
-
         }
-
       });
   }
 
@@ -140,7 +128,6 @@ export class Cart implements OnInit, OnDestroy {
     const available = this.getAvailableStock(item);
 
     if (available <= 0) return 'Out of Stock';
-
     if (available <= 5) return 'Limited Stock';
 
     return 'In Stock';
@@ -148,6 +135,7 @@ export class Cart implements OnInit, OnDestroy {
 
   // =====================================
   // INCREASE QUANTITY
+  // NO API CALL
   // =====================================
 
   increaseQuantity(item: CartItem): void {
@@ -165,11 +153,13 @@ export class Cart implements OnInit, OnDestroy {
       return;
     }
 
-    this.loadCart();
+    this.cartItems.set(this.cartService.getCartItems());
+    this.stockError.set('');
   }
 
   // =====================================
   // DECREASE QUANTITY
+  // NO API CALL
   // =====================================
 
   decreaseQuantity(item: CartItem): void {
@@ -187,11 +177,13 @@ export class Cart implements OnInit, OnDestroy {
       return;
     }
 
-    this.loadCart();
+    this.cartItems.set(this.cartService.getCartItems());
+    this.stockError.set('');
   }
 
   // =====================================
   // REMOVE ITEM
+  // NO API CALL
   // =====================================
 
   removeItem(item: CartItem): void {
@@ -201,16 +193,12 @@ export class Cart implements OnInit, OnDestroy {
       item.weight
     );
 
-    this.stockError.set('');
-
     this.cartItems.set(this.cartService.getCartItems());
-
-    // Refresh remaining cart items.
-    this.loadCart();
+    this.stockError.set('');
   }
 
   // =====================================
-  // RETRY REFRESH
+  // RETRY API REFRESH
   // =====================================
 
   retryRefresh(): void {
