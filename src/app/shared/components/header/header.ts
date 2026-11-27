@@ -3,7 +3,8 @@ import {
   Component,
   ElementRef,
   HostListener,
-  ViewChild,
+  QueryList,
+  ViewChildren,
   signal,
 } from '@angular/core';
 
@@ -11,7 +12,7 @@ import {
   NavigationEnd,
   Router,
   RouterLink,
-  RouterLinkActive
+  RouterLinkActive,
 } from '@angular/router';
 
 import { filter } from 'rxjs';
@@ -29,15 +30,23 @@ import { Cart } from '../../../core/services/cart';
 })
 export class Header {
 
+  // Menu states
   isMobileMenuOpen = false;
   isProfileMenuOpen = false;
 
+  // Login state
   isLoggedIn = signal(false);
 
-  // Customer details Signals
+  // Customer details
   customerName = signal('My Account');
-
   customerInitial = signal('U');
+
+  // Header scroll state
+  isScrolled = false;
+
+  // Both mobile and desktop profile wrappers
+  @ViewChildren('customerProfile')
+  customerProfiles!: QueryList<ElementRef<HTMLElement>>;
 
   constructor(
     public cartService: Cart,
@@ -51,37 +60,46 @@ export class Header {
       )
       .subscribe(() => {
         this.updateCustomerSession();
+        this.closeMobileMenu();
+        this.closeProfileMenu();
       });
   }
 
-  isScrolled = false;
+  // --------------------------------
+  // Header Scroll
+  // --------------------------------
 
-@HostListener('window:scroll', [])
-onWindowScroll(): void {
-  this.isScrolled = window.scrollY > 50;
-}
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.isScrolled = window.scrollY > 50;
+  }
 
-  // Update login and customer details
+  // --------------------------------
+  // Customer Session
+  // --------------------------------
+
   private updateCustomerSession(): void {
 
-    const isLoggedIn = this.hasLoginSession();
+    const loggedIn = this.hasLoginSession();
 
-    this.isLoggedIn.set(isLoggedIn);
+    this.isLoggedIn.set(loggedIn);
 
-    if (!isLoggedIn) {
+    if (!loggedIn) {
       this.customerName.set('My Account');
       this.customerInitial.set('U');
       return;
     }
 
     try {
-
       const savedUser = localStorage.getItem('nutnest-user');
 
-      if (!savedUser) return;
+      if (!savedUser) {
+        this.customerName.set('My Account');
+        this.customerInitial.set('U');
+        return;
+      }
 
       const user = JSON.parse(savedUser);
-
       const name = user.name?.trim();
 
       if (name) {
@@ -99,40 +117,88 @@ onWindowScroll(): void {
       !!localStorage.getItem('nutnest-access-token');
   }
 
-  // Mobile Menu
+  // --------------------------------
+  // Mobile Navigation
+  // --------------------------------
+
   toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
+
+    if (this.isMobileMenuOpen) {
+      this.closeProfileMenu();
+    }
   }
 
   closeMobileMenu(): void {
     this.isMobileMenuOpen = false;
   }
 
-  // Profile Dropdown
+  // --------------------------------
+  // Customer Profile Dropdown
+  // --------------------------------
+
   toggleProfileMenu(): void {
     this.isProfileMenuOpen = !this.isProfileMenuOpen;
+
+    if (this.isProfileMenuOpen) {
+      this.closeMobileMenu();
+    }
   }
 
   closeProfileMenu(): void {
     this.isProfileMenuOpen = false;
   }
 
-  // Open Customer Profile
+  // Detect clicks outside both profile wrappers
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+
+    if (!this.isProfileMenuOpen) {
+      return;
+    }
+
+    const target = event.target as Node;
+
+    const clickedInside = this.customerProfiles?.some(profile =>
+      profile.nativeElement.contains(target)
+    );
+
+    if (!clickedInside) {
+      this.closeProfileMenu();
+    }
+  }
+
+  // Close dropdown using Escape
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.closeProfileMenu();
+    this.closeMobileMenu();
+  }
+
+  // --------------------------------
+  // Customer Navigation
+  // --------------------------------
+
   openProfile(): void {
     this.closeProfileMenu();
     this.closeMobileMenu();
+
     this.router.navigate(['/profile']);
   }
 
-  // Open Customer Orders
   openOrders(): void {
     this.closeProfileMenu();
     this.closeMobileMenu();
+
     this.router.navigate(['/my-orders']);
   }
 
+  // --------------------------------
   // Logout
+  // --------------------------------
+
   logout(): void {
+
     this.closeProfileMenu();
     this.closeMobileMenu();
 
@@ -144,26 +210,5 @@ onWindowScroll(): void {
     this.customerInitial.set('U');
 
     this.router.navigate(['/login']);
-  }
-
-  @ViewChild('customerProfile')
-  customerProfile!: ElementRef<HTMLElement>;
-
-  // Close dropdown when clicking outside
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-
-    if (
-      this.isProfileMenuOpen &&
-      !this.customerProfile?.nativeElement.contains(event.target as Node)
-    ) {
-      this.closeProfileMenu();
-    }
-  }
-
-  // Close dropdown using Escape key
-  @HostListener('document:keydown.escape')
-  onEscapeKey(): void {
-    this.closeProfileMenu();
   }
 }
