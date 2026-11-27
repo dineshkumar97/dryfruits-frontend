@@ -13,7 +13,7 @@ export class App {
    loadingService = inject(Loading);
   toastService = inject(Toast);
 
-   @HostListener('document:keydown', ['$event'])
+  /*  @HostListener('document:keydown', ['$event'])
     preventDevTools(event: KeyboardEvent): void {
 
       // F12
@@ -40,5 +40,5 @@ export class App {
     @HostListener('document:contextmenu', ['$event'])
     preventRightClick(event: MouseEvent): void {
       event.preventDefault();
-    }
+    } */
 }

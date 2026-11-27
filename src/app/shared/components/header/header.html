@@ -1,43 +1,29 @@
-
 <header class="header" [class.scrolled]="isScrolled">
 
   <div class="container header-content">
 
     <!-- MOBILE MENU BUTTON -->
-    <button
-      type="button"
-      class="menu-toggle"
-      (click)="toggleMobileMenu()"
-      [attr.aria-expanded]="isMobileMenuOpen"
+    <button type="button" class="menu-toggle" (click)="toggleMobileMenu()" [attr.aria-expanded]="isMobileMenuOpen"
       aria-label="Toggle navigation menu">
 
       <span>{{ isMobileMenuOpen ? '✕' : '☰' }}</span>
     </button>
 
     <!-- LOGO -->
-    <a
-      routerLink="/home"
-      class="brand"
-      (click)="closeMobileMenu()">
-
-      <span class="brand-name">RATASREE.</span>
-      <span class="brand-tagline">NATURE'S FINEST TREASURES</span>
-
+    <!-- LOGO -->
+    <a routerLink="/home" class="brand" (click)="closeMobileMenu()">
+      <img src="/images/ratasree-logo.png" alt="RATASREE Premium Dry Fruits" class="brand-logo logo-static" />
     </a>
-
     <!-- MOBILE ACTIONS -->
     <div class="mobile-header-actions">
 
       <!-- MOBILE CART -->
-      <a
-        routerLink="/cart"
-        class="mobile-cart-btn"
-        aria-label="Shopping cart">
+      <a routerLink="/cart" class="mobile-cart-btn" aria-label="Shopping cart">
 
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 3h2l2.2 11.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 1.9-1.5L22 7H6"/>
-          <circle cx="10" cy="20" r="1"/>
-          <circle cx="18" cy="20" r="1"/>
+          <path d="M3 3h2l2.2 11.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 1.9-1.5L22 7H6" />
+          <circle cx="10" cy="20" r="1" />
+          <circle cx="18" cy="20" r="1" />
         </svg>
 
         <span class="cart-count">
@@ -49,150 +35,110 @@
       <!-- MOBILE PROFILE -->
       @if (isLoggedIn()) {
 
-        <div class="customer-profile-wrapper" #customerProfile>
+      <div class="customer-profile-wrapper" #customerProfile>
 
-          <button
-            type="button"
-            class="customer-profile-btn mobile-profile-btn"
-            (click)="toggleProfileMenu()"
-            [attr.aria-expanded]="isProfileMenuOpen"
-            aria-label="Customer account menu">
+        <button type="button" class="customer-profile-btn mobile-profile-btn" (click)="toggleProfileMenu()"
+          [attr.aria-expanded]="isProfileMenuOpen" aria-label="Customer account menu">
 
-            <span class="customer-avatar">
-              {{ customerInitial() }}
-            </span>
+          <span class="customer-avatar">
+            {{ customerInitial() }}
+          </span>
+
+        </button>
+
+        @if (isProfileMenuOpen) {
+
+        <div class="customer-profile-dropdown">
+
+          <div class="dropdown-heading">
+            <strong>{{ customerName() }}</strong>
+            <span>Manage your RATASREE. account</span>
+          </div>
+
+          <button type="button" class="dropdown-item" (click)="openProfile()">
+
+            <span>♙</span>
+            <span>My Profile</span>
 
           </button>
 
-          @if (isProfileMenuOpen) {
+          <button type="button" class="dropdown-item" (click)="openOrders()">
 
-            <div class="customer-profile-dropdown">
+            <span>▤</span>
+            <span>My Orders</span>
 
-              <div class="dropdown-heading">
-                <strong>{{ customerName() }}</strong>
-                <span>Manage your RATASREE. account</span>
-              </div>
+          </button>
 
-              <button
-                type="button"
-                class="dropdown-item"
-                (click)="openProfile()">
+          <div class="dropdown-divider"></div>
 
-                <span>♙</span>
-                <span>My Profile</span>
+          <button type="button" class="dropdown-item logout-item" (click)="logout()">
 
-              </button>
+            <span>⇥</span>
+            <span>Logout</span>
 
-              <button
-                type="button"
-                class="dropdown-item"
-                (click)="openOrders()">
-
-                <span>▤</span>
-                <span>My Orders</span>
-
-              </button>
-
-              <div class="dropdown-divider"></div>
-
-              <button
-                type="button"
-                class="dropdown-item logout-item"
-                (click)="logout()">
-
-                <span>⇥</span>
-                <span>Logout</span>
-
-              </button>
-
-            </div>
-
-          }
+          </button>
 
         </div>
 
+        }
+
+      </div>
+
       } @else {
 
-        <a
-          routerLink="/login"
-          class="mobile-profile-btn"
-          aria-label="Login">
+      <a routerLink="/login" class="mobile-profile-btn" aria-label="Login">
 
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="8" r="4"/>
-            <path d="M4 21a8 8 0 0 1 16 0"/>
-          </svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21a8 8 0 0 1 16 0" />
+        </svg>
 
-        </a>
+      </a>
 
       }
 
     </div>
 
     <!-- NAVIGATION -->
-    <nav
-      class="navigation"
-      [class.mobile-open]="isMobileMenuOpen">
+    <nav class="navigation" [class.mobile-open]="isMobileMenuOpen">
 
-      <a
-        routerLink="/home"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
+      <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
         (click)="closeMobileMenu()">
         Home
       </a>
 
-      <a
-        routerLink="/products"
-        routerLinkActive="active"
-        (click)="closeMobileMenu()">
+      <a routerLink="/products" routerLinkActive="active" (click)="closeMobileMenu()">
         Products
       </a>
 
       @if (isLoggedIn()) {
 
-        <a
-          routerLink="/my-orders"
-          routerLinkActive="active"
-          (click)="closeMobileMenu()">
-          My Orders
-        </a>
+      <a routerLink="/my-orders" routerLinkActive="active" (click)="closeMobileMenu()">
+        My Orders
+      </a>
 
       }
 
-      <a
-        routerLink="/wishlist"
-        routerLinkActive="active"
-        class="wishlist-link"
-        (click)="closeMobileMenu()">
+      <a routerLink="/wishlist" routerLinkActive="active" class="wishlist-link" (click)="closeMobileMenu()">
 
         <span>♡</span>
         Wishlist
 
       </a>
 
-      <a
-        routerLink="/about"
-        routerLinkActive="active"
-        (click)="closeMobileMenu()">
+      <a routerLink="/about" routerLinkActive="active" (click)="closeMobileMenu()">
         About Us
       </a>
 
-      <a
-        routerLink="/contact"
-        routerLinkActive="active"
-        (click)="closeMobileMenu()">
+      <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileMenu()">
         Contact
       </a>
 
       @if (!isLoggedIn()) {
 
-        <a
-          routerLink="/login"
-          class="mobile-login-link"
-          (click)="closeMobileMenu()">
-          Login
-        </a>
+      <a routerLink="/login" class="mobile-login-link" (click)="closeMobileMenu()">
+        Login
+      </a>
 
       }
 
@@ -203,9 +149,9 @@
 
       @if (!isLoggedIn()) {
 
-        <a routerLink="/login" class="login-btn">
-          Login
-        </a>
+      <a routerLink="/login" class="login-btn">
+        Login
+      </a>
 
       }
 
@@ -224,77 +170,62 @@
       <!-- DESKTOP PROFILE -->
       @if (isLoggedIn()) {
 
-        <div class="customer-profile-wrapper" #customerProfile>
+      <div class="customer-profile-wrapper" #customerProfile>
 
-          <button
-            type="button"
-            class="customer-profile-btn"
-            (click)="toggleProfileMenu()"
-            [attr.aria-expanded]="isProfileMenuOpen"
-            aria-label="Customer account menu">
+        <button type="button" class="customer-profile-btn" (click)="toggleProfileMenu()"
+          [attr.aria-expanded]="isProfileMenuOpen" aria-label="Customer account menu">
 
-            <span class="customer-avatar">
-              {{ customerInitial() }}
-            </span>
+          <span class="customer-avatar">
+            {{ customerInitial() }}
+          </span>
 
-            <span class="profile-label">
-              {{ customerName() }}
-            </span>
+          <span class="profile-label">
+            {{ customerName() }}
+          </span>
 
-            <span
-              class="profile-chevron"
-              [class.open]="isProfileMenuOpen">
-              ▾
-            </span>
+          <span class="profile-chevron" [class.open]="isProfileMenuOpen">
+            ▾
+          </span>
+
+        </button>
+
+        @if (isProfileMenuOpen) {
+
+        <div class="customer-profile-dropdown">
+
+          <div class="dropdown-heading">
+            <strong>{{ customerName() }}</strong>
+            <span>Manage your RATASREE. account</span>
+          </div>
+
+          <button type="button" class="dropdown-item" (click)="openProfile()">
+
+            <span>♙</span>
+            <span>My Profile</span>
 
           </button>
 
-          @if (isProfileMenuOpen) {
+          <button type="button" class="dropdown-item" (click)="openOrders()">
 
-            <div class="customer-profile-dropdown">
+            <span>▤</span>
+            <span>My Orders</span>
 
-              <div class="dropdown-heading">
-                <strong>{{ customerName() }}</strong>
-                <span>Manage your RATASREE. account</span>
-              </div>
+          </button>
 
-              <button
-                type="button"
-                class="dropdown-item"
-                (click)="openProfile()">
+          <div class="dropdown-divider"></div>
 
-                <span>♙</span>
-                <span>My Profile</span>
+          <button type="button" class="dropdown-item logout-item" (click)="logout()">
 
-              </button>
+            <span>⇥</span>
+            <span>Logout</span>
 
-              <button
-                type="button"
-                class="dropdown-item"
-                (click)="openOrders()">
-
-                <span>▤</span>
-                <span>My Orders</span>
-
-              </button>
-
-              <div class="dropdown-divider"></div>
-
-              <button
-                type="button"
-                class="dropdown-item logout-item"
-                (click)="logout()">
-
-                <span>⇥</span>
-                <span>Logout</span>
-
-              </button>
-
-            </div>
-
-          }
+          </button>
 
         </div>
+
+        }
+
+      </div>
 
       }
 

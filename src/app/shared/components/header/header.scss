@@ -3,15 +3,22 @@
 ======================================== */
 
 .header {
+  --header-bg: #173b2b;
+  --logo-color: #e8c77a;
+
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 9999;
-  background: #173b2b;
+  background: var(--header-bg);
   color: #fffdf5;
   box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
   transition: background 0.35s ease, box-shadow 0.35s ease;
+}
+
+.header.scrolled {
+  box-shadow: 0 5px 22px rgba(0, 0, 0, 0.25);
 }
 
 .header-content {
@@ -23,56 +30,67 @@
   transition: min-height 0.35s ease;
 }
 
-/* LOGO */
-
-.brand {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding-left: 10px;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-
-.brand-name {
-  color: #e8c77a;
-  font-size: 29px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  line-height: 1.2;
-  transition: font-size 0.35s ease;
-}
-
-.brand-tagline {
-  color: #e9e1ce;
-  font-size: 8px;
-  letter-spacing: 1.8px;
-  margin-top: 4px;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-
-/* SCROLL EFFECT */
-
-.header.scrolled {
-  background: #102c20;
-  box-shadow: 0 5px 22px rgba(0, 0, 0, 0.25);
-}
-
 .header.scrolled .header-content {
   min-height: 65px;
 }
 
+/* LOGO */
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
+  color: var(--logo-color);
+  background: transparent;
+  transition: color 0.35s ease;
+}
+
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  display: block;
+  flex-shrink: 0;
+  color: var(--logo-color);
+  transition: width 0.35s ease, height 0.35s ease;
+}
+
+.header.scrolled .brand-mark {
+  width: 36px;
+  height: 36px;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.brand-name {
+  color: var(--logo-color);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  transition: font-size 0.35s ease;
+}
+
+.brand-code {
+  color: var(--logo-color);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-top: 2px;
+  transition: font-size 0.35s ease;
+}
+
 .header.scrolled .brand-name {
-  font-size: 24px;
+  font-size: 17px;
 }
 
-.header.scrolled .brand-tagline {
-  opacity: 0;
-  transform: translateY(-5px);
-}
-
-.header.scrolled .navigation {
-  gap: 19px;
+.header.scrolled .brand-code {
+  font-size: 11px;
 }
 
 /* DESKTOP NAVIGATION */
@@ -100,6 +118,10 @@
   }
 }
 
+.header.scrolled .navigation {
+  gap: 19px;
+}
+
 /* DESKTOP ACTIONS */
 
 .header-actions {
@@ -107,6 +129,7 @@
   align-items: center;
   gap: 15px;
   flex-shrink: 0;
+  margin-right: 10px;
 }
 
 .login-btn,
@@ -210,6 +233,7 @@
   border-radius: 12px;
   background: #fffdf7;
   color: #243b2e;
+  border: 1px solid rgba(23, 59, 43, 0.12);
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
 }
 
@@ -268,7 +292,7 @@
 }
 
 /* ========================================
-   TABLET AND MOBILE
+   TABLET AND MOBILE (<= 900px)
 ======================================== */
 
 @media (max-width: 900px) {
@@ -279,18 +303,6 @@
 
   .header.scrolled .header-content {
     min-height: 58px;
-  }
-
-  .header.scrolled .brand-name {
-    font-size: 22px;
-  }
-
-  .brand {
-    padding-left: 5px;
-  }
-
-  .brand-name {
-    font-size: 25px;
   }
 
   .navigation {
@@ -304,7 +316,7 @@
     justify-content: flex-start;
     gap: 0;
     padding: 12px 20px 20px;
-    background: #173b2b;
+    background: var(--header-bg);
     box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
 
     &.mobile-open {
@@ -339,10 +351,7 @@
   }
 
   .header-actions .cart-btn,
-  .header-actions .login-btn {
-    display: none;
-  }
-
+  .header-actions .login-btn,
   .profile-label,
   .profile-chevron {
     display: none;
@@ -361,21 +370,20 @@
 }
 
 /* ========================================
-   MOBILE HEADER ACTIONS
+   MOBILE HEADER ACTIONS (<= 768px)
 ======================================== */
 
 @media (max-width: 768px) {
   .header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     flex-wrap: nowrap;
-    gap: 10px;
+    gap: 8px;
     padding: 0 12px;
   }
 
   .menu-toggle {
     order: 1;
+    flex: 0 0 40px;
     width: 40px;
     height: 40px;
     padding: 0;
@@ -385,21 +393,28 @@
 
   .brand {
     order: 2;
-    flex: 1;
-    min-width: 0;
-    align-items: center;
+    flex: 0 0 auto;
+    margin-left: 2px;
     padding: 0;
+    gap: 7px;
+  }
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .header.scrolled .brand-mark {
+    width: 32px;
+    height: 32px;
   }
 
   .brand-name {
-    white-space: nowrap;
-    font-size: 23px;
+    font-size: 16px;
   }
 
-  .brand-tagline {
-    white-space: nowrap;
-    font-size: 7px;
-    letter-spacing: 1.3px;
+  .brand-code {
+    font-size: 11px;
   }
 
   .mobile-header-actions {
@@ -407,15 +422,16 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 12px;
+    margin-left: auto;
+    gap: 10px;
     flex-shrink: 0;
   }
 
   .mobile-cart-btn,
   .mobile-profile-btn {
     position: relative;
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -456,106 +472,109 @@
     font-weight: 800;
   }
 
+  .mobile-profile-btn .customer-avatar {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #e8c77a;
+    color: #173b2b;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
   .header-actions {
     display: none;
   }
-
-  .customer-profile-wrapper {
-    display: block;
-  }
 }
 
-/* SMALL MOBILE */
+/* ========================================
+   SMALL MOBILE (<= 380px)
+======================================== */
 
 @media (max-width: 380px) {
   .header-content {
-    gap: 5px;
+    gap: 6px;
     padding: 0 8px;
   }
 
-  .brand-name {
-    font-size: 20px;
+  .menu-toggle {
+    flex-basis: 36px;
+    width: 36px;
+    height: 38px;
   }
 
-  .brand-tagline {
-    font-size: 6px;
-    letter-spacing: 1px;
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brand-name {
+    font-size: 14px;
+  }
+
+  .brand-code {
+    font-size: 10px;
   }
 
   .mobile-header-actions {
     gap: 5px;
   }
 
-  .menu-toggle,
   .mobile-cart-btn,
   .mobile-profile-btn {
     width: 34px;
     height: 38px;
   }
+}.header {
+  --header-bg: #173b2b;
+  background: var(--header-bg);
 }
 
-/* DESKTOP VISIBILITY */
-
-@media (min-width: 769px) {
-
-  .menu-toggle,
-  .mobile-header-actions {
-    display: none;
-  }
-
-  .header-actions {
-    display: flex;
-    margin-right: 10px;
-  }
+.header.scrolled {
+  background: var(--header-bg);
 }
 
-.mobile-profile-btn .customer-avatar {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #e8c77a;
-  color: #173b2b;
-  font-size: 15px;
-  font-weight: 800;
-}
-
-
-.customer-profile-wrapper {
-  position: relative;
-}
-
-.customer-profile-btn {
-  cursor: pointer;
-}
-
-.customer-profile-dropdown {
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  z-index: 10000;
-  min-width: 240px;
-  background: #fff;
-  border: 1px solid rgba(23, 59, 43, 0.12);
-  border-radius: 12px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.16);
-}
-
-.mobile-profile-btn {
-  border: 0;
+.brand {
+  display: inline-flex;
+  align-items: center;
+  padding-left: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
   background: transparent;
-  padding: 0;
 }
 
-.mobile-profile-btn .customer-avatar {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #e8c77a;
-  color: #173b2b;
-  font-size: 15px;
-  font-weight: 800;
+.brand-logo,
+.brand-logo.logo-static {
+  height: 52px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  mix-blend-mode: normal;
+  transition: height 0.3s ease;
+}
+
+.header.scrolled .brand-logo,
+.header.scrolled .brand-logo.logo-static {
+  height: 42px;
+}
+
+@media (max-width: 768px) {
+  .brand {
+    padding-left: 0;
+  }
+
+  .brand-logo,
+  .brand-logo.logo-static {
+    height: 40px;
+  }
+
+  .header.scrolled .brand-logo,
+  .header.scrolled .brand-logo.logo-static {
+    height: 36px;
+  }
 }
