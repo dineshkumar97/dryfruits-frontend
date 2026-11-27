@@ -1,8 +1,10 @@
-
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ProductService } from '../../../core/services/product';
-import { CategoryService, StoreCategory } from '../../../core/services/category';
+
+import {
+  CategoryService,
+  StoreCategory
+} from '../../../core/services/category';
 
 @Component({
   selector: 'app-home',
@@ -11,51 +13,59 @@ import { CategoryService, StoreCategory } from '../../../core/services/category'
   templateUrl: './home.html',
   styleUrl: './home.scss'
 })
-export class Home {
+export class Home implements OnInit {
 
   categories: StoreCategory[] = [];
 
+  isLoading = true;
+  errorMessage = '';
+
   constructor(
-    private categoryService: CategoryService,
-    private productService: ProductService
-  ) {
+    private categoryService: CategoryService
+  ) {}
+
+  ngOnInit(): void {
     this.loadCategories();
   }
 
-  // Load active categories that contain active products
   loadCategories(): void {
 
-    const activeProducts = this.productService
-      .getProducts()
-      .filter(product => product.active);
+    this.isLoading = true;
+    this.errorMessage = '';
+    console.log('kslsslslsl')
 
-    const availableCategoryNames = new Set(
-      activeProducts.map(product => product.category.toLowerCase())
-    );
+    this.categoryService.getActiveCategories().subscribe({
 
-    this.categories = this.categoryService
-      .getCategories()
-      .filter(category =>
-        category.active &&
-        availableCategoryNames.has(category.name.toLowerCase())
-      );
+      next: (categories) => {
+
+        console.log('Homepage categories:', categories);
+
+        this.categories = categories.filter(
+          category => category.active
+        );
+
+        this.isLoading = false;
+
+      },
+
+      error: (error) => {
+
+        console.error('Category API error:', error);
+
+        this.errorMessage = 'Unable to load collections.';
+
+        this.isLoading = false;
+
+      }
+
+    });
+
   }
 
-  // Get category image
   getCategoryImage(category: StoreCategory): string {
 
-    if (category.image) {
-      return category.image;
-    }
+    return category.image || 'images/home.png';
 
-    const product = this.productService
-      .getProducts()
-      .find(item =>
-        item.active &&
-        item.category.toLowerCase() === category.name.toLowerCase()
-      );
-
-    return product?.image || 'images/home.png';
   }
 
 }

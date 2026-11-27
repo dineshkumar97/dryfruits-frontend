@@ -172,7 +172,7 @@ export class CategoryService {
   getActiveCategories(): Observable<StoreCategory[]> {
 
     return this.http.get<CategoryApiResponse<CategoryApiItem[]>>(
-      `${this.apiUrl}/active`
+      `${this.apiUrl}/all`
     ).pipe(
 
       map(response =>
