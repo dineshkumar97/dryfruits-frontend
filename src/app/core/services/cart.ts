@@ -8,6 +8,8 @@ import {
 } from '@angular/core';
 
 import { isPlatformBrowser } from '@angular/common';
+import { Observable, map } from 'rxjs';
+
 import { ProductService, Product } from './product';
 
 export interface CartItem {
@@ -35,23 +37,16 @@ export class Cart {
   private readonly storageKey = 'nutnest-cart';
   private readonly isBrowser: boolean;
 
-  // Cart items Signal
   private items = signal<CartItem[]>([]);
 
-  // Computed Cart Signals
   cartItems = computed(() =>
     this.items().map(item => ({ ...item }))
   );
 
-  cartCount = computed(() =>
-    this.items().length
-  );
+  cartCount = computed(() => this.items().length);
 
   totalQuantity = computed(() =>
-    this.items().reduce(
-      (total, item) => total + item.quantity,
-      0
-    )
+    this.items().reduce((total, item) => total + item.quantity, 0)
   );
 
   subtotal = computed(() =>
@@ -76,18 +71,38 @@ export class Cart {
     this.isBrowser = isPlatformBrowser(platformId);
 
     if (this.isBrowser) {
+      // Load only saved cart selections.
       this.items.set(this.loadCart());
-      this.syncCartPrices();
       this.saveCart();
     }
   }
 
-  // Get cart items
+  // =====================================
+  // REFRESH CART FROM BACKEND
+  // =====================================
+
+  refreshCart(): Observable<CartActionResult> {
+    return this.productService.refreshProducts().pipe(
+      map(products => {
+        this.syncCartPrices(products);
+
+        return this.validateCartWithProducts(products);
+      })
+    );
+  }
+
+  // =====================================
+  // GET CART ITEMS
+  // =====================================
+
   getCartItems(): CartItem[] {
     return this.cartItems();
   }
 
-  // Add product to cart
+  // =====================================
+  // ADD TO CART
+  // =====================================
+
   addToCart(item: CartItem): CartActionResult {
 
     const product = this.productService.getProductById(item.productId);
@@ -106,7 +121,6 @@ export class Cart {
       };
     }
 
-    // Check whether the same product and weight already exist
     const existingItem = this.items().find(
       cartItem =>
         cartItem.productId === item.productId &&
@@ -120,34 +134,18 @@ export class Cart {
       };
     }
 
-    const updatedItem = this.getLatestCartItem(item, product);
+    const available = Math.max(0, Number(product.stock) || 0);
 
-    const usedGrams = this.getUsedStockGrams(item.productId);
-
-   const requestedGrams =
-  this.getWeightInGrams(item.weight) * item.quantity;
-
-const availableGrams =
-  product.stock * this.getWeightInGrams(product.weight);
-
-if (requestedGrams > availableGrams) {
-      const availableQuantity = Math.floor(
-        Math.max(0, availableGrams - usedGrams) /
-        this.getWeightInGrams(item.weight)
-      );
-
+    if (item.quantity > available) {
       return {
         success: false,
-        message: availableQuantity > 0
-          ? `Only ${availableQuantity} more pack(s) are available.`
-          : 'Sorry, insufficient stock available.'
+        message: `Only ${available} pack(s) are available.`
       };
     }
 
-    // Add new product to cart
     this.items.update(items => [
       ...items,
-      updatedItem
+      this.getLatestCartItem(item, product)
     ]);
 
     this.saveCart();
@@ -158,7 +156,10 @@ if (requestedGrams > availableGrams) {
     };
   }
 
-  // Update cart quantity
+  // =====================================
+  // UPDATE QUANTITY
+  // =====================================
+
   updateQuantity(
     productId: number,
     weight: string,
@@ -194,41 +195,24 @@ if (requestedGrams > availableGrams) {
       };
     }
 
-    const usedGrams = this.getUsedStockGrams(
-      productId,
-      weight
-    );
+    const available = Math.max(0, Number(product.stock) || 0);
 
-    const requestedGrams =
-      this.getWeightInGrams(weight) * quantity;
-
-    const availableGrams =
-      product.stock * this.getWeightInGrams(product.weight);
-
-    if (usedGrams + requestedGrams > availableGrams) {
-      const availableQuantity = Math.floor(
-        Math.max(0, availableGrams - usedGrams) /
-        this.getWeightInGrams(weight)
-      );
-
+    if (quantity > available) {
       return {
         success: false,
-        message: availableQuantity > 0
-          ? `Maximum available quantity is ${availableQuantity}.`
-          : 'Sorry, insufficient stock available.'
+        message: `Only ${available} pack(s) are available.`
       };
     }
 
     this.items.update(items =>
       items.map(cartItem =>
         cartItem.productId === productId &&
-          cartItem.weight === weight
-          ? { ...cartItem, quantity }
+        cartItem.weight === weight
+          ? this.getLatestCartItem(cartItem, product, quantity)
           : cartItem
       )
     );
 
-    this.syncCartPrices();
     this.saveCart();
 
     return {
@@ -237,78 +221,77 @@ if (requestedGrams > availableGrams) {
     };
   }
 
-  // Remove cart item
-  removeItem(productId: number, weight: string): void {
+  // =====================================
+  // REMOVE ITEM
+  // =====================================
 
+  removeItem(productId: number, weight: string): void {
     this.items.update(items =>
       items.filter(
         item =>
-          !(item.productId === productId &&
-            item.weight === weight)
+          !(item.productId === productId && item.weight === weight)
       )
     );
 
     this.saveCart();
   }
 
-  // Get number of cart lines
+  // =====================================
+  // CART TOTALS
+  // =====================================
+
   getCartCount(): number {
     return this.cartCount();
   }
 
-  // Get subtotal
   getSubtotal(): number {
     return this.subtotal();
   }
 
-  // Get total quantity
   getTotalQuantity(): number {
     return this.totalQuantity();
   }
 
-  // Get remaining quantity for selected weight
-  /*  getAvailableQuantity(productId: number, weight: string): number {
- 
-     const product = this.productService.getProductById(productId);
- 
-     if (!product || !product.active) {
-       return 0;
-     }
- 
-     const availableGrams =
-       product.stock * this.getWeightInGrams(product.weight);
- 
-     const usedGrams = this.getUsedStockGrams(productId);
- 
-     const remainingGrams = Math.max(
-       0,
-       availableGrams - usedGrams
-     );
- 
-     return Math.floor(
-       remainingGrams / this.getWeightInGrams(weight)
-     );
-   } */
-
+  // =====================================
+  // AVAILABLE QUANTITY
+  // =====================================
 
   getAvailableQuantity(productId: number, weight: string): number {
     const product = this.productService.getProductById(productId);
+
     if (!product || !product.active) {
       return 0;
     }
-    // Cart items do not reserve or deduct stock.
+
     return Math.max(0, Number(product.stock) || 0);
   }
 
-  // Validate entire cart before checkout
+  // =====================================
+  // VALIDATE CART
+  // =====================================
+
   validateCart(): CartActionResult {
 
-    this.syncCartPrices();
+    if (!this.productService.areProductsLoaded()) {
+      return {
+        success: false,
+        message: 'Please refresh product information before checkout.'
+      };
+    }
+
+    return this.validateCartWithProducts(
+      this.productService.getProducts()
+    );
+  }
+
+  private validateCartWithProducts(
+    products: Product[]
+  ): CartActionResult {
 
     for (const item of this.items()) {
 
-      const product = this.productService.getProductById(
-        item.productId
+      const product = products.find(
+        product => product.id === item.productId
       );
 
       if (!product || !product.active) {
@@ -318,13 +301,10 @@ if (requestedGrams > availableGrams) {
         };
       }
 
-      if (
-        this.getUsedStockGrams(item.productId) >
-        product.stock * this.getWeightInGrams(product.weight)
-      ) {
+      if (item.quantity > product.stock) {
         return {
           success: false,
-          message: `Insufficient stock available for ${item.name}. Please update your cart.`
+          message: `Only ${product.stock} pack(s) of ${item.name} are available.`
         };
       }
     }
@@ -335,51 +315,26 @@ if (requestedGrams > availableGrams) {
     };
   }
 
-  // Clear cart
+  // =====================================
+  // CLEAR CART
+  // =====================================
+
   clearCart(): void {
     this.items.set([]);
     this.saveCart();
   }
 
-  // Calculate weight in grams
-  private getWeightInGrams(weight: string): number {
+  // =====================================
+  // SYNC LATEST PRODUCT DATA
+  // =====================================
 
-    if (weight === '1kg') {
-      return 1000;
-    }
-
-    return Number(weight.replace('g', ''));
-  }
-
-  // Calculate total stock consumed by a product
-  private getUsedStockGrams(
-    productId: number,
-    excludeWeight?: string
-  ): number {
-
-    return this.items()
-      .filter(item =>
-        item.productId === productId &&
-        item.weight !== excludeWeight
-      )
-      .reduce(
-        (total, item) =>
-          total + this.getWeightInGrams(item.weight) * item.quantity,
-        0
-      );
-  }
-
-  // Get latest name, image and prices
-
-
-  // Refresh cart prices after Admin changes
-  private syncCartPrices(): void {
+  private syncCartPrices(products: Product[]): void {
 
     this.items.update(items =>
       items.map(item => {
 
-        const product = this.productService.getProductById(
-          item.productId
+        const product = products.find(
+          product => product.id === item.productId
         );
 
         if (!product) {
@@ -389,35 +344,58 @@ if (requestedGrams > availableGrams) {
         return this.getLatestCartItem(item, product);
       })
     );
+
+    this.saveCart();
   }
 
-  // Save cart
+  // =====================================
+  // LATEST CART ITEM
+  // =====================================
+
+  private getLatestCartItem(
+    item: CartItem,
+    product: Product,
+    quantity: number = item.quantity
+  ): CartItem {
+
+    return {
+      productId: product.id,
+      mongoId: product.mongoId,
+      name: product.name,
+      image: product.image,
+      category: product.category,
+      weight: product.weight,
+      price: product.price,
+      oldPrice: product.oldPrice,
+      quantity
+    };
+  }
+
+  // =====================================
+  // SAVE CART SELECTIONS
+  // =====================================
+
   private saveCart(): void {
 
     if (!this.isBrowser) return;
 
     try {
-
       localStorage.setItem(
         this.storageKey,
         JSON.stringify(this.items())
       );
-
-      console.log(
-        'Cart saved successfully. Count:',
-        this.cartCount()
-      );
-
     } catch (error) {
       console.error('Unable to save cart:', error);
     }
   }
 
-  // Load existing cart
+  // =====================================
+  // LOAD CART SELECTIONS
+  // =====================================
+
   private loadCart(): CartItem[] {
 
     try {
-
       const savedItems: unknown = JSON.parse(
         localStorage.getItem(this.storageKey) || '[]'
       );
@@ -439,22 +417,5 @@ if (requestedGrams > availableGrams) {
     } catch {
       return [];
     }
-  }
-  private getLatestCartItem(
-    item: CartItem,
-    product: Product
-  ): CartItem {
-
-    return {
-      productId: product.id,
-      mongoId: product.mongoId,
-      name: product.name,
-      image: product.image,
-      category: product.category,
-      weight: product.weight,
-      price: product.price,
-      oldPrice: product.oldPrice,
-      quantity: item.quantity
-    };
   }
 }

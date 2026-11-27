@@ -6,10 +6,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { Observable, map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-// =====================================
-// PRODUCT INTERFACE
-// =====================================
-
 export interface Product {
   id: number;
   mongoId?: string;
@@ -23,10 +19,6 @@ export interface Product {
   stock: number;
   active: boolean;
 }
-
-// =====================================
-// API INTERFACES
-// =====================================
 
 interface ProductApiItem {
   _id: string;
@@ -51,20 +43,11 @@ interface ProductApiResponse<T> {
 })
 export class ProductService {
 
-  // =====================================
-  // CONFIGURATION
-  // =====================================
-
   private readonly apiUrl = `${environment.apiUrl}/product`;
-
   private readonly isBrowser: boolean;
 
-  // =====================================
-  // PRODUCT CACHE
-  // =====================================
-
+  // In-memory cache only. No product localStorage.
   private products: Product[] = [];
-
   private productsLoaded = false;
 
   constructor(
@@ -74,12 +57,8 @@ export class ProductService {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
-  // =====================================
-  // AUTHORIZATION HEADER
-  // =====================================
-
+  // Authorization header
   private getHeaders(): HttpHeaders {
-
     const token = this.isBrowser
       ? localStorage.getItem('nutnest-access-token')
       : null;
@@ -89,15 +68,10 @@ export class ProductService {
           Authorization: `Bearer ${token}`
         })
       : new HttpHeaders();
-
   }
 
-  // =====================================
-  // MAP MONGODB PRODUCT
-  // =====================================
-
+  // Convert MongoDB product to frontend product
   private mapProduct(product: ProductApiItem): Product {
-
     return {
       id: Number.parseInt(product._id.slice(-8), 16),
       mongoId: product._id,
@@ -108,127 +82,77 @@ export class ProductService {
       oldPrice: product.oldPrice,
       image: product.image || '',
       description: product.description || '',
-      stock: product.stock,
+      stock: Number(product.stock) || 0,
       active: product.active
     };
-
   }
 
-  // =====================================
-  // UPDATE PRODUCT CACHE
-  // =====================================
-
+  // Update in-memory cache
   private updateCache(products: Product[]): void {
-
     this.products = [...products];
-
     this.productsLoaded = true;
-
   }
 
-  // =====================================
-  // GET CACHE STATUS
-  // =====================================
+  // Refresh products directly from MongoDB API
+  refreshProducts(): Observable<Product[]> {
+    return this.getActiveProducts();
+  }
 
+  // Cache status
   areProductsLoaded(): boolean {
-
     return this.productsLoaded;
-
   }
 
-  // =====================================
-  // GET CACHED PRODUCTS
-  // =====================================
-
+  // Get cached products
   getProducts(): Product[] {
-
     return [...this.products];
-
   }
 
-  // =====================================
-  // GET PRODUCT BY ID
-  // =====================================
-
+  // Get product by frontend ID
   getProductById(id: number): Product | undefined {
-
-    return this.products.find(
-      product => product.id === id
-    );
-
+    return this.products.find(product => product.id === id);
   }
 
-  // =====================================
-  // GET PRODUCT BY MONGODB ID
-  // =====================================
-
+  // Get product by MongoDB ID
   getProductByMongoId(mongoId: string): Product | undefined {
-
-    return this.products.find(
-      product => product.mongoId === mongoId
-    );
-
+    return this.products.find(product => product.mongoId === mongoId);
   }
 
-  // =====================================
-  // GET ACTIVE PRODUCTS - CUSTOMER
-  // =====================================
-
+  // Get active customer products from API
   getActiveProducts(): Observable<Product[]> {
-
     return this.http.get<ProductApiResponse<ProductApiItem[]>>(
       this.apiUrl
     ).pipe(
-
       map(response =>
         (response.data || []).map(product =>
           this.mapProduct(product)
         )
       ),
-
-      tap(products => {
-        this.updateCache(products);
-      })
-
+      tap(products => this.updateCache(products))
     );
-
   }
 
-  // =====================================
-  // GET ALL PRODUCTS - ADMIN
-  // =====================================
-
+  // Get admin products from API
   getAdminProducts(): Observable<Product[]> {
-
     return this.http.get<ProductApiResponse<ProductApiItem[]>>(
       `${this.apiUrl}/admin`,
       {
         headers: this.getHeaders()
       }
     ).pipe(
-
       map(response =>
         (response.data || []).map(product =>
           this.mapProduct(product)
         )
       ),
-
-      tap(products => {
-        this.updateCache(products);
-      })
-
+      tap(products => this.updateCache(products))
     );
-
   }
 
-  // =====================================
-  // CREATE PRODUCT
-  // =====================================
-
+  // Create product
   createProduct(
     product: Omit<Product, 'id' | 'mongoId'>
   ): Observable<Product> {
-
     return this.http.post<ProductApiResponse<ProductApiItem>>(
       this.apiUrl,
       product,
@@ -236,33 +160,21 @@ export class ProductService {
         headers: this.getHeaders()
       }
     ).pipe(
-
-      map(response =>
-        this.mapProduct(response.data)
-      ),
-
+      map(response => this.mapProduct(response.data)),
       tap(newProduct => {
-
         this.updateCache([
           ...this.products,
           newProduct
         ]);
-
       })
-
     );
-
   }
 
-  // =====================================
-  // UPDATE PRODUCT
-  // =====================================
-
+  // Update product
   updateProduct(
     mongoId: string,
     product: Partial<Omit<Product, 'id' | 'mongoId'>>
   ): Observable<Product> {
-
     return this.http.put<ProductApiResponse<ProductApiItem>>(
       `${this.apiUrl}/${mongoId}`,
       product,
@@ -270,66 +182,37 @@ export class ProductService {
         headers: this.getHeaders()
       }
     ).pipe(
-
-      map(response =>
-        this.mapProduct(response.data)
-      ),
-
+      map(response => this.mapProduct(response.data)),
       tap(updatedProduct => {
-
         const updatedProducts = this.products.map(item =>
-          item.mongoId === mongoId
-            ? updatedProduct
-            : item
+          item.mongoId === mongoId ? updatedProduct : item
         );
 
         this.updateCache(updatedProducts);
-
       })
-
     );
-
   }
 
-  // =====================================
-  // DELETE PRODUCT
-  // =====================================
-
+  // Delete product
   deleteProduct(mongoId: string): Observable<void> {
-
     return this.http.delete<ProductApiResponse<unknown>>(
       `${this.apiUrl}/${mongoId}`,
       {
         headers: this.getHeaders()
       }
     ).pipe(
-
       map(() => undefined),
-
       tap(() => {
-
-        const updatedProducts = this.products.filter(
-          item => item.mongoId !== mongoId
+        this.updateCache(
+          this.products.filter(item => item.mongoId !== mongoId)
         );
-
-        this.updateCache(updatedProducts);
-
       })
-
     );
-
   }
 
-  // =====================================
-  // CLEAR PRODUCT CACHE
-  // =====================================
-
+  // Clear in-memory cache
   clearCache(): void {
-
     this.products = [];
-
     this.productsLoaded = false;
-
   }
-
 }

@@ -1,7 +1,15 @@
 
-import { Component, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  signal,
+  computed
+} from '@angular/core';
+
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
+import { Subject, takeUntil } from 'rxjs';
 
 import {
   Cart as CartService,
@@ -15,18 +23,24 @@ import {
   templateUrl: './cart.html',
   styleUrl: './cart.scss'
 })
-export class Cart {
+export class Cart implements OnInit, OnDestroy {
 
-  // Cart state
+  // =====================================
+  // CART STATE
+  // =====================================
+
   cartItems = signal<CartItem[]>([]);
 
   stockError = signal('');
 
-  constructor(private cartService: CartService) {
-    this.loadCart();
-  }
+  isLoading = signal(true);
 
-  // Cart summary using computed signals
+  private destroy$ = new Subject<void>();
+
+  // =====================================
+  // CART SUMMARY
+  // =====================================
+
   totalQuantity = computed(() =>
     this.cartItems().reduce(
       (total, item) => total + item.quantity,
@@ -49,18 +63,67 @@ export class Cart {
     )
   );
 
-  // Load cart and validate stock
-  loadCart(): void {
-    this.cartItems.set(this.cartService.getCartItems());
+  constructor(
+    private cartService: CartService
+  ) {}
 
-    const validation = this.cartService.validateCart();
+  // =====================================
+  // INITIALIZE CART
+  // =====================================
 
-    this.stockError.set(
-      validation.success ? '' : validation.message
-    );
+  ngOnInit(): void {
+    this.loadCart();
   }
 
-  // Available stock
+  // =====================================
+  // LOAD CART AND REFRESH API DATA
+  // =====================================
+
+  loadCart(): void {
+
+    this.isLoading.set(true);
+    this.stockError.set('');
+
+    // Show saved cart selections immediately.
+    this.cartItems.set(this.cartService.getCartItems());
+
+    // Fetch latest products and stock from MongoDB.
+    this.cartService.refreshCart()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+
+        next: result => {
+
+          // Update cart with latest product information.
+          this.cartItems.set(this.cartService.getCartItems());
+
+          this.stockError.set(
+            result.success ? '' : result.message
+          );
+
+          this.isLoading.set(false);
+
+        },
+
+        error: error => {
+
+          console.error('Cart refresh error:', error);
+
+          this.stockError.set(
+            'Unable to refresh product availability. Please try again.'
+          );
+
+          this.isLoading.set(false);
+
+        }
+
+      });
+  }
+
+  // =====================================
+  // AVAILABLE STOCK
+  // =====================================
+
   getAvailableStock(item: CartItem): number {
     return this.cartService.getAvailableQuantity(
       item.productId,
@@ -68,18 +131,29 @@ export class Cart {
     );
   }
 
-  // Stock status
+  // =====================================
+  // STOCK STATUS
+  // =====================================
+
   getStockStatus(item: CartItem): string {
+
     const available = this.getAvailableStock(item);
 
     if (available <= 0) return 'Out of Stock';
+
     if (available <= 5) return 'Limited Stock';
 
     return 'In Stock';
   }
 
-  // Increase quantity
+  // =====================================
+  // INCREASE QUANTITY
+  // =====================================
+
   increaseQuantity(item: CartItem): void {
+
+    if (this.isLoading()) return;
+
     const result = this.cartService.updateQuantity(
       item.productId,
       item.weight,
@@ -94,9 +168,13 @@ export class Cart {
     this.loadCart();
   }
 
-  // Decrease quantity
+  // =====================================
+  // DECREASE QUANTITY
+  // =====================================
+
   decreaseQuantity(item: CartItem): void {
-    if (item.quantity <= 1) return;
+
+    if (this.isLoading() || item.quantity <= 1) return;
 
     const result = this.cartService.updateQuantity(
       item.productId,
@@ -112,13 +190,39 @@ export class Cart {
     this.loadCart();
   }
 
-  // Remove item
+  // =====================================
+  // REMOVE ITEM
+  // =====================================
+
   removeItem(item: CartItem): void {
+
     this.cartService.removeItem(
       item.productId,
       item.weight
     );
 
+    this.stockError.set('');
+
+    this.cartItems.set(this.cartService.getCartItems());
+
+    // Refresh remaining cart items.
     this.loadCart();
+  }
+
+  // =====================================
+  // RETRY REFRESH
+  // =====================================
+
+  retryRefresh(): void {
+    this.loadCart();
+  }
+
+  // =====================================
+  // DESTROY
+  // =====================================
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
